@@ -110,12 +110,19 @@ export default function App() {
 
   // Initialize Game State Listener
   useEffect(() => {
-    if (!isConnected) return;
+    if (!isConnected || !userId) return;
 
     const gameRef = doc(db, 'games', GAME_ID);
     const unsubscribe = onSnapshot(gameRef, (snapshot) => {
       if (snapshot.exists()) {
-        setGameState(snapshot.data() as GameState);
+        const data = snapshot.data() as GameState;
+        setGameState(data);
+        
+        // If user is already in the players list, they have "joined"
+        const me = data.players.find(p => p.id === userId);
+        if (me && !selectedNickname) {
+          setSelectedNickname(me.name);
+        }
       } else {
         // Initialize game if it doesn't exist
         setDoc(gameRef, {
@@ -822,10 +829,15 @@ export default function App() {
       {/* Main Content */}
       <main className="relative z-10 w-full min-h-screen flex items-center justify-center pt-20">
         <AnimatePresence mode="wait">
-          {gameState.status === 'HOME' && renderHome()}
-          {gameState.status === 'LOBBY' && renderLobby()}
-          {gameState.status === 'GAME' && renderGame()}
-          {gameState.status === 'RESULTS' && renderResults()}
+          {(!selectedNickname || gameState.status === 'HOME') ? (
+            renderHome()
+          ) : (
+            <>
+              {gameState.status === 'LOBBY' && renderLobby()}
+              {gameState.status === 'GAME' && renderGame()}
+              {gameState.status === 'RESULTS' && renderResults()}
+            </>
+          )}
         </AnimatePresence>
       </main>
     </div>
