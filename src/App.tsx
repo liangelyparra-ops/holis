@@ -757,6 +757,25 @@ export default function App() {
           </div>
 
           <div className="mt-auto pt-6 space-y-4">
+            <div className="bg-surface-container-highest p-4 rounded-2xl border border-outline-variant/20 space-y-3">
+              <h4 className="font-headline text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                <HelpCircle size={14} /> Guía de Desafíos
+              </h4>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { n: 'ACTING', d: 'Mímica' },
+                  { n: 'TABÚ', d: 'Palabras prohibidas' },
+                  { n: 'EXPOSE', d: 'Verdad o reto' },
+                  { n: 'VOTAR', d: 'Elección grupal' }
+                ].map(item => (
+                  <div key={item.n} className="flex flex-col">
+                    <span className="text-[8px] font-black text-on-surface uppercase">{item.n}</span>
+                    <span className="text-[8px] text-on-surface-variant leading-tight">{item.d}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {gameState.players.length < 3 && (
               <div className="bg-error/10 border border-error/20 p-4 rounded-2xl flex items-center gap-3">
                 <AlertCircle size={20} className="text-error shrink-0" />
@@ -786,6 +805,7 @@ export default function App() {
   );
 
   const renderGame = () => {
+    if (myPlayer && !myPlayer.isReady) return renderWaiting();
     const currentCard = gameState.cards[gameState.currentCardIndex];
     if (!currentCard) return null;
 
@@ -1079,16 +1099,14 @@ export default function App() {
       {/* Main Content */}
       <main className="relative z-10 w-full min-h-screen flex items-center justify-center pt-20">
         <AnimatePresence mode="wait">
-          {isWaiting ? renderWaiting() : (
-            (!selectedNickname || gameState.status === 'HOME') ? (
-              renderHome()
-            ) : (
-              <>
-                {gameState.status === 'LOBBY' && renderLobby()}
-                {gameState.status === 'GAME' && renderGame()}
-                {gameState.status === 'RESULTS' && renderResults()}
-              </>
-            )
+          {!selectedNickname || gameState.status === 'HOME' ? (
+            renderHome()
+          ) : (
+            <>
+              {gameState.status === 'LOBBY' && renderLobby()}
+              {gameState.status === 'GAME' && renderGame()}
+              {gameState.status === 'RESULTS' && renderResults()}
+            </>
           )}
         </AnimatePresence>
       </main>
