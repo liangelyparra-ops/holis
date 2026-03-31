@@ -19,7 +19,7 @@ import { doc, onSnapshot, setDoc, updateDoc, getDoc, arrayUnion } from 'firebase
 import { onAuthStateChanged } from 'firebase/auth';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS } from './types';
-import { db, auth, loginAnonymously } from './firebase';
+import { db, auth, loginWithGoogle } from './firebase';
 
 const GAME_ID = 'global-party'; // Using a global ID for simplicity in this version
 
@@ -45,7 +45,6 @@ export default function App() {
 
   // Initialize Auth
   useEffect(() => {
-    loginAnonymously();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserId(user.uid);
@@ -109,30 +108,42 @@ export default function App() {
   }, [gameState.status, gameState.timer, gameState.players, userId]);
 
   const joinGame = async (name: string) => {
-    if (!userId) return;
-    const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
-    const newPlayer: Player = { id: userId, name, avatar, score: 0, isReady: false };
-    
-    const gameRef = doc(db, 'games', GAME_ID);
-    const snapshot = await getDoc(gameRef);
-    const currentPlayers = snapshot.exists() ? (snapshot.data().players || []) : [];
-    
-    // Check if player already exists
-    const existingIdx = currentPlayers.findIndex((p: Player) => p.id === userId);
-    let updatedPlayers = [...currentPlayers];
-    
-    if (existingIdx === -1) {
-      updatedPlayers.push(newPlayer);
-    } else {
-      updatedPlayers[existingIdx] = { ...updatedPlayers[existingIdx], name, avatar };
-    }
+    try {
+      let currentUserId = userId;
+      
+      if (!currentUserId) {
+        await loginWithGoogle();
+        currentUserId = auth.currentUser?.uid || null;
+      }
 
-    await updateDoc(gameRef, {
-      players: updatedPlayers,
-      status: snapshot.data()?.status === 'HOME' ? 'LOBBY' : snapshot.data()?.status
-    });
-    
-    setSelectedNickname(name);
+      if (!currentUserId) return;
+
+      const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
+      const newPlayer: Player = { id: currentUserId, name, avatar, score: 0, isReady: false };
+      
+      const gameRef = doc(db, 'games', GAME_ID);
+      const snapshot = await getDoc(gameRef);
+      const currentPlayers = snapshot.exists() ? (snapshot.data().players || []) : [];
+      
+      // Check if player already exists
+      const existingIdx = currentPlayers.findIndex((p: Player) => p.id === currentUserId);
+      let updatedPlayers = [...currentPlayers];
+      
+      if (existingIdx === -1) {
+        updatedPlayers.push(newPlayer);
+      } else {
+        updatedPlayers[existingIdx] = { ...updatedPlayers[existingIdx], name, avatar };
+      }
+
+      await updateDoc(gameRef, {
+        players: updatedPlayers,
+        status: snapshot.data()?.status === 'HOME' ? 'LOBBY' : snapshot.data()?.status
+      });
+      
+      setSelectedNickname(name);
+    } catch (error) {
+      console.error("Error joining game:", error);
+    }
   };
 
   const setReady = async () => {
