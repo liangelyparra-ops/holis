@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously } from 'firebase/auth';
+import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
@@ -8,14 +8,13 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 
-// Sign in anonymously (no popup) so anyone with the link can join
-export const loginAnonymously = async () => {
-  if (!auth.currentUser) {
-    try {
-      await signInAnonymously(auth);
-      // optional: console.log('Signed in anonymously', auth.currentUser?.uid);
-    } catch (error) {
-      console.error('Error signing in anonymously:', error);
-    }
+const googleProvider = new GoogleAuthProvider();
+
+// Sign in with Google (enabled by default in this environment)
+export const loginWithGoogle = async () => {
+  try {
+    await signInWithPopup(auth, googleProvider);
+  } catch (error) {
+    console.error("Error signing in with Google:", error);
   }
 };
