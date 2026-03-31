@@ -15,17 +15,19 @@ import {
   AlertCircle,
   User
 } from 'lucide-react';
-import { io } from 'socket.io-client';
+import { doc, onSnapshot, setDoc, updateDoc, getDoc, arrayUnion } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS } from './types';
+import { db, auth, loginAnonymously } from './firebase';
 
-const socket = io();
+const GAME_ID = 'global-party'; // Using a global ID for simplicity in this version
 
 export default function App() {
   const [gameState, setGameState] = useState<GameState>({
     status: 'HOME',
     players: [],
-    cards: [],
+    cards: DEFAULT_CARDS,
     currentCardIndex: 0,
     timer: 60,
     isChaosMode: true,
@@ -36,30 +38,129 @@ export default function App() {
 
   const [selectedNickname, setSelectedNickname] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [isConnected, setIsConnected] = useState(false);
   const [showPlayersList, setShowPlayersList] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Initialize Auth
   useEffect(() => {
-    socket.on("connect", () => setIsConnected(true));
-    socket.on("disconnect", () => setIsConnected(false));
-    socket.on("game:state", (state: GameState) => setGameState(state));
-
-    return () => {
-      socket.off("connect");
-      socket.off("disconnect");
-      socket.off("game:state");
-    };
+    loginAnonymously();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserId(user.uid);
+        setIsConnected(true);
+      } else {
+        setUserId(null);
+        setIsConnected(false);
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
-  const joinGame = (name: string) => {
+  // Initialize Game State Listener
+  useEffect(() => {
+    if (!isConnected) return;
+
+    const gameRef = doc(db, 'games', GAME_ID);
+    const unsubscribe = onSnapshot(gameRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setGameState(snapshot.data() as GameState);
+      } else {
+        // Initialize game if it doesn't exist
+        setDoc(gameRef, {
+          status: 'HOME',
+          players: [],
+          cards: DEFAULT_CARDS,
+          currentCardIndex: 0,
+          timer: 60,
+          isChaosMode: true,
+          isPenaltyMode: false,
+          currentTurnPlayerId: null,
+          readyCount: 0,
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, [isConnected]);
+
+  // Timer Logic (Client-side sync)
+  useEffect(() => {
+    if (gameState.status !== 'GAME' || !userId) return;
+
+    // Only the first player (host-ish) handles the timer to avoid multiple decrements
+    const isHost = gameState.players[0]?.id === userId;
+    if (!isHost) return;
+
+    const interval = setInterval(() => {
+      if (gameState.timer > 0) {
+        updateDoc(doc(db, 'games', GAME_ID), {
+          timer: gameState.timer - 1
+        });
+      } else {
+        updateDoc(doc(db, 'games', GAME_ID), {
+          status: 'RESULTS'
+        });
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [gameState.status, gameState.timer, gameState.players, userId]);
+
+  const joinGame = async (name: string) => {
+    if (!userId) return;
     const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
-    socket.emit("player:join", { name, avatar });
+    const newPlayer: Player = { id: userId, name, avatar, score: 0, isReady: false };
+    
+    const gameRef = doc(db, 'games', GAME_ID);
+    const snapshot = await getDoc(gameRef);
+    const currentPlayers = snapshot.exists() ? (snapshot.data().players || []) : [];
+    
+    // Check if player already exists
+    const existingIdx = currentPlayers.findIndex((p: Player) => p.id === userId);
+    let updatedPlayers = [...currentPlayers];
+    
+    if (existingIdx === -1) {
+      updatedPlayers.push(newPlayer);
+    } else {
+      updatedPlayers[existingIdx] = { ...updatedPlayers[existingIdx], name, avatar };
+    }
+
+    await updateDoc(gameRef, {
+      players: updatedPlayers,
+      status: snapshot.data()?.status === 'HOME' ? 'LOBBY' : snapshot.data()?.status
+    });
+    
     setSelectedNickname(name);
   };
 
-  const setReady = () => {
-    socket.emit("player:ready");
+  const setReady = async () => {
+    if (!userId) return;
+    const gameRef = doc(db, 'games', GAME_ID);
+    const snapshot = await getDoc(gameRef);
+    if (!snapshot.exists()) return;
+
+    const players = snapshot.data().players as Player[];
+    const playerIdx = players.findIndex(p => p.id === userId);
+    if (playerIdx === -1 || players[playerIdx].isReady) return;
+
+    players[playerIdx].isReady = true;
+    const newReadyCount = (snapshot.data().readyCount || 0) + 1;
+
+    const updates: any = {
+      players,
+      readyCount: newReadyCount
+    };
+
+    if (newReadyCount === players.length && players.length > 0) {
+      updates.status = 'GAME';
+      updates.currentCardIndex = 0;
+      updates.timer = 60;
+      updates.currentTurnPlayerId = players[0].id;
+    }
+
+    await updateDoc(gameRef, updates);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,11 +195,11 @@ export default function App() {
         });
 
         const newCards = JSON.parse(response.text).map((c: any, i: number) => ({ ...c, id: `ai-${i}` }));
-        socket.emit("game:update_cards", newCards);
+        await updateDoc(doc(db, 'games', GAME_ID), { cards: newCards });
       } catch (error) {
         console.error("Error generating cards:", error);
         alert("Error al generar cartas con IA. Usando mazo por defecto.");
-        socket.emit("game:update_cards", DEFAULT_CARDS);
+        await updateDoc(doc(db, 'games', GAME_ID), { cards: DEFAULT_CARDS });
       } finally {
         setIsUploading(false);
       }
@@ -106,21 +207,75 @@ export default function App() {
     reader.readAsText(file);
   };
 
-  const useDemoCards = () => {
-    socket.emit("game:update_cards", DEFAULT_CARDS);
+  const useDemoCards = async () => {
+    await updateDoc(doc(db, 'games', GAME_ID), { cards: DEFAULT_CARDS });
   };
 
-  const updateMode = (mode: 'CHAOS' | 'PENALTY') => {
-    socket.emit("game:update_status", 'LOBBY', mode);
+  const updateMode = async (mode: 'CHAOS' | 'PENALTY') => {
+    await updateDoc(doc(db, 'games', GAME_ID), {
+      isChaosMode: mode === 'CHAOS',
+      isPenaltyMode: mode === 'PENALTY'
+    });
   };
 
-  const voteWinner = (winnerId: string) => {
-    socket.emit("game:vote", winnerId);
+  const voteWinner = async (winnerId: string) => {
+    const gameRef = doc(db, 'games', GAME_ID);
+    const snapshot = await getDoc(gameRef);
+    if (!snapshot.exists()) return;
+
+    const data = snapshot.data();
+    const players = [...data.players];
+    const winnerIdx = players.findIndex(p => p.id === winnerId);
+    if (winnerIdx !== -1) {
+      players[winnerIdx].score += 10;
+    }
+
+    const updates: any = { players };
+
+    if (data.currentCardIndex < data.cards.length - 1) {
+      updates.currentCardIndex = data.currentCardIndex + 1;
+      const currentIdx = players.findIndex(p => p.id === data.currentTurnPlayerId);
+      const nextIdx = (currentIdx + 1) % players.length;
+      updates.currentTurnPlayerId = players[nextIdx].id;
+    } else {
+      updates.status = 'RESULTS';
+    }
+
+    await updateDoc(gameRef, updates);
   };
 
-  const myPlayer = gameState.players.find(p => p.id === socket.id);
+  const resetGame = async () => {
+    await setDoc(doc(db, 'games', GAME_ID), {
+      status: 'HOME',
+      players: [],
+      cards: DEFAULT_CARDS,
+      currentCardIndex: 0,
+      timer: 60,
+      isChaosMode: true,
+      isPenaltyMode: false,
+      currentTurnPlayerId: null,
+      readyCount: 0,
+    });
+  };
+
+  const restartGame = async () => {
+    const gameRef = doc(db, 'games', GAME_ID);
+    const snapshot = await getDoc(gameRef);
+    if (!snapshot.exists()) return;
+
+    const players = snapshot.data().players.map((p: Player) => ({ ...p, score: 0, isReady: false }));
+    await updateDoc(gameRef, {
+      status: 'LOBBY',
+      players,
+      readyCount: 0,
+      currentCardIndex: 0,
+      timer: 60
+    });
+  };
+
+  const myPlayer = gameState.players.find(p => p.id === userId);
   const currentTurnPlayer = gameState.players.find(p => p.id === gameState.currentTurnPlayerId);
-  const isMyTurn = gameState.currentTurnPlayerId === socket.id;
+  const isMyTurn = gameState.currentTurnPlayerId === userId;
 
   const renderHome = () => (
     <motion.div 
@@ -438,7 +593,7 @@ export default function App() {
         </div>
 
         <button 
-          onClick={() => socket.emit("game:restart")}
+          onClick={restartGame}
           className="w-full py-6 bg-primary text-on-primary-fixed font-headline font-black text-2xl rounded-3xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
         >
           VOLVER AL LOBBY 🔥
@@ -457,7 +612,7 @@ export default function App() {
 
       {/* Top Navigation Bar */}
       <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-8 h-16 bg-[#0e0e0e]/80 backdrop-blur-xl shadow-[0_0_20px_rgba(255,137,171,0.15)]">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => socket.emit("game:update_status", 'HOME')}>
+        <div className="flex items-center gap-3 cursor-pointer" onClick={resetGame}>
           <Gamepad2 className="text-[#ff89ab]" size={24} />
           <h1 className="text-xl font-black italic text-[#ff89ab] drop-shadow-[0_0_10px_rgba(255,137,171,0.5)] font-headline tracking-tighter uppercase">
             Holis fun party 🔥
@@ -495,7 +650,7 @@ export default function App() {
                         <img src={player.avatar} alt={player.name} className="w-8 h-8 rounded-full border border-outline-variant" />
                         <div className="flex-1 min-w-0">
                           <p className="font-body font-bold text-sm text-on-surface truncate">
-                            {player.name} {player.id === socket.id && <span className="text-[10px] text-primary">(Tú)</span>}
+                            {player.name} {player.id === userId && <span className="text-[10px] text-primary">(Tú)</span>}
                           </p>
                           <p className="text-[10px] text-on-surface-variant uppercase font-black">En la sala</p>
                         </div>

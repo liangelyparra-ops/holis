@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isValidGameState(data) {
+      return data.status in ['HOME', 'LOBBY', 'GAME', 'RESULTS'] &&
+             data.players is list &&
+             data.cards is list &&
+             data.currentCardIndex is number &&
+             data.timer is number &&
+             data.isChaosMode is bool &&
+             data.isPenaltyMode is bool &&
+             data.readyCount is number;
+    }
+
+    match /games/{gameId} {
+      // Allow anyone to read/write for now to keep it simple for a party game
+      // In a real app, we'd use auth, but for "fun party" we want low friction
+      allow read, write: if true;
+    }
+  }
+}

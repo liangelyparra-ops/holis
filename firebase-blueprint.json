@@ -1,0 +1,63 @@
+{
+  "entities": {
+    "Player": {
+      "title": "Player",
+      "description": "A player in the game",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "avatar": { "type": "string" },
+        "score": { "type": "number" },
+        "isReady": { "type": "boolean" }
+      },
+      "required": ["id", "name", "avatar", "score", "isReady"]
+    },
+    "GameCard": {
+      "title": "GameCard",
+      "description": "A card in the game",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "category": { "type": "string" },
+        "content": { "type": "string" },
+        "emoji": { "type": "string" },
+        "tabooWords": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["id", "category", "content", "emoji"]
+    },
+    "GameState": {
+      "title": "GameState",
+      "description": "The state of a game session",
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "enum": ["HOME", "LOBBY", "GAME", "RESULTS"] },
+        "players": {
+          "type": "array",
+          "items": { "$ref": "Player" }
+        },
+        "cards": {
+          "type": "array",
+          "items": { "$ref": "GameCard" }
+        },
+        "currentCardIndex": { "type": "number" },
+        "timer": { "type": "number" },
+        "isChaosMode": { "type": "boolean" },
+        "isPenaltyMode": { "type": "boolean" },
+        "currentTurnPlayerId": { "type": "string" },
+        "readyCount": { "type": "number" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      },
+      "required": ["status", "players", "cards", "currentCardIndex", "timer", "isChaosMode", "isPenaltyMode", "readyCount"]
+    }
+  },
+  "firestore": {
+    "/games/{gameId}": {
+      "schema": "GameState",
+      "description": "Stores the state of a specific game session"
+    }
+  }
+}
