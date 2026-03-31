@@ -169,69 +169,83 @@ export default function App() {
   }, [gameState.status, gameState.timer, gameState.players, userId]);
 
   // Instrumented joinGame with console logging + local fallback
-  const joinGame = async (name: string) => {
-    console.log('[joinGame] start', { name, userId, authUid: auth.currentUser?.uid });
-    try {
-      let currentUserId = userId;
-      
-      if (!currentUserId) {
-        // Use anonymous sign-in (no popup) so userId will be available
-        await loginAnonymously();
-        currentUserId = auth.currentUser?.uid || null;
-        console.log('[joinGame] anonymous login, uid=', currentUserId);
-      }
+  // Replace your existing joinGame with this debug version
+const joinGame = async (name: string) => {
+  alert(`[joinGame] clicked: ${name}`);
+  console.log('[joinGame] start', { name, userId, authUid: auth.currentUser?.uid });
 
-      if (!currentUserId) {
-        console.warn('[joinGame] no user id after login');
-        return;
-      }
+  try {
+    let currentUserId = userId;
 
-      const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
-      const newPlayer: Player = { id: currentUserId, name, avatar, score: 0, isReady: false };
-      
-      const gameRef = doc(db, 'games', GAME_ID);
-      let snapshot;
-      try {
-        snapshot = await getDoc(gameRef);
-        console.log('[joinGame] got snapshot', snapshot.exists(), snapshot?.data && snapshot.data());
-      } catch (err) {
-        console.error('[joinGame] getDoc error', err);
-        handleFirestoreError(err, OperationType.GET, `games/${GAME_ID}`);
-        return;
-      }
-
-      const currentPlayers = snapshot.exists() ? (snapshot.data().players || []) : [];
-      
-      // Check if player already exists
-      const existingIdx = currentPlayers.findIndex((p: Player) => p.id === currentUserId);
-      let updatedPlayers = [...currentPlayers];
-      
-      if (existingIdx === -1) {
-        updatedPlayers.push(newPlayer);
-      } else {
-        updatedPlayers[existingIdx] = { ...updatedPlayers[existingIdx], name, avatar };
-      }
-
-      try {
-        const newStatus = snapshot.data()?.status === 'HOME' ? 'LOBBY' : snapshot.data()?.status;
-        await updateDoc(gameRef, {
-          players: updatedPlayers,
-          status: newStatus
-        });
-        console.log('[joinGame] updateDoc succeeded', { newStatus, updatedPlayers });
-
-        // Local fallback to immediately update UI while we wait for Firestore snapshot propagation
-        setGameState(prev => ({ ...prev, players: updatedPlayers, status: newStatus }));
-      } catch (err) {
-        console.error('[joinGame] updateDoc error', err);
-        handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
-      }
-      
-      setSelectedNickname(name);
-    } catch (error) {
-      console.error("Error joining game:", error);
+    if (!currentUserId) {
+      // Try anonymous sign-in
+      await loginAnonymously();
+      currentUserId = auth.currentUser?.uid || null;
+      console.log('[joinGame] after loginAnonymously, uid=', currentUserId);
+      alert(`[joinGame] after anonymous login, uid=${currentUserId}`);
     }
-  };
+
+    if (!currentUserId) {
+      alert('[joinGame] No user id available after login.');
+      console.warn('[joinGame] no user id after login');
+      return;
+    }
+
+    const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
+    const newPlayer: Player = { id: currentUserId, name, avatar, score: 0, isReady: false };
+
+    const gameRef = doc(db, 'games', GAME_ID);
+    let snapshot;
+    try {
+      snapshot = await getDoc(gameRef);
+      console.log('[joinGame] getDoc snapshot.exists=', snapshot.exists());
+      alert(`[joinGame] getDoc success, exists=${snapshot.exists()}`);
+    } catch (err) {
+      console.error('[joinGame] getDoc error', err);
+      alert('[joinGame] getDoc failed (see console)');
+      handleFirestoreError(err, OperationType.GET, `games/${GAME_ID}`);
+      return;
+    }
+
+    const currentPlayers = snapshot.exists() ? (snapshot.data().players || []) : [];
+
+    // Check if player already exists
+    const existingIdx = currentPlayers.findIndex((p: Player) => p.id === currentUserId);
+    let updatedPlayers = [...currentPlayers];
+
+    if (existingIdx === -1) {
+      updatedPlayers.push(newPlayer);
+    } else {
+      updatedPlayers[existingIdx] = { ...updatedPlayers[existingIdx], name, avatar };
+    }
+
+    // Determine new status locally
+    const newStatus = snapshot.data()?.status === 'HOME' ? 'LOBBY' : snapshot.data()?.status || 'LOBBY';
+
+    // TRY updating Firestore but always apply a local fallback so UI moves immediately
+    try {
+      await updateDoc(gameRef, {
+        players: updatedPlayers,
+        status: newStatus
+      });
+      console.log('[joinGame] updateDoc succeeded', { newStatus, updatedPlayers });
+      alert('[joinGame] updateDoc succeeded');
+    } catch (err) {
+      console.error('[joinGame] updateDoc error', err);
+      alert('[joinGame] updateDoc failed (see console). Falling back to local UI update.');
+      // Do not rethrow — continue to local fallback so user sees the Lobby
+    }
+
+    // LOCAL FALLBACK: immediately set UI so the client proceeds even if Firestore is slow/blocked
+    setGameState(prev => ({ ...prev, players: updatedPlayers, status: newStatus }));
+    setSelectedNickname(name);
+    console.log('[joinGame] local UI fallback applied. status=', newStatus);
+    alert(`[joinGame] joined locally as ${name}. Status: ${newStatus}`);
+  } catch (error) {
+    console.error("Error joining game:", error);
+    alert('[joinGame] Exception: see console');
+  }
+};
 
   const setReady = async () => {
     if (!userId) return;
