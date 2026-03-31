@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -17,9 +16,12 @@ import {
   User
 } from 'lucide-react';
 import { doc, onSnapshot, setDoc, updateDoc, getDoc, arrayUnion } from 'firebase/firestore';
+import { Gamepad2, Users, Trophy, Timer, Flame, Skull, Upload, Star, Check } from 'lucide-react';
+import { doc, onSnapshot, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS } from './types';
+import { Player, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS } from './types';
 import { db, auth, loginAnonymously } from './firebase';
 
 const GAME_ID = 'global-party'; // Using a global ID for simplicity in this version
@@ -74,30 +76,28 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
   console.error('Firestore Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
 }
+const GAME_ID = 'global-party';
 
 export default function App() {
   const [firestoreError, setFirestoreError] = useState<string | null>(null);
-  const [gameState, setGameState] = useState<GameState>({
-    status: 'HOME',
-    players: [],
-    cards: DEFAULT_CARDS,
-    currentCardIndex: 0,
-    timer: 60,
-    isChaosMode: true,
-    isPenaltyMode: false,
-    currentTurnPlayerId: null,
-    readyCount: 0,
-  });
+
+const [gameState, setGameState] = useState<GameState>({
+status: 'HOME',
+players: [],
+@@ -88,45 +22,31 @@ export default function App() {
+readyCount: 0,
+});
 
   const [selectedNickname, setSelectedNickname] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [showPlayersList, setShowPlayersList] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+const [userId, setUserId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Initialize Auth
-  useEffect(() => {
+  // AUTH
+useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserId(user.uid);
@@ -106,67 +106,87 @@ export default function App() {
         setUserId(null);
         setIsConnected(false);
       }
-    });
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setUserId(user?.uid || null);
+});
     return () => unsubscribe();
-  }, []);
+    return () => unsub();
+}, []);
 
   // Ensure anonymous auth on startup so joinGame can rely on auth.currentUser
-  useEffect(() => {
+useEffect(() => {
     loginAnonymously().catch((e) => {
       console.warn('Anonymous login failed', e);
     });
-  }, []);
+    loginAnonymously();
+}, []);
 
   // Initialize Game State Listener
-  useEffect(() => {
+  // LISTENER
+useEffect(() => {
     if (!isConnected) return;
+    if (!userId) return;
 
     const gameRef = doc(db, 'games', GAME_ID);
     const unsubscribe = onSnapshot(gameRef, (snapshot) => {
       if (snapshot.exists()) {
         setGameState(snapshot.data() as GameState);
-      } else {
+    const ref = doc(db, 'games', GAME_ID);
+
+    const unsub = onSnapshot(ref, (snap) => {
+      if (snap.exists()) {
+        setGameState(snap.data() as GameState);
+} else {
         // Initialize game if it doesn't exist
         setDoc(gameRef, {
-          status: 'HOME',
-          players: [],
-          cards: DEFAULT_CARDS,
-          currentCardIndex: 0,
-          timer: 60,
-          isChaosMode: true,
-          isPenaltyMode: false,
-          currentTurnPlayerId: null,
-          readyCount: 0,
+        setDoc(ref, {
+status: 'HOME',
+players: [],
+cards: DEFAULT_CARDS,
+@@ -136,697 +56,165 @@ export default function App() {
+isPenaltyMode: false,
+currentTurnPlayerId: null,
+readyCount: 0,
         }).catch(err => handleFirestoreError(err, OperationType.WRITE, `games/${GAME_ID}`));
-      }
+        });
+}
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, `games/${GAME_ID}`);
-    });
+});
 
     return () => unsubscribe();
   }, [isConnected]);
+    return () => unsub();
+  }, [userId]);
 
   // Timer Logic (Client-side sync)
-  useEffect(() => {
-    if (gameState.status !== 'GAME' || !userId) return;
+  // TIMER FIXED
+useEffect(() => {
+if (gameState.status !== 'GAME' || !userId) return;
 
     // Only the first player (host-ish) handles the timer to avoid multiple decrements
-    const isHost = gameState.players[0]?.id === userId;
-    if (!isHost) return;
+const isHost = gameState.players[0]?.id === userId;
+if (!isHost) return;
 
-    const interval = setInterval(() => {
+const interval = setInterval(() => {
       if (gameState.timer > 0) {
         updateDoc(doc(db, 'games', GAME_ID), {
           timer: gameState.timer - 1
         }).catch(err => handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`));
       } else {
-        updateDoc(doc(db, 'games', GAME_ID), {
-          status: 'RESULTS'
-        }).catch(err => handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`));
-      }
-    }, 1000);
+      updateDoc(doc(db, 'games', GAME_ID), {
+        timer: gameState.timer > 0 ? gameState.timer - 1 : 0
+      });
 
-    return () => clearInterval(interval);
+      if (gameState.timer <= 1) {
+updateDoc(doc(db, 'games', GAME_ID), {
+status: 'RESULTS'
+        }).catch(err => handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`));
+        });
+}
+}, 1000);
+
+return () => clearInterval(interval);
   }, [gameState.status, gameState.timer, gameState.players, userId]);
 
   // Instrumented joinGame with console logging + local fallback
@@ -247,6 +267,7 @@ const joinGame = async (name: string) => {
     alert('[joinGame] Exception: see console');
   }
 };
+  }, [gameState.status, userId]);
 
   const setReady = async () => {
     if (!userId) return;
@@ -271,8 +292,11 @@ const joinGame = async (name: string) => {
       players,
       readyCount: newReadyCount
     };
+  // JOIN GAME FIXED
+  const joinGame = async (name: string) => {
+    if (!auth.currentUser) await loginAnonymously();
 
-if (newReadyCount >= 1) { players.length > 0) {
+    if (newReadyCount === players.length && players.length > 0) {
       updates.status = 'GAME';
       updates.currentCardIndex = 0;
       updates.timer = 60;
@@ -285,6 +309,8 @@ if (newReadyCount >= 1) { players.length > 0) {
       handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
     }
   };
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -316,6 +342,8 @@ if (newReadyCount >= 1) { players.length > 0) {
             },
           },
         });
+    const ref = doc(db, 'games', GAME_ID);
+    const snap = await getDoc(ref);
 
         const newCards = JSON.parse(response.text).map((c: any, i: number) => ({ ...c, id: `ai-${i}` }));
         await updateDoc(doc(db, 'games', GAME_ID), { cards: newCards });
@@ -329,6 +357,7 @@ if (newReadyCount >= 1) { players.length > 0) {
     };
     reader.readAsText(file);
   };
+    const players = snap.exists() ? snap.data().players || [] : [];
 
   const useDemoCards = async () => {
     try {
@@ -337,6 +366,13 @@ if (newReadyCount >= 1) { players.length > 0) {
       handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
     }
   };
+    const newPlayer: Player = {
+      id: uid,
+      name,
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
+      score: 0,
+      isReady: false,
+    };
 
   const updateMode = async (mode: 'CHAOS' | 'PENALTY') => {
     try {
@@ -348,6 +384,7 @@ if (newReadyCount >= 1) { players.length > 0) {
       handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
     }
   };
+    const updated = [...players.filter((p: Player) => p.id !== uid), newPlayer];
 
   const voteWinner = async (winnerId: string) => {
     const gameRef = doc(db, 'games', GAME_ID);
@@ -384,6 +421,11 @@ if (newReadyCount >= 1) { players.length > 0) {
       handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
     }
   };
+    await setDoc(ref, {
+      ...snap.data(),
+      players: updated,
+      status: 'LOBBY'
+    });
 
   const resetGame = async () => {
     try {
@@ -401,7 +443,12 @@ if (newReadyCount >= 1) { players.length > 0) {
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, `games/${GAME_ID}`);
     }
-  };
+    setGameState(prev => ({
+      ...prev,
+      players: updated,
+      status: 'LOBBY'
+    }));
+};
 
   const restartGame = async () => {
     const gameRef = doc(db, 'games', GAME_ID);
@@ -427,6 +474,9 @@ if (newReadyCount >= 1) { players.length > 0) {
       handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
     }
   };
+  // READY FIXED
+  const setReady = async () => {
+    if (!userId) return;
 
   const myPlayer = gameState.players.find(p => p.id === userId);
   const currentTurnPlayer = gameState.players.find(p => p.id === gameState.currentTurnPlayerId);
@@ -453,6 +503,8 @@ if (newReadyCount >= 1) { players.length > 0) {
           ¿Quién eres hoy? Elige tu personaje para entrar al desmadre.
         </p>
       </div>
+    const ref = doc(db, 'games', GAME_ID);
+    const snap = await getDoc(ref);
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {PREDEFINED_PLAYERS.map((name) => {
@@ -501,6 +553,7 @@ if (newReadyCount >= 1) { players.length > 0) {
               </span>
             </div>
           </div>
+    if (!snap.exists()) return;
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {gameState.players.map((player) => (
@@ -522,6 +575,10 @@ if (newReadyCount >= 1) { players.length > 0) {
               </motion.div>
             ))}
           </div>
+    const players = snap.data().players;
+    const updated = players.map((p: Player) =>
+      p.id === userId ? { ...p, isReady: true } : p
+    );
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
             <button 
@@ -554,6 +611,15 @@ if (newReadyCount >= 1) { players.length > 0) {
           </div>
         </div>
       </div>
+    await updateDoc(ref, {
+      players: updated,
+      readyCount: updated.filter((p: Player) => p.isReady).length,
+      status: 'GAME', // 🔥 FORZADO
+      currentCardIndex: 0,
+      timer: 60,
+      currentTurnPlayerId: updated[0]?.id
+    });
+  };
 
       <div className="lg:col-span-4 space-y-6">
         <div className="bg-surface-container-high rounded-[2.5rem] p-8 border-2 border-primary/20 shadow-2xl flex flex-col gap-6">
@@ -572,6 +638,8 @@ if (newReadyCount >= 1) { players.length > 0) {
               </div>
               {gameState.isChaosMode && <Check size={16} className="text-primary" />}
             </button>
+  const currentCard = gameState.cards[gameState.currentCardIndex];
+  const myPlayer = gameState.players.find(p => p.id === userId);
 
             <button 
               onClick={() => updateMode('PENALTY')}
@@ -586,6 +654,7 @@ if (newReadyCount >= 1) { players.length > 0) {
               {gameState.isPenaltyMode && <Check size={16} className="text-error" />}
             </button>
           </div>
+  // UI
 
           <div className="mt-auto pt-6">
             <button 
@@ -598,21 +667,33 @@ if (newReadyCount >= 1) { players.length > 0) {
               }`}
             >
               {myPlayer?.isReady ? '¡ESTÁS LISTO! 🔥' : 'ESTOY LISTO'}
-            </button>
+  if (gameState.status === 'HOME') {
+    return (
+      <div className="p-10 text-center">
+        <h1 className="text-4xl mb-6">Holis Fun Party 🔥</h1>
+        <div className="grid grid-cols-3 gap-4">
+          {PREDEFINED_PLAYERS.map(name => (
+            <button key={name} onClick={() => joinGame(name)}>
+              {name}
+</button>
             <p className="text-center mt-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
               {gameState.readyCount} / {gameState.players.length} jugadores listos
             </p>
           </div>
-        </div>
-      </div>
+          ))}
+</div>
+</div>
     </motion.div>
   );
 
   const renderGame = () => {
     const currentCard = gameState.cards[gameState.currentCardIndex];
     if (!currentCard) return null;
+    );
+  }
 
-    return (
+  if (gameState.status === 'LOBBY') {
+return (
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -645,6 +726,8 @@ if (newReadyCount >= 1) { players.length > 0) {
               animate={{ width: `${((gameState.currentCardIndex + 1) / gameState.cards.length) * 100}%` }}
             />
           </div>
+      <div className="p-10 text-center space-y-6">
+        <h2>Lobby</h2>
 
           <span className="text-8xl">{currentCard.emoji}</span>
           <div className="space-y-4">
@@ -685,7 +768,11 @@ if (newReadyCount >= 1) { players.length > 0) {
                 <span className="text-[10px] font-black uppercase tracking-widest">¡Es tu turno de elegir ganador!</span>
               </div>
             )}
-          </div>
+        {gameState.players.map(p => (
+          <div key={p.id}>
+            {p.name} {p.isReady ? '✅' : ''}
+</div>
+        ))}
 
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
             {gameState.players.map((player) => (
@@ -746,16 +833,31 @@ if (newReadyCount >= 1) { players.length > 0) {
             </motion.div>
           ))}
         </div>
+        <button onClick={setReady}>
+          ESTOY LISTO 🔥
+        </button>
 
         <button 
           onClick={restartGame}
           className="w-full py-6 bg-primary text-on-primary-fixed font-headline font-black text-2xl rounded-3xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
-        >
+        <button
+          onClick={async () => {
+            await updateDoc(doc(db, 'games', GAME_ID), {
+              status: 'GAME',
+              currentCardIndex: 0,
+              timer: 60,
+              currentTurnPlayerId: gameState.players[0]?.id
+            });
+          }}
+>
           VOLVER AL LOBBY 🔥
-        </button>
+          START GAME
+</button>
       </motion.div>
-    );
+      </div>
+);
   };
+  }
 
   return (
     <div className="min-h-screen bg-[#0e0e0e] text-on-surface font-body selection:bg-primary/30 overflow-x-hidden">
@@ -763,7 +865,15 @@ if (newReadyCount >= 1) { players.length > 0) {
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-1/4 -left-1/4 w-full h-full neon-glow-pink animate-pulse"></div>
         <div className="absolute -bottom-1/4 -right-1/4 w-full h-full neon-glow-cyan animate-pulse" style={{ animationDelay: '1s' }}></div>
-      </div>
+  if (gameState.status === 'GAME') {
+    return (
+      <div className="p-10 text-center">
+        <h2>{currentCard?.category}</h2>
+        <h1>{currentCard?.content}</h1>
+        <p>⏱ {gameState.timer}</p>
+</div>
+    );
+  }
 
       {/* Top Navigation Bar */}
       <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-8 h-16 bg-[#0e0e0e]/80 backdrop-blur-xl shadow-[0_0_20px_rgba(255,137,171,0.15)]">
@@ -787,6 +897,16 @@ if (newReadyCount >= 1) { players.length > 0) {
               <span className="text-on-surface font-label text-sm font-bold truncate max-w-[100px]">{myPlayer.name}</span>
               <Users size={14} className="text-on-surface-variant" />
             </button>
+  if (gameState.status === 'RESULTS') {
+    return (
+      <div className="p-10 text-center">
+        <h2>Resultados</h2>
+        {gameState.players.map(p => (
+          <div key={p.id}>{p.name} - {p.score}</div>
+        ))}
+      </div>
+    );
+  }
 
             <AnimatePresence>
               {showPlayersList && (
@@ -830,6 +950,5 @@ if (newReadyCount >= 1) { players.length > 0) {
       </main>
     </div>
   );
+  return null;
 }
-
-
