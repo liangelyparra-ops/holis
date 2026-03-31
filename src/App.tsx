@@ -15,8 +15,7 @@ import {
   AlertCircle,
   User
 } from 'lucide-react';
-import { doc, onSnapshot, setDoc, updateDoc, getDoc, arrayUnion } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
+import { doc, onSnapshot, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS } from './types';
 import { db } from './firebase';
@@ -162,40 +161,54 @@ export default function App() {
   const joinGame = async (name: string) => {
     try {
       const currentUserId = userId;
-      if (!currentUserId) return;
+      if (!currentUserId) {
+        console.warn("No user ID available yet.");
+        return;
+      }
 
       const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
       const newPlayer: Player = { id: currentUserId, name, avatar, score: 0, isReady: false, isHost: false };
       
       const gameRef = doc(db, 'games', GAME_ID);
-      let snapshot;
-      try {
-        snapshot = await getDoc(gameRef);
-      } catch (err) {
-        handleFirestoreError(err, OperationType.GET, `games/${GAME_ID}`);
-        return;
-      }
+      const snapshot = await getDoc(gameRef);
+      
+      let updatedPlayers: Player[] = [];
+      let currentStatus = 'HOME';
+      let existingData: any = {};
 
-      const currentPlayers = snapshot.exists() ? (snapshot.data().players || []) : [];
-      
-      // Check if player already exists
-      const existingIdx = currentPlayers.findIndex((p: Player) => p.id === currentUserId);
-      let updatedPlayers = [...currentPlayers];
-      
-      if (existingIdx === -1) {
-        updatedPlayers.push(newPlayer);
+      if (snapshot.exists()) {
+        existingData = snapshot.data();
+        updatedPlayers = [...(existingData.players || [])];
+        currentStatus = existingData.status || 'HOME';
+        
+        // Check if player already exists
+        const existingIdx = updatedPlayers.findIndex((p: Player) => p.id === currentUserId);
+        if (existingIdx === -1) {
+          updatedPlayers.push(newPlayer);
+        } else {
+          updatedPlayers[existingIdx] = { ...updatedPlayers[existingIdx], name, avatar };
+        }
       } else {
-        updatedPlayers[existingIdx] = { ...updatedPlayers[existingIdx], name, avatar };
+        updatedPlayers = [newPlayer];
       }
 
-      try {
-        await updateDoc(gameRef, {
-          players: updatedPlayers,
-          status: snapshot.data()?.status === 'HOME' ? 'LOBBY' : snapshot.data()?.status
-        });
-      } catch (err) {
-        handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
-      }
+      // If we are at HOME, move to LOBBY
+      const nextStatus = currentStatus === 'HOME' ? 'LOBBY' : currentStatus;
+
+      // Use setDoc to ensure document exists
+      await setDoc(gameRef, {
+        ...existingData,
+        players: updatedPlayers,
+        status: nextStatus,
+        // Ensure other fields exist if creating
+        cards: existingData.cards || DEFAULT_CARDS,
+        currentCardIndex: existingData.currentCardIndex || 0,
+        timer: existingData.timer !== undefined ? existingData.timer : 60,
+        isChaosMode: existingData.isChaosMode !== undefined ? existingData.isChaosMode : true,
+        isPenaltyMode: existingData.isPenaltyMode !== undefined ? existingData.isPenaltyMode : false,
+        currentTurnPlayerId: existingData.currentTurnPlayerId || null,
+        readyCount: existingData.readyCount || 0,
+      });
       
       setSelectedNickname(name);
     } catch (error) {
