@@ -20,17 +20,23 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS } from './types';
 import { db } from './firebase';
 
-const GAME_ID = 'global-party';
 const USER_ID_KEY = 'party-game-user-id';
 
 function getOrCreateUserId() {
-  let id = localStorage.getItem(USER_ID_KEY);
+  let id = sessionStorage.getItem(USER_ID_KEY);
   if (!id) {
     id = `guest-${Math.random().toString(36).substring(2, 9)}`;
-    localStorage.setItem(USER_ID_KEY, id);
+    sessionStorage.setItem(USER_ID_KEY, id);
   }
   return id;
 }
+
+function getRoomId() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('room') || 'global-party';
+}
+
+const GAME_ID = getRoomId();
 
 enum OperationType {
   CREATE = 'create',
@@ -225,6 +231,42 @@ export default function App() {
     }
   };
 
+  const goHome = async () => {
+    if (!userId) {
+      setSelectedNickname(null);
+      return;
+    }
+    
+    try {
+      const gameRef = doc(db, 'games', GAME_ID);
+      const snapshot = await getDoc(gameRef);
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        const players = (data.players || []) as Player[];
+        const filteredPlayers = players.filter(p => p.id !== userId);
+        
+        const updates: any = { players: filteredPlayers };
+        
+        const me = players.find(p => p.id === userId);
+        if (me?.isReady) {
+          updates.readyCount = Math.max(0, (data.readyCount || 0) - 1);
+        }
+        
+        if (filteredPlayers.length === 0) {
+          updates.status = 'HOME';
+          updates.readyCount = 0;
+        }
+
+        await updateDoc(gameRef, updates);
+      }
+    } catch (error) {
+      console.error("Error leaving game:", error);
+    } finally {
+      setSelectedNickname(null);
+      setTempNickname('');
+    }
+  };
+
   const setReady = async () => {
     if (!userId) return;
     const gameRef = doc(db, 'games', GAME_ID);
@@ -249,7 +291,7 @@ export default function App() {
       readyCount: newReadyCount
     };
 
-    if (newReadyCount === players.length && players.length > 0) {
+    if (newReadyCount === players.length && players.length >= 3) {
       updates.status = 'GAME';
       updates.currentCardIndex = 0;
       updates.timer = 60;
@@ -409,6 +451,11 @@ export default function App() {
   const currentTurnPlayer = gameState.players.find(p => p.id === gameState.currentTurnPlayerId);
   const isMyTurn = gameState.currentTurnPlayerId === userId;
 
+  const createPrivateRoom = () => {
+    const newRoomId = Math.random().toString(36).substring(2, 9);
+    window.location.href = `?room=${newRoomId}`;
+  };
+
   const renderHome = () => (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -423,7 +470,7 @@ export default function App() {
         >
           <Gamepad2 size={80} className="text-[#ff89ab] mx-auto drop-shadow-[0_0_15px_rgba(255,137,171,0.5)]" />
         </motion.div>
-        <h1 className="text-7xl font-black italic text-[#ff89ab] font-headline tracking-tighter uppercase drop-shadow-[0_0_20px_rgba(255,137,171,0.4)]">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black italic text-[#ff89ab] font-headline tracking-tighter uppercase drop-shadow-[0_0_20px_rgba(255,137,171,0.4)]">
           Holis fun party 🔥
         </h1>
         <p className="text-xl text-on-surface-variant font-body max-w-lg mx-auto">
@@ -485,6 +532,23 @@ export default function App() {
           <span>ENTRAR AL LOBBY</span>
           <ChevronRight />
         </button>
+
+        <div className="pt-6 border-t border-outline-variant/20 space-y-4">
+          <button 
+            onClick={createPrivateRoom}
+            className="w-full bg-surface-container-highest text-on-surface font-headline font-bold py-4 rounded-2xl flex items-center justify-center gap-2 border-2 border-outline-variant/30 hover:bg-surface-bright transition-all"
+          >
+            <Users size={20} />
+            CREAR SALA PRIVADA
+          </button>
+          
+          <div className="flex items-center justify-center gap-2 px-4 py-2 bg-surface-variant/30 rounded-full w-fit mx-auto">
+            <div className={`w-2 h-2 rounded-full ${GAME_ID === 'global-party' ? 'bg-tertiary' : 'bg-primary animate-pulse'}`}></div>
+            <span className="text-[10px] text-on-surface-variant uppercase font-black tracking-widest">
+              {GAME_ID === 'global-party' ? 'SALA GLOBAL' : `SALA: ${GAME_ID}`}
+            </span>
+          </div>
+        </div>
       </div>
     </motion.div>
   );
@@ -496,16 +560,25 @@ export default function App() {
       className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 p-6"
     >
       <div className="lg:col-span-8 space-y-6">
-        <div className="bg-surface-container-high rounded-[2.5rem] p-8 border-2 border-primary/20 shadow-2xl space-y-8">
-          <div className="flex justify-between items-center">
-            <h2 className="font-headline text-4xl font-black uppercase tracking-tighter text-on-surface">
+        <div className="bg-surface-container-high rounded-[2.5rem] p-6 sm:p-8 border-2 border-primary/20 shadow-2xl space-y-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <h2 className="font-headline text-3xl sm:text-4xl font-black uppercase tracking-tighter text-on-surface">
               La Banda <span className="text-primary">Conectada</span>
             </h2>
-            <div className="flex items-center gap-2 bg-surface-container-highest px-4 py-2 rounded-full border border-outline-variant/30">
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-tertiary animate-pulse' : 'bg-error'}`}></div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
-                {isConnected ? 'Conectado' : 'Desconectado'}
-              </span>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={goHome}
+                className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1"
+              >
+                <ChevronRight className="rotate-180" size={12} />
+                SALIR
+              </button>
+              <div className="flex items-center gap-2 bg-surface-container-highest px-4 py-2 rounded-full border border-outline-variant/30">
+                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-tertiary animate-pulse' : 'bg-error'}`}></div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
+                  {isConnected ? 'Conectado' : 'Desconectado'}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -594,19 +667,27 @@ export default function App() {
             </button>
           </div>
 
-          <div className="mt-auto pt-6">
+          <div className="mt-auto pt-6 space-y-4">
+            {gameState.players.length < 3 && (
+              <div className="bg-error/10 border border-error/20 p-4 rounded-2xl flex items-center gap-3">
+                <AlertCircle size={20} className="text-error shrink-0" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-error leading-tight">
+                  Se necesitan al menos 3 jugadores para iniciar la partida.
+                </p>
+              </div>
+            )}
             <button 
               onClick={setReady}
-              disabled={myPlayer?.isReady}
+              disabled={myPlayer?.isReady || gameState.players.length < 3}
               className={`w-full py-6 rounded-3xl font-headline font-black text-2xl uppercase tracking-tighter shadow-lg transition-all active:scale-95 ${
-                myPlayer?.isReady 
+                myPlayer?.isReady || gameState.players.length < 3
                   ? 'bg-surface-container-highest text-on-surface-variant cursor-not-allowed' 
                   : 'bg-primary text-on-primary-fixed hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,137,171,0.4)]'
               }`}
             >
               {myPlayer?.isReady ? '¡ESTÁS LISTO! 🔥' : 'ESTOY LISTO'}
             </button>
-            <p className="text-center mt-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
+            <p className="text-center text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
               {gameState.readyCount} / {gameState.players.length} jugadores listos
             </p>
           </div>
@@ -625,25 +706,36 @@ export default function App() {
         animate={{ opacity: 1 }}
         className="max-w-4xl w-full p-6 flex flex-col items-center gap-8"
       >
-        <div className="w-full flex justify-between items-center">
-          <div className="flex items-center gap-3 bg-surface-container-high px-6 py-3 rounded-full border border-primary/20 shadow-xl">
-            <Timer className="text-primary" size={20} />
-            <span className="font-headline font-black text-2xl text-on-surface">{gameState.timer}s</span>
-          </div>
+        <div className="w-full flex justify-between items-center gap-4">
+          <button 
+            onClick={goHome}
+            className="bg-surface-container-high p-3 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-primary transition-all shadow-lg"
+          >
+            <ChevronRight className="rotate-180" size={24} />
+          </button>
           
-          <div className="flex items-center gap-3 bg-surface-container-high px-6 py-3 rounded-full border border-primary/20 shadow-xl">
-            {gameState.isChaosMode ? <Flame className="text-primary" size={20} /> : <Skull className="text-error" size={20} />}
-            <span className="font-headline font-black text-sm uppercase tracking-widest text-on-surface">
-              {gameState.isChaosMode ? 'Modo Caos 🔥' : 'Modo Penalty 💀'}
-            </span>
+          <div className="flex-1 flex justify-center gap-4">
+            <div className="flex items-center gap-3 bg-surface-container-high px-4 sm:px-6 py-3 rounded-full border border-primary/20 shadow-xl">
+              <Timer className="text-primary" size={20} />
+              <span className="font-headline font-black text-xl sm:text-2xl text-on-surface">{gameState.timer}s</span>
+            </div>
+            
+            <div className="hidden sm:flex items-center gap-3 bg-surface-container-high px-6 py-3 rounded-full border border-primary/20 shadow-xl">
+              {gameState.isChaosMode ? <Flame className="text-primary" size={20} /> : <Skull className="text-error" size={20} />}
+              <span className="font-headline font-black text-sm uppercase tracking-widest text-on-surface">
+                {gameState.isChaosMode ? 'Modo Caos 🔥' : 'Modo Penalty 💀'}
+              </span>
+            </div>
           </div>
+
+          <div className="w-12 h-12 hidden sm:block"></div>
         </div>
 
         <motion.div 
           key={gameState.currentCardIndex}
           initial={{ rotateY: 90, opacity: 0 }}
           animate={{ rotateY: 0, opacity: 1 }}
-          className="w-full aspect-[4/3] max-w-2xl bg-surface-container-high rounded-[3rem] border-4 border-primary/30 shadow-[0_0_60px_rgba(255,137,171,0.15)] p-12 flex flex-col items-center justify-center text-center gap-8 relative overflow-hidden"
+          className="w-full aspect-square sm:aspect-[4/3] max-w-2xl bg-surface-container-high rounded-[2rem] sm:rounded-[3rem] border-4 border-primary/30 shadow-[0_0_60px_rgba(255,137,171,0.15)] p-6 sm:p-12 flex flex-col items-center justify-center text-center gap-4 sm:gap-8 relative overflow-hidden"
         >
           <div className="absolute top-0 left-0 w-full h-2 bg-primary/20">
             <motion.div 
@@ -653,18 +745,18 @@ export default function App() {
             />
           </div>
 
-          <span className="text-8xl">{currentCard.emoji}</span>
-          <div className="space-y-4">
-            <h4 className="font-headline text-xl font-black uppercase tracking-[0.2em] text-primary">{currentCard.category}</h4>
-            <p className="font-headline text-4xl md:text-5xl font-black text-on-surface leading-tight tracking-tighter italic">
+          <span className="text-6xl sm:text-8xl">{currentCard.emoji}</span>
+          <div className="space-y-2 sm:space-y-4">
+            <h4 className="font-headline text-sm sm:text-xl font-black uppercase tracking-[0.2em] text-primary">{currentCard.category}</h4>
+            <p className="font-headline text-2xl sm:text-4xl md:text-5xl font-black text-on-surface leading-tight tracking-tighter italic">
               "{currentCard.content}"
             </p>
             {currentCard.tabooWords && (
-              <div className="mt-6 p-4 bg-error/10 border border-error/20 rounded-2xl">
-                <p className="text-[10px] font-black uppercase tracking-widest text-error mb-2">Palabras Prohibidas:</p>
+              <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-error/10 border border-error/20 rounded-2xl">
+                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-error mb-2">Palabras Prohibidas:</p>
                 <div className="flex flex-wrap justify-center gap-2">
                   {currentCard.tabooWords.map(word => (
-                    <span key={word} className="bg-error text-on-error px-3 py-1 rounded-full text-xs font-bold uppercase">{word}</span>
+                    <span key={word} className="bg-error text-on-error px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase">{word}</span>
                   ))}
                 </div>
               </div>
@@ -672,8 +764,8 @@ export default function App() {
           </div>
         </motion.div>
 
-        <div className="w-full bg-surface-container-high rounded-[2.5rem] p-8 border-2 border-primary/20 shadow-2xl space-y-6">
-          <div className="flex items-center justify-between">
+        <div className="w-full bg-surface-container-high rounded-[2.5rem] p-6 sm:p-8 border-2 border-primary/20 shadow-2xl space-y-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="relative">
                 <img src={currentTurnPlayer?.avatar} alt={currentTurnPlayer?.name} className="w-12 h-12 rounded-full border-2 border-primary" />
@@ -694,20 +786,20 @@ export default function App() {
             )}
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3">
             {gameState.players.map((player) => (
               <button
                 key={player.id}
                 disabled={!isMyTurn}
                 onClick={() => voteWinner(player.id)}
-                className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${
+                className={`flex flex-col items-center gap-2 p-2 sm:p-3 rounded-2xl border transition-all ${
                   isMyTurn 
                     ? 'border-primary/30 bg-surface-container-low hover:border-primary hover:scale-105' 
                     : 'border-outline-variant/20 bg-surface-container-low opacity-80'
                 }`}
               >
-                <img src={player.avatar} alt={player.name} className="w-10 h-10 rounded-full" />
-                <span className="text-[10px] font-black uppercase tracking-tight text-on-surface truncate w-full text-center">{player.name}</span>
+                <img src={player.avatar} alt={player.name} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full" />
+                <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-tight text-on-surface truncate w-full text-center">{player.name}</span>
               </button>
             ))}
           </div>
@@ -723,43 +815,51 @@ export default function App() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="max-w-2xl w-full p-8 bg-surface-container-high rounded-[3rem] border-4 border-primary/30 shadow-[0_0_80px_rgba(255,137,171,0.2)] text-center space-y-10"
+        className="max-w-2xl w-full p-6 sm:p-8 bg-surface-container-high rounded-[2rem] sm:rounded-[3rem] border-4 border-primary/30 shadow-[0_0_80px_rgba(255,137,171,0.2)] text-center space-y-6 sm:space-y-10"
       >
         <div className="space-y-4">
-          <Trophy size={80} className="text-tertiary mx-auto drop-shadow-[0_0_20px_rgba(251,191,36,0.5)]" />
-          <h2 className="font-headline text-5xl font-black uppercase tracking-tighter text-on-surface">Puntuaciones Finales</h2>
+          <Trophy size={64} className="text-tertiary mx-auto drop-shadow-[0_0_20px_rgba(251,191,36,0.5)]" />
+          <h2 className="font-headline text-3xl sm:text-5xl font-black uppercase tracking-tighter text-on-surface">Puntuaciones Finales</h2>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {sortedPlayers.map((player, index) => (
             <motion.div 
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: index * 0.1 }}
               key={player.id}
-              className={`flex items-center justify-between p-6 rounded-3xl border-2 ${
+              className={`flex items-center justify-between p-4 sm:p-6 rounded-2xl sm:rounded-3xl border-2 ${
                 index === 0 ? 'bg-tertiary/10 border-tertiary' : 'bg-surface-container-low border-outline-variant/30'
               }`}
             >
-              <div className="flex items-center gap-6">
-                <span className="font-headline font-black text-3xl text-on-surface-variant w-8">{index + 1}</span>
-                <img src={player.avatar} alt={player.name} className="w-16 h-16 rounded-full border-2 border-primary/20" />
-                <span className="font-headline font-black text-2xl text-on-surface uppercase">{player.name}</span>
+              <div className="flex items-center gap-4 sm:gap-6">
+                <span className="font-headline font-black text-xl sm:text-3xl text-on-surface-variant w-6 sm:w-8">{index + 1}</span>
+                <img src={player.avatar} alt={player.name} className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-primary/20" />
+                <span className="font-headline font-black text-lg sm:text-2xl text-on-surface uppercase truncate max-w-[100px] sm:max-w-none">{player.name}</span>
               </div>
               <div className="text-right">
-                <span className="font-headline font-black text-3xl text-primary">{player.score}</span>
-                <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Puntos</p>
+                <span className="font-headline font-black text-2xl sm:text-3xl text-primary">{player.score}</span>
+                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Puntos</p>
               </div>
             </motion.div>
           ))}
         </div>
 
-        <button 
-          onClick={restartGame}
-          className="w-full py-6 bg-primary text-on-primary-fixed font-headline font-black text-2xl rounded-3xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
-        >
-          VOLVER AL LOBBY 🔥
-        </button>
+        <div className="flex flex-col gap-3">
+          <button 
+            onClick={restartGame}
+            className="w-full py-5 bg-primary text-on-primary-fixed font-headline font-black text-xl sm:text-2xl rounded-2xl sm:rounded-3xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
+          >
+            VOLVER AL LOBBY 🔥
+          </button>
+          <button 
+            onClick={goHome}
+            className="w-full py-4 bg-surface-container-high text-on-surface font-headline font-bold text-lg rounded-2xl border-2 border-outline-variant/30 hover:bg-surface-bright transition-all"
+          >
+            SALIR AL INICIO
+          </button>
+        </div>
       </motion.div>
     );
   };
@@ -773,10 +873,10 @@ export default function App() {
       </div>
 
       {/* Top Navigation Bar */}
-      <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-8 h-16 bg-[#0e0e0e]/80 backdrop-blur-xl shadow-[0_0_20px_rgba(255,137,171,0.15)]">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={resetGame}>
-          <Gamepad2 className="text-[#ff89ab]" size={24} />
-          <h1 className="text-xl font-black italic text-[#ff89ab] drop-shadow-[0_0_10px_rgba(255,137,171,0.5)] font-headline tracking-tighter uppercase">
+      <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 sm:px-8 h-16 bg-[#0e0e0e]/80 backdrop-blur-xl shadow-[0_0_20px_rgba(255,137,171,0.15)]">
+        <div className="flex items-center gap-3 cursor-pointer" onClick={goHome}>
+          <Gamepad2 className="text-[#ff89ab]" size={20} sm:size={24} />
+          <h1 className="text-lg sm:text-xl font-black italic text-[#ff89ab] drop-shadow-[0_0_10px_rgba(255,137,171,0.5)] font-headline tracking-tighter uppercase">
             Holis fun party 🔥
           </h1>
         </div>
