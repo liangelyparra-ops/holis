@@ -168,7 +168,9 @@ export default function App() {
     return () => clearInterval(interval);
   }, [gameState.status, gameState.timer, gameState.players, userId]);
 
+  // Instrumented joinGame with console logging + local fallback
   const joinGame = async (name: string) => {
+    console.log('[joinGame] start', { name, userId, authUid: auth.currentUser?.uid });
     try {
       let currentUserId = userId;
       
@@ -176,9 +178,13 @@ export default function App() {
         // Use anonymous sign-in (no popup) so userId will be available
         await loginAnonymously();
         currentUserId = auth.currentUser?.uid || null;
+        console.log('[joinGame] anonymous login, uid=', currentUserId);
       }
 
-      if (!currentUserId) return;
+      if (!currentUserId) {
+        console.warn('[joinGame] no user id after login');
+        return;
+      }
 
       const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
       const newPlayer: Player = { id: currentUserId, name, avatar, score: 0, isReady: false };
@@ -187,7 +193,9 @@ export default function App() {
       let snapshot;
       try {
         snapshot = await getDoc(gameRef);
+        console.log('[joinGame] got snapshot', snapshot.exists(), snapshot?.data && snapshot.data());
       } catch (err) {
+        console.error('[joinGame] getDoc error', err);
         handleFirestoreError(err, OperationType.GET, `games/${GAME_ID}`);
         return;
       }
@@ -205,11 +213,17 @@ export default function App() {
       }
 
       try {
+        const newStatus = snapshot.data()?.status === 'HOME' ? 'LOBBY' : snapshot.data()?.status;
         await updateDoc(gameRef, {
           players: updatedPlayers,
-          status: snapshot.data()?.status === 'HOME' ? 'LOBBY' : snapshot.data()?.status
+          status: newStatus
         });
+        console.log('[joinGame] updateDoc succeeded', { newStatus, updatedPlayers });
+
+        // Local fallback to immediately update UI while we wait for Firestore snapshot propagation
+        setGameState(prev => ({ ...prev, players: updatedPlayers, status: newStatus }));
       } catch (err) {
+        console.error('[joinGame] updateDoc error', err);
         handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
       }
       
