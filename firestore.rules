@@ -6,6 +6,14 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isValidPlayer(player) {
+      return player.id is string &&
+             player.name is string &&
+             player.avatar is string &&
+             player.score is number &&
+             player.isReady is bool;
+    }
+
     function isValidGameState(data) {
       return data.status in ['HOME', 'LOBBY', 'GAME', 'RESULTS'] &&
              data.players is list &&
@@ -18,9 +26,13 @@ service cloud.firestore {
     }
 
     match /games/{gameId} {
-      // Allow anyone to read/write for now to keep it simple for a party game
-      // In a real app, we'd use auth, but for "fun party" we want low friction
-      allow read, write: if true;
+      // Allow authenticated users to read and write game state
+      // This is a party game, so we allow any logged-in user to participate
+      allow read, write: if isAuthenticated();
+    }
+
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
     }
   }
 }

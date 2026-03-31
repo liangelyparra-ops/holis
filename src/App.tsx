@@ -23,7 +23,59 @@ import { db, auth, loginWithGoogle } from './firebase';
 
 const GAME_ID = 'global-party'; // Using a global ID for simplicity in this version
 
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId: string | undefined;
+    email: string | null | undefined;
+    emailVerified: boolean | undefined;
+    isAnonymous: boolean | undefined;
+    tenantId: string | null | undefined;
+    providerInfo: {
+      providerId: string;
+      displayName: string | null;
+      email: string | null;
+      photoUrl: string | null;
+    }[];
+  }
+}
+
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo: auth.currentUser?.providerData.map(provider => ({
+        providerId: provider.providerId,
+        displayName: provider.displayName,
+        email: provider.email,
+        photoUrl: provider.photoURL
+      })) || []
+    },
+    operationType,
+    path
+  }
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
+
 export default function App() {
+  const [firestoreError, setFirestoreError] = useState<string | null>(null);
   const [gameState, setGameState] = useState<GameState>({
     status: 'HOME',
     players: [],
@@ -77,8 +129,10 @@ export default function App() {
           isPenaltyMode: false,
           currentTurnPlayerId: null,
           readyCount: 0,
-        });
+        }).catch(err => handleFirestoreError(err, OperationType.WRITE, `games/${GAME_ID}`));
       }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, `games/${GAME_ID}`);
     });
 
     return () => unsubscribe();
@@ -96,11 +150,11 @@ export default function App() {
       if (gameState.timer > 0) {
         updateDoc(doc(db, 'games', GAME_ID), {
           timer: gameState.timer - 1
-        });
+        }).catch(err => handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`));
       } else {
         updateDoc(doc(db, 'games', GAME_ID), {
           status: 'RESULTS'
-        });
+        }).catch(err => handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`));
       }
     }, 1000);
 
@@ -122,7 +176,14 @@ export default function App() {
       const newPlayer: Player = { id: currentUserId, name, avatar, score: 0, isReady: false };
       
       const gameRef = doc(db, 'games', GAME_ID);
-      const snapshot = await getDoc(gameRef);
+      let snapshot;
+      try {
+        snapshot = await getDoc(gameRef);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.GET, `games/${GAME_ID}`);
+        return;
+      }
+
       const currentPlayers = snapshot.exists() ? (snapshot.data().players || []) : [];
       
       // Check if player already exists
@@ -135,10 +196,14 @@ export default function App() {
         updatedPlayers[existingIdx] = { ...updatedPlayers[existingIdx], name, avatar };
       }
 
-      await updateDoc(gameRef, {
-        players: updatedPlayers,
-        status: snapshot.data()?.status === 'HOME' ? 'LOBBY' : snapshot.data()?.status
-      });
+      try {
+        await updateDoc(gameRef, {
+          players: updatedPlayers,
+          status: snapshot.data()?.status === 'HOME' ? 'LOBBY' : snapshot.data()?.status
+        });
+      } catch (err) {
+        handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
+      }
       
       setSelectedNickname(name);
     } catch (error) {
@@ -149,7 +214,13 @@ export default function App() {
   const setReady = async () => {
     if (!userId) return;
     const gameRef = doc(db, 'games', GAME_ID);
-    const snapshot = await getDoc(gameRef);
+    let snapshot;
+    try {
+      snapshot = await getDoc(gameRef);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.GET, `games/${GAME_ID}`);
+      return;
+    }
     if (!snapshot.exists()) return;
 
     const players = snapshot.data().players as Player[];
@@ -171,7 +242,11 @@ export default function App() {
       updates.currentTurnPlayerId = players[0].id;
     }
 
-    await updateDoc(gameRef, updates);
+    try {
+      await updateDoc(gameRef, updates);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -219,19 +294,33 @@ export default function App() {
   };
 
   const useDemoCards = async () => {
-    await updateDoc(doc(db, 'games', GAME_ID), { cards: DEFAULT_CARDS });
+    try {
+      await updateDoc(doc(db, 'games', GAME_ID), { cards: DEFAULT_CARDS });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
+    }
   };
 
   const updateMode = async (mode: 'CHAOS' | 'PENALTY') => {
-    await updateDoc(doc(db, 'games', GAME_ID), {
-      isChaosMode: mode === 'CHAOS',
-      isPenaltyMode: mode === 'PENALTY'
-    });
+    try {
+      await updateDoc(doc(db, 'games', GAME_ID), {
+        isChaosMode: mode === 'CHAOS',
+        isPenaltyMode: mode === 'PENALTY'
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
+    }
   };
 
   const voteWinner = async (winnerId: string) => {
     const gameRef = doc(db, 'games', GAME_ID);
-    const snapshot = await getDoc(gameRef);
+    let snapshot;
+    try {
+      snapshot = await getDoc(gameRef);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.GET, `games/${GAME_ID}`);
+      return;
+    }
     if (!snapshot.exists()) return;
 
     const data = snapshot.data();
@@ -252,36 +341,54 @@ export default function App() {
       updates.status = 'RESULTS';
     }
 
-    await updateDoc(gameRef, updates);
+    try {
+      await updateDoc(gameRef, updates);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
+    }
   };
 
   const resetGame = async () => {
-    await setDoc(doc(db, 'games', GAME_ID), {
-      status: 'HOME',
-      players: [],
-      cards: DEFAULT_CARDS,
-      currentCardIndex: 0,
-      timer: 60,
-      isChaosMode: true,
-      isPenaltyMode: false,
-      currentTurnPlayerId: null,
-      readyCount: 0,
-    });
+    try {
+      await setDoc(doc(db, 'games', GAME_ID), {
+        status: 'HOME',
+        players: [],
+        cards: DEFAULT_CARDS,
+        currentCardIndex: 0,
+        timer: 60,
+        isChaosMode: true,
+        isPenaltyMode: false,
+        currentTurnPlayerId: null,
+        readyCount: 0,
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `games/${GAME_ID}`);
+    }
   };
 
   const restartGame = async () => {
     const gameRef = doc(db, 'games', GAME_ID);
-    const snapshot = await getDoc(gameRef);
+    let snapshot;
+    try {
+      snapshot = await getDoc(gameRef);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.GET, `games/${GAME_ID}`);
+      return;
+    }
     if (!snapshot.exists()) return;
 
     const players = snapshot.data().players.map((p: Player) => ({ ...p, score: 0, isReady: false }));
-    await updateDoc(gameRef, {
-      status: 'LOBBY',
-      players,
-      readyCount: 0,
-      currentCardIndex: 0,
-      timer: 60
-    });
+    try {
+      await updateDoc(gameRef, {
+        status: 'LOBBY',
+        players,
+        readyCount: 0,
+        currentCardIndex: 0,
+        timer: 60
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
+    }
   };
 
   const myPlayer = gameState.players.find(p => p.id === userId);
