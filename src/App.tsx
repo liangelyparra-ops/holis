@@ -93,6 +93,8 @@ export default function App() {
   });
 
   const [selectedNickname, setSelectedNickname] = useState<string | null>(null);
+  const [tempNickname, setTempNickname] = useState('');
+  const [selectedAvatarSeed, setSelectedAvatarSeed] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [showPlayersList, setShowPlayersList] = useState(false);
@@ -158,7 +160,9 @@ export default function App() {
     return () => clearInterval(interval);
   }, [gameState.status, gameState.timer, gameState.players, userId]);
 
-  const joinGame = async (name: string) => {
+  const joinGame = async () => {
+    if (!tempNickname.trim() || !selectedAvatarSeed) return;
+
     try {
       const currentUserId = userId;
       if (!currentUserId) {
@@ -166,7 +170,8 @@ export default function App() {
         return;
       }
 
-      const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
+      const name = tempNickname.trim();
+      const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedAvatarSeed}`;
       const newPlayer: Player = { id: currentUserId, name, avatar, score: 0, isReady: false, isHost: false };
       
       const gameRef = doc(db, 'games', GAME_ID);
@@ -192,15 +197,12 @@ export default function App() {
         updatedPlayers = [newPlayer];
       }
 
-      // If we are at HOME, move to LOBBY
       const nextStatus = currentStatus === 'HOME' ? 'LOBBY' : currentStatus;
 
-      // Use setDoc to ensure document exists
       await setDoc(gameRef, {
         ...existingData,
         players: updatedPlayers,
         status: nextStatus,
-        // Ensure other fields exist if creating
         cards: existingData.cards || DEFAULT_CARDS,
         currentCardIndex: existingData.currentCardIndex || 0,
         timer: existingData.timer !== undefined ? existingData.timer : 60,
@@ -418,34 +420,64 @@ export default function App() {
           Holis fun party 🔥
         </h1>
         <p className="text-xl text-on-surface-variant font-body max-w-lg mx-auto">
-          ¿Quién eres hoy? Elige tu personaje para entrar al desmadre.
+          ¡Personaliza tu entrada al desmadre! Elige un avatar y pon tu apodo.
         </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {PREDEFINED_PLAYERS.map((name) => {
-          const isTaken = gameState.players.some(p => p.name === name);
-          return (
-            <button
-              key={name}
-              disabled={isTaken}
-              onClick={() => joinGame(name)}
-              className={`group relative p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${
-                isTaken 
-                  ? 'opacity-50 grayscale cursor-not-allowed border-outline-variant bg-surface-container-low' 
-                  : 'border-primary/30 bg-surface-container-high hover:border-primary hover:scale-105 hover:shadow-[0_0_20px_rgba(255,137,171,0.2)]'
-              }`}
-            >
-              <img 
-                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`} 
-                alt={name}
-                className="w-16 h-16 rounded-full bg-surface-variant"
-              />
-              <span className="font-headline font-black uppercase text-sm tracking-tight text-on-surface">{name}</span>
-              {isTaken && <span className="absolute top-2 right-2 text-[10px] bg-outline-variant text-on-surface-variant px-2 py-0.5 rounded-full font-black uppercase">Ocupado</span>}
-            </button>
-          );
-        })}
+      <div className="max-w-md mx-auto space-y-8 bg-surface-container-high p-8 rounded-[2.5rem] border-2 border-primary/20 shadow-2xl">
+        <div className="space-y-4">
+          <label className="block text-left text-[10px] font-black uppercase tracking-widest text-primary ml-4">Tu Apodo / Nombre</label>
+          <input 
+            type="text" 
+            value={tempNickname}
+            onChange={(e) => setTempNickname(e.target.value)}
+            placeholder="Ej: El Rey de la Fiesta"
+            className="w-full bg-surface-container-highest border-2 border-outline-variant/30 rounded-2xl p-4 font-headline font-black uppercase text-on-surface focus:border-primary outline-none transition-all"
+          />
+        </div>
+
+        <div className="space-y-4">
+          <label className="block text-left text-[10px] font-black uppercase tracking-widest text-primary ml-4">Elige tu Avatar</label>
+          <div className="grid grid-cols-5 gap-3 max-h-48 overflow-y-auto p-2 scrollbar-hide">
+            {Array.from({ length: 20 }).map((_, i) => {
+              const seed = `avatar-${i + 1}`;
+              const isSelected = selectedAvatarSeed === seed;
+              return (
+                <button
+                  key={seed}
+                  onClick={() => setSelectedAvatarSeed(seed)}
+                  className={`relative aspect-square rounded-xl border-2 transition-all overflow-hidden ${
+                    isSelected ? 'border-primary scale-110 shadow-[0_0_15px_rgba(255,137,171,0.4)]' : 'border-outline-variant/30 grayscale hover:grayscale-0 hover:border-primary/50'
+                  }`}
+                >
+                  <img 
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`} 
+                    alt="Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                  {isSelected && (
+                    <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                      <Check size={20} className="text-on-primary-fixed" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <button 
+          onClick={joinGame}
+          disabled={!tempNickname.trim() || !selectedAvatarSeed}
+          className={`w-full py-6 rounded-3xl font-headline font-black text-2xl uppercase tracking-tighter shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3 ${
+            !tempNickname.trim() || !selectedAvatarSeed
+              ? 'bg-surface-container-highest text-on-surface-variant cursor-not-allowed' 
+              : 'bg-primary text-on-primary-fixed hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,137,171,0.4)]'
+          }`}
+        >
+          <span>ENTRAR AL LOBBY</span>
+          <ChevronRight />
+        </button>
       </div>
     </motion.div>
   );
