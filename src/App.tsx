@@ -36,6 +36,15 @@ function getRoomId() {
   return params.get('room') || 'global-party';
 }
 
+function shuffleArray<T>(array: T[]): T[] {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+}
+
 const GAME_ID = getRoomId();
 
 enum OperationType {
@@ -134,7 +143,7 @@ export default function App() {
         setDoc(gameRef, {
           status: 'HOME',
           players: [],
-          cards: DEFAULT_CARDS,
+          cards: shuffleArray(DEFAULT_CARDS),
           currentCardIndex: 0,
           timer: 60,
           isChaosMode: true,
@@ -336,12 +345,12 @@ export default function App() {
           },
         });
 
-        const newCards = JSON.parse(response.text).map((c: any, i: number) => ({ ...c, id: `ai-${i}` }));
+        const newCards = shuffleArray(JSON.parse(response.text).map((c: any, i: number) => ({ ...c, id: `ai-${i}` })));
         await updateDoc(doc(db, 'games', GAME_ID), { cards: newCards });
       } catch (error) {
         console.error("Error generating cards:", error);
         alert("Error al generar cartas con IA. Usando mazo por defecto.");
-        await updateDoc(doc(db, 'games', GAME_ID), { cards: DEFAULT_CARDS });
+        await updateDoc(doc(db, 'games', GAME_ID), { cards: shuffleArray(DEFAULT_CARDS) });
       } finally {
         setIsUploading(false);
       }
@@ -351,7 +360,7 @@ export default function App() {
 
   const useDemoCards = async () => {
     try {
-      await updateDoc(doc(db, 'games', GAME_ID), { cards: DEFAULT_CARDS });
+      await updateDoc(doc(db, 'games', GAME_ID), { cards: shuffleArray(DEFAULT_CARDS) });
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
     }
@@ -409,7 +418,7 @@ export default function App() {
       await setDoc(doc(db, 'games', GAME_ID), {
         status: 'HOME',
         players: [],
-        cards: DEFAULT_CARDS,
+        cards: shuffleArray(DEFAULT_CARDS),
         currentCardIndex: 0,
         timer: 60,
         isChaosMode: true,
@@ -433,11 +442,18 @@ export default function App() {
     }
     if (!snapshot.exists()) return;
 
-    const players = snapshot.data().players.map((p: Player) => ({ ...p, score: 0, isReady: false }));
+    const data = snapshot.data();
+    const players = data.players.map((p: Player) => ({ ...p, score: 0, isReady: false }));
+    
+    // Shuffle cards if they are the default ones or if we want a fresh experience
+    const currentCards = data.cards || DEFAULT_CARDS;
+    const shuffledCards = shuffleArray(currentCards);
+
     try {
       await updateDoc(gameRef, {
         status: 'LOBBY',
         players,
+        cards: shuffledCards,
         readyCount: 0,
         currentCardIndex: 0,
         timer: 60
@@ -473,7 +489,7 @@ export default function App() {
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-black italic text-[#ff89ab] font-headline tracking-tighter uppercase drop-shadow-[0_0_20px_rgba(255,137,171,0.4)]">
           Holis fun party 🔥
         </h1>
-        <p className="text-xl text-on-surface-variant font-body max-w-lg mx-auto">
+        <p className="text-base sm:text-lg text-on-surface-variant font-body max-w-lg mx-auto">
           ¡Personaliza tu entrada al desmadre! Elige un avatar y pon tu apodo.
         </p>
       </div>
@@ -607,7 +623,11 @@ export default function App() {
             <button 
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="flex items-center justify-center gap-3 p-6 bg-surface-container-low border-2 border-dashed border-primary/30 rounded-3xl hover:border-primary hover:bg-surface-container-highest transition-all group"
+              className={`flex items-center justify-center gap-3 p-6 bg-surface-container-low border-2 rounded-3xl transition-all group relative ${
+                gameState.cards[0]?.id.startsWith('ai-') 
+                ? 'border-primary bg-primary/5 shadow-[0_0_20px_rgba(255,137,171,0.2)]' 
+                : 'border-dashed border-primary/30 hover:border-primary hover:bg-surface-container-highest'
+              }`}
             >
               {isUploading ? (
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
@@ -618,18 +638,32 @@ export default function App() {
                 <p className="font-headline font-black uppercase text-sm text-on-surface">Subir Archivo .txt</p>
                 <p className="text-[10px] text-on-surface-variant uppercase font-black">Generar cartas con IA</p>
               </div>
+              {gameState.cards[0]?.id.startsWith('ai-') && (
+                <div className="absolute -top-2 -right-2 bg-primary text-on-primary-fixed p-1 rounded-full shadow-lg">
+                  <Check size={12} />
+                </div>
+              )}
             </button>
             <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".txt" className="hidden" />
 
             <button 
               onClick={useDemoCards}
-              className="flex items-center justify-center gap-3 p-6 bg-surface-container-low border-2 border-dashed border-tertiary/30 rounded-3xl hover:border-tertiary hover:bg-surface-container-highest transition-all group"
+              className={`flex items-center justify-center gap-3 p-6 bg-surface-container-low border-2 rounded-3xl transition-all group relative ${
+                !gameState.cards[0]?.id.startsWith('ai-') 
+                ? 'border-tertiary bg-tertiary/5 shadow-[0_0_20px_rgba(251,191,36,0.2)]' 
+                : 'border-dashed border-tertiary/30 hover:border-tertiary hover:bg-surface-container-highest'
+              }`}
             >
               <Star className="text-tertiary group-hover:scale-110 transition-transform" />
               <div className="text-left">
                 <p className="font-headline font-black uppercase text-sm text-on-surface">Usar Demo</p>
                 <p className="text-[10px] text-on-surface-variant uppercase font-black">Mazo predefinido</p>
               </div>
+              {!gameState.cards[0]?.id.startsWith('ai-') && (
+                <div className="absolute -top-2 -right-2 bg-tertiary text-on-tertiary-container p-1 rounded-full shadow-lg">
+                  <Check size={12} />
+                </div>
+              )}
             </button>
           </div>
         </div>
