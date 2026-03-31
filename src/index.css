@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #0e0e0e;
+  --color-surface: #0e0e0e;
+  --color-surface-bright: #2c2c2c;
+  --color-surface-dim: #0e0e0e;
+  --color-surface-container-lowest: #000000;
+  --color-surface-container-low: #131313;
+  --color-surface-container: #1a1919;
+  --color-surface-container-high: #201f1f;
+  --color-surface-container-highest: #262626;
+  --color-surface-variant: #262626;
+  
+  --color-on-surface: #ffffff;
+  --color-on-surface-variant: #adaaaa;
+  
+  --color-primary: #ff89ab;
+  --color-primary-dim: #e30071;
+  --color-on-primary: #62002d;
+  --color-on-primary-fixed: #000000;
+  
+  --color-secondary: #00f4fe;
+  --color-secondary-dim: #00e5ee;
+  --color-on-secondary: #00575b;
+  
+  --color-tertiary: #69fd5d;
+  --color-tertiary-dim: #49e043;
+  --color-on-tertiary: #005e07;
+  
+  --color-error: #ff6e84;
+  --color-outline: #777575;
+  --color-outline-variant: #494847;
+
+  --font-headline: "Epilogue", sans-serif;
+  --font-body: "Be Vietnam Pro", sans-serif;
+  --font-label: "Space Grotesk", sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary;
+    overflow-x: hidden;
+  }
+}
+
+.neon-glow-pink {
+  background: radial-gradient(circle at center, rgba(255, 137, 171, 0.15) 0%, transparent 70%);
+}
+
+.neon-glow-cyan {
+  background: radial-gradient(circle at center, rgba(0, 244, 254, 0.1) 0%, transparent 70%);
+}
+
+.glass-panel {
+  background: rgba(38, 38, 38, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.neon-tube-primary {
+  @apply bg-gradient-to-br from-primary to-primary-dim shadow-[0_0_20px_rgba(255,137,171,0.3)];
+}
+
+.neon-tube-secondary {
+  @apply border-2 border-secondary text-secondary shadow-[0_0_20px_rgba(0,244,254,0.2)];
+}
+
+.neon-tube-tertiary {
+  @apply bg-gradient-to-br from-tertiary to-tertiary-dim shadow-[0_0_20px_rgba(105,253,93,0.3)];
+}
