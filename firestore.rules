@@ -6,33 +6,15 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isValidPlayer(player) {
-      return player.id is string &&
-             player.name is string &&
-             player.avatar is string &&
-             player.score is number &&
-             player.isReady is bool;
-    }
-
-    function isValidGameState(data) {
-      return data.status in ['HOME', 'LOBBY', 'GAME', 'RESULTS'] &&
-             data.players is list &&
-             data.cards is list &&
-             data.currentCardIndex is number &&
-             data.timer is number &&
-             data.isChaosMode is bool &&
-             data.isPenaltyMode is bool &&
-             data.readyCount is number;
-    }
-
     match /games/{gameId} {
-      // Allow authenticated users to read and write game state
-      // This is a party game, so we allow any logged-in user to participate
-      allow read, write: if isAuthenticated();
+      // WARNING: Public access allowed for low-friction party game experience as requested.
+      // In a production app with sensitive data, this should be restricted to authenticated users.
+      allow read, write: if true;
     }
 
     match /users/{userId} {
-      allow read, write: if request.auth.uid == userId;
+      // Keep user profiles restricted to the owner if they happen to sign in
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }

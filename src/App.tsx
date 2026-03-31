@@ -19,9 +19,19 @@ import { doc, onSnapshot, setDoc, updateDoc, getDoc, arrayUnion } from 'firebase
 import { onAuthStateChanged } from 'firebase/auth';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS } from './types';
-import { db, auth, loginWithGoogle } from './firebase';
+import { db } from './firebase';
 
-const GAME_ID = 'global-party'; // Using a global ID for simplicity in this version
+const GAME_ID = 'global-party';
+const USER_ID_KEY = 'party-game-user-id';
+
+function getOrCreateUserId() {
+  let id = localStorage.getItem(USER_ID_KEY);
+  if (!id) {
+    id = `guest-${Math.random().toString(36).substring(2, 9)}`;
+    localStorage.setItem(USER_ID_KEY, id);
+  }
+  return id;
+}
 
 enum OperationType {
   CREATE = 'create',
@@ -55,17 +65,12 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
-      emailVerified: auth.currentUser?.emailVerified,
-      isAnonymous: auth.currentUser?.isAnonymous,
-      tenantId: auth.currentUser?.tenantId,
-      providerInfo: auth.currentUser?.providerData.map(provider => ({
-        providerId: provider.providerId,
-        displayName: provider.displayName,
-        email: provider.email,
-        photoUrl: provider.photoURL
-      })) || []
+      userId: undefined,
+      email: undefined,
+      emailVerified: undefined,
+      isAnonymous: undefined,
+      tenantId: undefined,
+      providerInfo: []
     },
     operationType,
     path
@@ -95,18 +100,11 @@ export default function App() {
   const [userId, setUserId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Initialize Auth
+  // Initialize Local User ID
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUserId(user.uid);
-        setIsConnected(true);
-      } else {
-        setUserId(null);
-        setIsConnected(false);
-      }
-    });
-    return () => unsubscribe();
+    const id = getOrCreateUserId();
+    setUserId(id);
+    setIsConnected(true);
   }, []);
 
   // Initialize Game State Listener
@@ -163,17 +161,11 @@ export default function App() {
 
   const joinGame = async (name: string) => {
     try {
-      let currentUserId = userId;
-      
-      if (!currentUserId) {
-        await loginWithGoogle();
-        currentUserId = auth.currentUser?.uid || null;
-      }
-
+      const currentUserId = userId;
       if (!currentUserId) return;
 
       const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
-      const newPlayer: Player = { id: currentUserId, name, avatar, score: 0, isReady: false };
+      const newPlayer: Player = { id: currentUserId, name, avatar, score: 0, isReady: false, isHost: false };
       
       const gameRef = doc(db, 'games', GAME_ID);
       let snapshot;
