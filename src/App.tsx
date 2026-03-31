@@ -13,7 +13,9 @@ import {
   ChevronRight,
   Star,
   AlertCircle,
-  User
+  User,
+  Info,
+  HelpCircle
 } from 'lucide-react';
 import { doc, onSnapshot, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -463,6 +465,37 @@ export default function App() {
     }
   };
 
+  const continueWithPoints = async () => {
+    const gameRef = doc(db, 'games', GAME_ID);
+    let snapshot;
+    try {
+      snapshot = await getDoc(gameRef);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.GET, `games/${GAME_ID}`);
+      return;
+    }
+    if (!snapshot.exists()) return;
+
+    const data = snapshot.data();
+    const players = data.players.map((p: Player) => ({ ...p, isReady: false }));
+    
+    const currentCards = data.cards || DEFAULT_CARDS;
+    const shuffledCards = shuffleArray(currentCards);
+
+    try {
+      await updateDoc(gameRef, {
+        status: 'LOBBY',
+        players,
+        cards: shuffledCards,
+        readyCount: 0,
+        currentCardIndex: 0,
+        timer: 60
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
+    }
+  };
+
   const myPlayer = gameState.players.find(p => p.id === userId);
   const currentTurnPlayer = gameState.players.find(p => p.id === gameState.currentTurnPlayerId);
   const isMyTurn = gameState.currentTurnPlayerId === userId;
@@ -674,31 +707,53 @@ export default function App() {
           <h3 className="font-headline text-2xl font-black uppercase tracking-tighter text-on-surface">Configuración</h3>
           
           <div className="space-y-4">
-            <button 
-              onClick={() => updateMode('CHAOS')}
-              className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${
-                gameState.isChaosMode ? 'bg-primary/10 border-primary' : 'bg-surface-container-low border-outline-variant/30'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <Flame className={gameState.isChaosMode ? 'text-primary' : 'text-on-surface-variant'} />
-                <span className="font-headline font-black uppercase text-sm">Modo Caos</span>
+            <div className="relative group">
+              <button 
+                onClick={() => updateMode('CHAOS')}
+                className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${
+                  gameState.isChaosMode ? 'bg-primary/10 border-primary' : 'bg-surface-container-low border-outline-variant/30'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Flame className={gameState.isChaosMode ? 'text-primary' : 'text-on-surface-variant'} />
+                  <span className="font-headline font-black uppercase text-sm">Modo Caos</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {gameState.isChaosMode && <Check size={16} className="text-primary" />}
+                  <Info size={16} className="text-on-surface-variant cursor-help" />
+                </div>
+              </button>
+              <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-full bg-surface-container-highest p-3 rounded-xl border border-outline-variant/30 shadow-2xl z-50">
+                <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Modo Caos 🔥</p>
+                <p className="text-[10px] text-on-surface-variant leading-tight">
+                  ¡Pura locura! Las cartas aparecen rápido y el turno cambia constantemente. Ideal para grupos grandes.
+                </p>
               </div>
-              {gameState.isChaosMode && <Check size={16} className="text-primary" />}
-            </button>
+            </div>
 
-            <button 
-              onClick={() => updateMode('PENALTY')}
-              className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${
-                gameState.isPenaltyMode ? 'bg-error/10 border-error' : 'bg-surface-container-low border-outline-variant/30'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <Skull className={gameState.isPenaltyMode ? 'text-error' : 'text-on-surface-variant'} />
-                <span className="font-headline font-black uppercase text-sm">Modo Penalty</span>
+            <div className="relative group">
+              <button 
+                onClick={() => updateMode('PENALTY')}
+                className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${
+                  gameState.isPenaltyMode ? 'bg-error/10 border-error' : 'bg-surface-container-low border-outline-variant/30'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Skull className={gameState.isPenaltyMode ? 'text-error' : 'text-on-surface-variant'} />
+                  <span className="font-headline font-black uppercase text-sm">Modo Penalty</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {gameState.isPenaltyMode && <Check size={16} className="text-error" />}
+                  <Info size={16} className="text-on-surface-variant cursor-help" />
+                </div>
+              </button>
+              <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-full bg-surface-container-highest p-3 rounded-xl border border-outline-variant/30 shadow-2xl z-50">
+                <p className="text-[10px] font-black uppercase tracking-widest text-error mb-1">Modo Penalty 💀</p>
+                <p className="text-[10px] text-on-surface-variant leading-tight">
+                  ¡Más serio! Si pierdes o no cumples el reto, el grupo decide el castigo. Menos cartas, más intensidad.
+                </p>
               </div>
-              {gameState.isPenaltyMode && <Check size={16} className="text-error" />}
-            </button>
+            </div>
           </div>
 
           <div className="mt-auto pt-6 space-y-4">
@@ -781,7 +836,23 @@ export default function App() {
 
           <span className="text-6xl sm:text-8xl">{currentCard.emoji}</span>
           <div className="space-y-2 sm:space-y-4">
-            <h4 className="font-headline text-sm sm:text-xl font-black uppercase tracking-[0.2em] text-primary">{currentCard.category}</h4>
+            <div className="flex items-center justify-center gap-2 group relative">
+              <h4 className="font-headline text-sm sm:text-xl font-black uppercase tracking-[0.2em] text-primary">{currentCard.category}</h4>
+              <HelpCircle size={16} className="text-primary/50 cursor-help" />
+              
+              <div className="absolute bottom-full mb-2 hidden group-hover:block w-64 bg-surface-container-highest p-3 rounded-xl border border-outline-variant/30 shadow-2xl z-50 text-left">
+                <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">{currentCard.category}</p>
+                <p className="text-[10px] text-on-surface-variant leading-tight normal-case font-body">
+                  {currentCard.category === 'ACTING' && 'Actúa la situación sin hablar. ¡Tus amigos deben adivinar!'}
+                  {currentCard.category === 'WHO SAID THIS' && '¿Quién dijo esta frase mítica? El grupo vota al culpable.'}
+                  {currentCard.category === 'EXPOSE' && 'Momento de la verdad. Responde con sinceridad o bebe.'}
+                  {currentCard.category === 'WHO IS MOST LIKELY' && 'Voten quién es más probable que haga esto.'}
+                  {currentCard.category === 'TABÚ' && 'Describe la palabra sin usar las prohibidas.'}
+                  {currentCard.category === 'TRUTH OR BOMB' && 'Responde la pregunta o explota (castigo del grupo).'}
+                  {!['ACTING', 'WHO SAID THIS', 'EXPOSE', 'WHO IS MOST LIKELY', 'TABÚ', 'TRUTH OR BOMB'].includes(currentCard.category) && 'Sigue las instrucciones de la carta para ganar puntos.'}
+                </p>
+              </div>
+            </div>
             <p className="font-headline text-2xl sm:text-4xl md:text-5xl font-black text-on-surface leading-tight tracking-tighter italic">
               "{currentCard.content}"
             </p>
@@ -842,6 +913,43 @@ export default function App() {
     );
   };
 
+  const renderWaiting = () => (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="max-w-md w-full p-8 bg-surface-container-high rounded-[2.5rem] border-2 border-primary/20 shadow-2xl text-center space-y-8"
+    >
+      <div className="space-y-4">
+        <div className="relative inline-block">
+          <Timer size={80} className="text-primary mx-auto animate-pulse" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Star size={32} className="text-on-primary-fixed animate-spin" />
+          </div>
+        </div>
+        <h2 className="font-headline text-3xl font-black uppercase tracking-tighter text-on-surface">Partida en Curso</h2>
+        <p className="text-on-surface-variant font-body">
+          ¡Llegaste justo a tiempo para el desmadre! Pero espera un toque, la partida ya arrancó.
+        </p>
+      </div>
+
+      <div className="bg-surface-container-highest p-6 rounded-3xl border border-outline-variant/30">
+        <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-2">Estado:</p>
+        <p className="font-headline font-black text-xl text-on-surface uppercase">ESTOY LISTO (ESPERANDO)</p>
+      </div>
+
+      <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
+        Entrarás automáticamente en la siguiente ronda.
+      </p>
+
+      <button 
+        onClick={goHome}
+        className="w-full py-4 bg-surface-container-low text-on-surface font-headline font-bold text-lg rounded-2xl border-2 border-outline-variant/30 hover:bg-surface-bright transition-all"
+      >
+        VOLVER AL INICIO
+      </button>
+    </motion.div>
+  );
+
   const renderResults = () => {
     const sortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
 
@@ -882,10 +990,16 @@ export default function App() {
 
         <div className="flex flex-col gap-3">
           <button 
+            onClick={continueWithPoints}
+            className="w-full py-5 bg-tertiary text-on-tertiary-fixed font-headline font-black text-xl sm:text-2xl rounded-2xl sm:rounded-3xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
+          >
+            CONTINUAR CON PUNTOS 🏆
+          </button>
+          <button 
             onClick={restartGame}
             className="w-full py-5 bg-primary text-on-primary-fixed font-headline font-black text-xl sm:text-2xl rounded-2xl sm:rounded-3xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
           >
-            VOLVER AL LOBBY 🔥
+            NUEVA PARTIDA (RESET) 🔥
           </button>
           <button 
             onClick={goHome}
@@ -897,6 +1011,8 @@ export default function App() {
       </motion.div>
     );
   };
+
+  const isWaiting = gameState.status === 'GAME' && myPlayer && !myPlayer.isReady;
 
   return (
     <div className="min-h-screen bg-[#0e0e0e] text-on-surface font-body selection:bg-primary/30 overflow-x-hidden">
@@ -963,14 +1079,16 @@ export default function App() {
       {/* Main Content */}
       <main className="relative z-10 w-full min-h-screen flex items-center justify-center pt-20">
         <AnimatePresence mode="wait">
-          {(!selectedNickname || gameState.status === 'HOME') ? (
-            renderHome()
-          ) : (
-            <>
-              {gameState.status === 'LOBBY' && renderLobby()}
-              {gameState.status === 'GAME' && renderGame()}
-              {gameState.status === 'RESULTS' && renderResults()}
-            </>
+          {isWaiting ? renderWaiting() : (
+            (!selectedNickname || gameState.status === 'HOME') ? (
+              renderHome()
+            ) : (
+              <>
+                {gameState.status === 'LOBBY' && renderLobby()}
+                {gameState.status === 'GAME' && renderGame()}
+                {gameState.status === 'RESULTS' && renderResults()}
+              </>
+            )
           )}
         </AnimatePresence>
       </main>
