@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, signInAnonymously } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
@@ -8,13 +8,14 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 
-const googleProvider = new GoogleAuthProvider();
-
-// Sign in with Google (enabled by default in this environment)
-export const loginWithGoogle = async () => {
-  try {
-    await signInWithPopup(auth, googleProvider);
-  } catch (error) {
-    console.error("Error signing in with Google:", error);
+// Anonymous sign-in for all users (no authentication needed)
+export const loginAnonymously = async () => {
+  if (!auth.currentUser) {
+    try {
+      await signInAnonymously(auth);
+      console.log('Signed in anonymously');
+    } catch (error) {
+      console.error('Error signing in anonymously:', error);
+    }
   }
 };
