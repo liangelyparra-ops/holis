@@ -854,39 +854,68 @@ export default function App() {
             />
           </div>
 
-          <span className="text-6xl sm:text-8xl">{currentCard.emoji}</span>
-          <div className="space-y-2 sm:space-y-4">
-            <div className="flex items-center justify-center gap-2 group relative">
-              <h4 className="font-headline text-sm sm:text-xl font-black uppercase tracking-[0.2em] text-primary">{currentCard.category}</h4>
-              <HelpCircle size={16} className="text-primary/50 cursor-help" />
-              
-              <div className="absolute bottom-full mb-2 hidden group-hover:block w-64 bg-surface-container-highest p-3 rounded-xl border border-outline-variant/30 shadow-2xl z-50 text-left">
-                <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">{currentCard.category}</p>
-                <p className="text-[10px] text-on-surface-variant leading-tight normal-case font-body">
-                  {currentCard.category === 'ACTING' && 'Actúa la situación sin hablar. ¡Tus amigos deben adivinar!'}
-                  {currentCard.category === 'WHO SAID THIS' && '¿Quién dijo esta frase mítica? El grupo vota al culpable.'}
-                  {currentCard.category === 'EXPOSE' && 'Momento de la verdad. Responde con sinceridad o bebe.'}
-                  {currentCard.category === 'WHO IS MOST LIKELY' && 'Voten quién es más probable que haga esto.'}
-                  {currentCard.category === 'TABÚ' && 'Describe la palabra sin usar las prohibidas.'}
-                  {currentCard.category === 'TRUTH OR BOMB' && 'Responde la pregunta o explota (castigo del grupo).'}
-                  {!['ACTING', 'WHO SAID THIS', 'EXPOSE', 'WHO IS MOST LIKELY', 'TABÚ', 'TRUTH OR BOMB'].includes(currentCard.category) && 'Sigue las instrucciones de la carta para ganar puntos.'}
+          {isMyTurn ? (
+            <>
+              <span className="text-6xl sm:text-8xl">{currentCard.emoji}</span>
+              <div className="space-y-2 sm:space-y-4">
+                <div className="flex items-center justify-center gap-2 group relative">
+                  <h4 className="font-headline text-sm sm:text-xl font-black uppercase tracking-[0.2em] text-primary">{currentCard.category}</h4>
+                  <HelpCircle size={16} className="text-primary/50 cursor-help" />
+                  
+                  <div className="absolute bottom-full mb-2 hidden group-hover:block w-64 bg-surface-container-highest p-3 rounded-xl border border-outline-variant/30 shadow-2xl z-50 text-left">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">{currentCard.category}</p>
+                    <p className="text-[10px] text-on-surface-variant leading-tight normal-case font-body">
+                      {currentCard.category === 'ACTING' && 'Actúa la situación sin hablar. ¡Tus amigos deben adivinar!'}
+                      {currentCard.category === 'WHO SAID THIS' && '¿Quién dijo esta frase mítica? El grupo vota al culpable.'}
+                      {currentCard.category === 'EXPOSE' && 'Momento de la verdad. Responde con sinceridad o bebe.'}
+                      {currentCard.category === 'WHO IS MOST LIKELY' && 'Voten quién es más probable que haga esto.'}
+                      {currentCard.category === 'TABÚ' && 'Describe la palabra sin usar las prohibidas.'}
+                      {currentCard.category === 'TRUTH OR BOMB' && 'Responde la pregunta o explota (castigo del grupo).'}
+                      {!['ACTING', 'WHO SAID THIS', 'EXPOSE', 'WHO IS MOST LIKELY', 'TABÚ', 'TRUTH OR BOMB'].includes(currentCard.category) && 'Sigue las instrucciones de la carta para ganar puntos.'}
+                    </p>
+                  </div>
+                </div>
+                <p className="font-headline text-2xl sm:text-4xl md:text-5xl font-black text-on-surface leading-tight tracking-tighter italic">
+                  "{currentCard.content}"
                 </p>
+                {currentCard.tabooWords && (
+                  <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-error/10 border border-error/20 rounded-2xl">
+                    <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-error mb-2">Palabras Prohibidas:</p>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {currentCard.tabooWords.map(word => (
+                        <span key={word} className="bg-error text-on-error px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase">{word}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-            <p className="font-headline text-2xl sm:text-4xl md:text-5xl font-black text-on-surface leading-tight tracking-tighter italic">
-              "{currentCard.content}"
-            </p>
-            {currentCard.tabooWords && (
-              <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-error/10 border border-error/20 rounded-2xl">
-                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-error mb-2">Palabras Prohibidas:</p>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {currentCard.tabooWords.map(word => (
-                    <span key={word} className="bg-error text-on-error px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase">{word}</span>
-                  ))}
+            </>
+          ) : (
+            <div className="space-y-6">
+              <div className="relative">
+                <Skull size={120} className="text-primary/20 mx-auto animate-pulse" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Star size={40} className="text-primary animate-spin" />
                 </div>
               </div>
-            )}
-          </div>
+              <div className="space-y-2">
+                <h2 className="font-headline text-4xl sm:text-6xl font-black uppercase tracking-tighter text-on-surface">¡ADIVINA!</h2>
+                <p className="text-on-surface-variant font-body uppercase tracking-widest text-xs sm:text-sm font-black">
+                  Presta atención a <span className="text-primary">{currentTurnPlayer?.name}</span>
+                </p>
+              </div>
+              <div className="flex justify-center gap-2">
+                {[1, 2, 3].map(i => (
+                  <motion.div
+                    key={i}
+                    animate={{ scale: [1, 1.5, 1] }}
+                    transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }}
+                    className="w-2 h-2 rounded-full bg-primary/40"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
 
         <div className="w-full bg-surface-container-high rounded-[2.5rem] p-6 sm:p-8 border-2 border-primary/20 shadow-2xl space-y-6">
@@ -904,9 +933,17 @@ export default function App() {
               </div>
             </div>
             {isMyTurn && (
-              <div className="bg-primary/10 text-primary px-4 py-2 rounded-full border border-primary/20 flex items-center gap-2">
-                <AlertCircle size={14} />
-                <span className="text-[10px] font-black uppercase tracking-widest">¡Es tu turno de elegir ganador!</span>
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <div className="bg-primary/10 text-primary px-4 py-2 rounded-full border border-primary/20 flex items-center gap-2">
+                  <AlertCircle size={14} />
+                  <span className="text-[10px] font-black uppercase tracking-widest">¡Es tu turno! No muestres tu pantalla</span>
+                </div>
+                <button
+                  onClick={() => voteWinner('')}
+                  className="bg-surface-container-highest text-on-surface-variant px-4 py-2 rounded-full border border-outline-variant/30 text-[10px] font-black uppercase tracking-widest hover:bg-error/10 hover:text-error hover:border-error/30 transition-all"
+                >
+                  Nadie adivinó ❌
+                </button>
               </div>
             )}
           </div>
