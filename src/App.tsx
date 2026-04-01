@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { doc, onSnapshot, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { GoogleGenAI, Type } from "@google/genai";
-import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS } from './types';
+import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS, PRIMOS_CARDS } from './types';
 import { db } from './firebase';
 
 const USER_ID_KEY = 'party-game-user-id';
@@ -102,11 +102,11 @@ export default function App() {
     players: [],
     cards: DEFAULT_CARDS,
     currentCardIndex: 0,
-    timer: 60,
-    isChaosMode: true,
-    isPenaltyMode: false,
+    timer: 90,
+    mode: 'CHAOS',
     currentTurnPlayerId: null,
     readyCount: 0,
+    turnOrder: [],
   });
 
   const [selectedNickname, setSelectedNickname] = useState<string | null>(null);
@@ -147,11 +147,11 @@ export default function App() {
           players: [],
           cards: shuffleArray(DEFAULT_CARDS),
           currentCardIndex: 0,
-          timer: 60,
-          isChaosMode: true,
-          isPenaltyMode: false,
+          timer: 90,
+          mode: 'CHAOS',
           currentTurnPlayerId: null,
           readyCount: 0,
+          turnOrder: [],
         }).catch(err => handleFirestoreError(err, OperationType.WRITE, `games/${GAME_ID}`));
       }
     }, (error) => {
@@ -221,7 +221,9 @@ export default function App() {
         updatedPlayers = [newPlayer];
       }
 
-      const nextStatus = currentStatus === 'HOME' ? 'LOBBY' : currentStatus;
+      const nextStatus = (currentStatus === 'HOME' || (currentStatus === 'GAME' && updatedPlayers.length <= 1)) 
+        ? 'LOBBY' 
+        : currentStatus;
 
       await setDoc(gameRef, {
         ...existingData,
@@ -229,11 +231,11 @@ export default function App() {
         status: nextStatus,
         cards: existingData.cards || DEFAULT_CARDS,
         currentCardIndex: existingData.currentCardIndex || 0,
-        timer: existingData.timer !== undefined ? existingData.timer : 60,
-        isChaosMode: existingData.isChaosMode !== undefined ? existingData.isChaosMode : true,
-        isPenaltyMode: existingData.isPenaltyMode !== undefined ? existingData.isPenaltyMode : false,
+        timer: existingData.timer !== undefined ? existingData.timer : 90,
+        mode: existingData.mode || 'CHAOS',
         currentTurnPlayerId: existingData.currentTurnPlayerId || null,
-        readyCount: existingData.readyCount || 0,
+        readyCount: nextStatus === 'LOBBY' ? 0 : (existingData.readyCount || 0),
+        turnOrder: existingData.turnOrder || [],
       });
       
       setSelectedNickname(name);
@@ -305,8 +307,10 @@ export default function App() {
     if (newReadyCount === players.length && players.length >= 3) {
       updates.status = 'GAME';
       updates.currentCardIndex = 0;
-      updates.timer = 60;
-      updates.currentTurnPlayerId = players[0].id;
+      updates.timer = 90;
+      const turnOrder = shuffleArray(players.map(p => p.id));
+      updates.turnOrder = turnOrder;
+      updates.currentTurnPlayerId = turnOrder[0];
     }
 
     try {
@@ -368,11 +372,13 @@ export default function App() {
     }
   };
 
-  const updateMode = async (mode: 'CHAOS' | 'PENALTY') => {
+  const updateMode = async (mode: 'CHAOS' | 'PENALTY' | 'PRIMOS') => {
     try {
+      const cards = mode === 'PRIMOS' ? shuffleArray(PRIMOS_CARDS) : shuffleArray(DEFAULT_CARDS);
       await updateDoc(doc(db, 'games', GAME_ID), {
-        isChaosMode: mode === 'CHAOS',
-        isPenaltyMode: mode === 'PENALTY'
+        mode,
+        cards,
+        currentCardIndex: 0
       });
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
@@ -390,20 +396,27 @@ export default function App() {
     }
     if (!snapshot.exists()) return;
 
-    const data = snapshot.data();
+    const data = snapshot.data() as GameState;
     const players = [...data.players];
-    const winnerIdx = players.findIndex(p => p.id === winnerId);
-    if (winnerIdx !== -1) {
-      players[winnerIdx].score += 10;
+    
+    if (winnerId) {
+      const winnerIdx = players.findIndex(p => p.id === winnerId);
+      if (winnerIdx !== -1) {
+        players[winnerIdx].score += 10;
+      }
     }
 
     const updates: any = { players };
+    const totalTurns = players.length * 3;
 
-    if (data.currentCardIndex < data.cards.length - 1) {
+    if (data.currentCardIndex < totalTurns - 1 && data.currentCardIndex < data.cards.length - 1) {
       updates.currentCardIndex = data.currentCardIndex + 1;
-      const currentIdx = players.findIndex(p => p.id === data.currentTurnPlayerId);
-      const nextIdx = (currentIdx + 1) % players.length;
-      updates.currentTurnPlayerId = players[nextIdx].id;
+      
+      const turnOrder = data.turnOrder || players.map(p => p.id);
+      const currentTurnIdx = turnOrder.indexOf(data.currentTurnPlayerId || '');
+      const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
+      updates.currentTurnPlayerId = turnOrder[nextTurnIdx];
+      updates.timer = 90;
     } else {
       updates.status = 'RESULTS';
     }
@@ -422,11 +435,11 @@ export default function App() {
         players: [],
         cards: shuffleArray(DEFAULT_CARDS),
         currentCardIndex: 0,
-        timer: 60,
-        isChaosMode: true,
-        isPenaltyMode: false,
+        timer: 90,
+        mode: 'CHAOS',
         currentTurnPlayerId: null,
         readyCount: 0,
+        turnOrder: [],
       });
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, `games/${GAME_ID}`);
@@ -447,9 +460,11 @@ export default function App() {
     const data = snapshot.data();
     const players = data.players.map((p: Player) => ({ ...p, score: 0, isReady: false }));
     
-    // Shuffle cards if they are the default ones or if we want a fresh experience
-    const currentCards = data.cards || DEFAULT_CARDS;
-    const shuffledCards = shuffleArray(currentCards);
+    // Shuffle cards if they are exhausted or for a fresh start
+    let shuffledCards = data.cards;
+    if (data.currentCardIndex >= data.cards.length - (players.length * 3)) {
+      shuffledCards = shuffleArray(data.cards);
+    }
 
     try {
       await updateDoc(gameRef, {
@@ -458,7 +473,7 @@ export default function App() {
         cards: shuffledCards,
         readyCount: 0,
         currentCardIndex: 0,
-        timer: 60
+        timer: 90
       });
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
@@ -479,8 +494,10 @@ export default function App() {
     const data = snapshot.data();
     const players = data.players.map((p: Player) => ({ ...p, isReady: false }));
     
-    const currentCards = data.cards || DEFAULT_CARDS;
-    const shuffledCards = shuffleArray(currentCards);
+    let shuffledCards = data.cards;
+    if (data.currentCardIndex >= data.cards.length - (players.length * 3)) {
+      shuffledCards = shuffleArray(data.cards);
+    }
 
     try {
       await updateDoc(gameRef, {
@@ -489,7 +506,7 @@ export default function App() {
         cards: shuffledCards,
         readyCount: 0,
         currentCardIndex: 0,
-        timer: 60
+        timer: 90
       });
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
@@ -602,175 +619,90 @@ export default function App() {
     </motion.div>
   );
 
-  const renderLobby = () => (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 p-6"
-    >
-      <div className="lg:col-span-8 space-y-6">
-        <div className="bg-surface-container-high rounded-[2.5rem] p-6 sm:p-8 border-2 border-primary/20 shadow-2xl space-y-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h2 className="font-headline text-3xl sm:text-4xl font-black uppercase tracking-tighter text-on-surface">
-              La Banda <span className="text-primary">Conectada</span>
-            </h2>
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={goHome}
-                className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1"
-              >
-                <ChevronRight className="rotate-180" size={12} />
-                SALIR
-              </button>
-              <div className="flex items-center gap-2 bg-surface-container-highest px-4 py-2 rounded-full border border-outline-variant/30">
-                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-tertiary animate-pulse' : 'bg-error'}`}></div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
-                  {isConnected ? 'Conectado' : 'Desconectado'}
-                </span>
-              </div>
-            </div>
+  const renderLobby = () => {
+    const myPlayer = gameState.players.find(p => p.id === userId);
+
+    return (
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="max-w-4xl w-full p-4 sm:p-8 flex flex-col gap-6"
+      >
+        <div className="flex justify-between items-center bg-surface-container-high p-4 rounded-3xl border-2 border-primary/20 shadow-xl">
+          <div className="flex items-center gap-3">
+            <Users className="text-primary" size={24} />
+            <h2 className="font-headline text-xl sm:text-2xl font-black uppercase tracking-tighter text-on-surface">Lobby</h2>
           </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {gameState.players.map((player) => (
-              <motion.div 
-                layout
-                key={player.id}
-                className={`relative flex items-center gap-4 p-4 rounded-2xl border transition-all ${
-                  player.isReady ? 'bg-tertiary/10 border-tertiary' : 'bg-surface-container-highest border-outline-variant/30'
-                }`}
-              >
-                <img src={player.avatar} alt={player.name} className="w-12 h-12 rounded-full border-2 border-primary/20" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-headline font-black text-on-surface truncate uppercase text-sm">{player.name}</p>
-                  <p className={`text-[10px] font-black uppercase tracking-widest ${player.isReady ? 'text-tertiary' : 'text-on-surface-variant'}`}>
-                    {player.isReady ? 'LISTO 🔥' : 'ESPERANDO...'}
-                  </p>
-                </div>
-                {player.isReady && <Check size={16} className="text-tertiary" />}
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-            <button 
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className={`flex items-center justify-center gap-3 p-6 bg-surface-container-low border-2 rounded-3xl transition-all group relative ${
-                gameState.cards[0]?.id.startsWith('ai-') 
-                ? 'border-primary bg-primary/5 shadow-[0_0_20px_rgba(255,137,171,0.2)]' 
-                : 'border-dashed border-primary/30 hover:border-primary hover:bg-surface-container-highest'
-              }`}
-            >
-              {isUploading ? (
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-              ) : (
-                <Upload className="text-primary group-hover:scale-110 transition-transform" />
-              )}
-              <div className="text-left">
-                <p className="font-headline font-black uppercase text-sm text-on-surface">Subir Archivo .txt</p>
-                <p className="text-[10px] text-on-surface-variant uppercase font-black">Generar cartas con IA</p>
-              </div>
-              {gameState.cards[0]?.id.startsWith('ai-') && (
-                <div className="absolute -top-2 -right-2 bg-primary text-on-primary-fixed p-1 rounded-full shadow-lg">
-                  <Check size={12} />
-                </div>
-              )}
-            </button>
-            <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".txt" className="hidden" />
-
-            <button 
-              onClick={useDemoCards}
-              className={`flex items-center justify-center gap-3 p-6 bg-surface-container-low border-2 rounded-3xl transition-all group relative ${
-                !gameState.cards[0]?.id.startsWith('ai-') 
-                ? 'border-tertiary bg-tertiary/5 shadow-[0_0_20px_rgba(251,191,36,0.2)]' 
-                : 'border-dashed border-tertiary/30 hover:border-tertiary hover:bg-surface-container-highest'
-              }`}
-            >
-              <Star className="text-tertiary group-hover:scale-110 transition-transform" />
-              <div className="text-left">
-                <p className="font-headline font-black uppercase text-sm text-on-surface">Usar Demo</p>
-                <p className="text-[10px] text-on-surface-variant uppercase font-black">Mazo predefinido</p>
-              </div>
-              {!gameState.cards[0]?.id.startsWith('ai-') && (
-                <div className="absolute -top-2 -right-2 bg-tertiary text-on-tertiary-container p-1 rounded-full shadow-lg">
-                  <Check size={12} />
-                </div>
-              )}
-            </button>
+          <div className="bg-primary/10 px-4 py-1 rounded-full border border-primary/20">
+            <span className="text-[10px] font-black uppercase tracking-widest text-primary">Esperando Jugadores</span>
           </div>
         </div>
-      </div>
 
-      <div className="lg:col-span-4 space-y-6">
-        <div className="bg-surface-container-high rounded-[2.5rem] p-8 border-2 border-primary/20 shadow-2xl flex flex-col gap-6">
-          <h3 className="font-headline text-2xl font-black uppercase tracking-tighter text-on-surface">Configuración</h3>
-          
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <div className="relative group">
-              <button 
-                onClick={() => updateMode('CHAOS')}
-                className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${
-                  gameState.isChaosMode ? 'bg-primary/10 border-primary' : 'bg-surface-container-low border-outline-variant/30'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Flame className={gameState.isChaosMode ? 'text-primary' : 'text-on-surface-variant'} />
-                  <span className="font-headline font-black uppercase text-sm">Modo Caos</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {gameState.isChaosMode && <Check size={16} className="text-primary" />}
-                  <Info size={16} className="text-on-surface-variant cursor-help" />
-                </div>
-              </button>
-              <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-full bg-surface-container-highest p-3 rounded-xl border border-outline-variant/30 shadow-2xl z-50">
-                <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Modo Caos 🔥</p>
-                <p className="text-[10px] text-on-surface-variant leading-tight">
-                  ¡Pura locura! Las cartas aparecen rápido y el turno cambia constantemente. Ideal para grupos grandes.
-                </p>
+            <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-primary/20 shadow-xl space-y-4">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Configuración</h3>
+              <div className="grid grid-cols-3 gap-2">
+                <button 
+                  onClick={() => updateMode('CHAOS')}
+                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'CHAOS' ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(255,137,171,0.3)]' : 'bg-surface-container-low border-outline-variant/30 opacity-60'}`}
+                >
+                  <Flame size={20} className={gameState.mode === 'CHAOS' ? 'text-primary' : 'text-on-surface-variant'} />
+                  <span className="text-[8px] font-black uppercase tracking-widest">Caos</span>
+                </button>
+                <button 
+                  onClick={() => updateMode('PENALTY')}
+                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'PENALTY' ? 'bg-error/10 border-error shadow-[0_0_15px_rgba(255,84,84,0.3)]' : 'bg-surface-container-low border-outline-variant/30 opacity-60'}`}
+                >
+                  <Skull size={20} className={gameState.mode === 'PENALTY' ? 'text-error' : 'text-on-surface-variant'} />
+                  <span className="text-[8px] font-black uppercase tracking-widest">Penalty</span>
+                </button>
+                <button 
+                  onClick={() => updateMode('PRIMOS')}
+                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'PRIMOS' ? 'bg-tertiary/10 border-tertiary shadow-[0_0_15px_rgba(251,191,36,0.3)]' : 'bg-surface-container-low border-outline-variant/30 opacity-60'}`}
+                >
+                  <Users size={20} className={gameState.mode === 'PRIMOS' ? 'text-tertiary' : 'text-on-surface-variant'} />
+                  <span className="text-[8px] font-black uppercase tracking-widest">Primos</span>
+                </button>
               </div>
             </div>
 
-            <div className="relative group">
-              <button 
-                onClick={() => updateMode('PENALTY')}
-                className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${
-                  gameState.isPenaltyMode ? 'bg-error/10 border-error' : 'bg-surface-container-low border-outline-variant/30'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Skull className={gameState.isPenaltyMode ? 'text-error' : 'text-on-surface-variant'} />
-                  <span className="font-headline font-black uppercase text-sm">Modo Penalty</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {gameState.isPenaltyMode && <Check size={16} className="text-error" />}
-                  <Info size={16} className="text-on-surface-variant cursor-help" />
-                </div>
-              </button>
-              <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-full bg-surface-container-highest p-3 rounded-xl border border-outline-variant/30 shadow-2xl z-50">
-                <p className="text-[10px] font-black uppercase tracking-widest text-error mb-1">Modo Penalty 💀</p>
-                <p className="text-[10px] text-on-surface-variant leading-tight">
-                  ¡Más serio! Si pierdes o no cumples el reto, el grupo decide el castigo. Menos cartas, más intensidad.
-                </p>
+            <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-primary/20 shadow-xl space-y-4">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Mazo Personalizado</h3>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-surface-container-highest rounded-2xl border-2 border-dashed border-outline-variant/50 text-on-surface-variant hover:border-primary hover:text-primary transition-all"
+                >
+                  <Upload size={18} />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Subir TXT</span>
+                </button>
+                <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".txt" />
+                <button 
+                  onClick={useDemoCards}
+                  className="px-4 py-3 bg-surface-container-highest rounded-2xl border-2 border-outline-variant/30 text-on-surface-variant hover:text-primary transition-all"
+                >
+                  <HelpCircle size={18} />
+                </button>
               </div>
             </div>
           </div>
 
-          <div className="mt-auto pt-6 space-y-4">
-            <div className="bg-surface-container-highest p-4 rounded-2xl border border-outline-variant/20 space-y-3">
-              <h4 className="font-headline text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                <HelpCircle size={14} /> Guía de Desafíos
-              </h4>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { n: 'ACTING', d: 'Mímica' },
-                  { n: 'TABÚ', d: 'Palabras prohibidas' },
-                  { n: 'EXPOSE', d: 'Verdad o reto' },
-                  { n: 'VOTAR', d: 'Elección grupal' }
-                ].map(item => (
-                  <div key={item.n} className="flex flex-col">
-                    <span className="text-[8px] font-black text-on-surface uppercase">{item.n}</span>
-                    <span className="text-[8px] text-on-surface-variant leading-tight">{item.d}</span>
+          <div className="space-y-4">
+            <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-primary/20 shadow-xl space-y-4">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Jugadores ({gameState.players.length})</h3>
+              <div className="grid grid-cols-4 gap-3 max-h-48 overflow-y-auto pr-2 scrollbar-hide">
+                {gameState.players.map((player) => (
+                  <div key={player.id} className="relative group">
+                    <img src={player.avatar} alt={player.name} className={`w-full aspect-square rounded-2xl border-2 transition-all ${player.isReady ? 'border-primary shadow-[0_0_10px_rgba(255,137,171,0.3)]' : 'border-outline-variant/30 opacity-50'}`} />
+                    {player.isReady && (
+                      <div className="absolute -top-1 -right-1 bg-primary text-on-primary-fixed p-1 rounded-full shadow-lg">
+                        <Check size={10} strokeWidth={4} />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 flex items-end p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-[8px] font-black uppercase bg-surface-container-highest/90 text-on-surface w-full text-center rounded py-0.5 truncate">{player.name}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -800,12 +732,14 @@ export default function App() {
             </p>
           </div>
         </div>
-      </div>
-    </motion.div>
-  );
+      </motion.div>
+    );
+  };
 
   const renderGame = () => {
-    if (myPlayer && !myPlayer.isReady) return renderWaiting();
+    const myPlayer = gameState.players.find(p => p.id === userId);
+    if (gameState.status === 'GAME' && myPlayer && !myPlayer.isReady) return renderWaiting();
+    
     const currentCard = gameState.cards[gameState.currentCardIndex];
     if (!currentCard) return null;
 
@@ -823,16 +757,16 @@ export default function App() {
             <ChevronRight className="rotate-180" size={24} />
           </button>
           
-          <div className="flex-1 flex justify-center gap-4">
-            <div className="flex items-center gap-3 bg-surface-container-high px-4 sm:px-6 py-3 rounded-full border border-primary/20 shadow-xl">
-              <Timer className="text-primary" size={20} />
-              <span className="font-headline font-black text-xl sm:text-2xl text-on-surface">{gameState.timer}s</span>
+          <div className="flex-1 flex justify-center gap-2">
+            <div className="flex items-center gap-2 bg-surface-container-high px-3 py-2 rounded-full border border-primary/20 shadow-xl">
+              <Timer className="text-primary" size={16} />
+              <span className="font-headline font-black text-lg text-on-surface">{gameState.timer}s</span>
             </div>
             
-            <div className="hidden sm:flex items-center gap-3 bg-surface-container-high px-6 py-3 rounded-full border border-primary/20 shadow-xl">
-              {gameState.isChaosMode ? <Flame className="text-primary" size={20} /> : <Skull className="text-error" size={20} />}
-              <span className="font-headline font-black text-sm uppercase tracking-widest text-on-surface">
-                {gameState.isChaosMode ? 'Modo Caos 🔥' : 'Modo Penalty 💀'}
+            <div className="flex items-center gap-2 bg-surface-container-high px-3 py-2 rounded-full border border-primary/20 shadow-xl">
+              {gameState.mode === 'CHAOS' ? <Flame className="text-primary" size={16} /> : gameState.mode === 'PENALTY' ? <Skull className="text-error" size={16} /> : <Users className="text-tertiary" size={16} />}
+              <span className="font-headline font-black text-[10px] uppercase tracking-widest text-on-surface">
+                {gameState.mode === 'CHAOS' ? 'Caos' : gameState.mode === 'PENALTY' ? 'Penalty' : 'Primos'}
               </span>
             </div>
           </div>
@@ -844,46 +778,46 @@ export default function App() {
           key={gameState.currentCardIndex}
           initial={{ rotateY: 90, opacity: 0 }}
           animate={{ rotateY: 0, opacity: 1 }}
-          className="w-full aspect-square sm:aspect-[4/3] max-w-2xl bg-surface-container-high rounded-[2rem] sm:rounded-[3rem] border-4 border-primary/30 shadow-[0_0_60px_rgba(255,137,171,0.15)] p-6 sm:p-12 flex flex-col items-center justify-center text-center gap-4 sm:gap-8 relative overflow-hidden"
+          className="w-full aspect-[4/3] max-w-2xl bg-surface-container-high rounded-[2rem] border-4 border-primary/30 shadow-[0_0_60px_rgba(255,137,171,0.15)] p-6 flex flex-col items-center justify-center text-center gap-4 relative overflow-hidden"
         >
           <div className="absolute top-0 left-0 w-full h-2 bg-primary/20">
             <motion.div 
               className="h-full bg-primary"
               initial={{ width: 0 }}
-              animate={{ width: `${((gameState.currentCardIndex + 1) / gameState.cards.length) * 100}%` }}
+              animate={{ width: `${((gameState.currentCardIndex + 1) / (gameState.players.length * 3)) * 100}%` }}
             />
           </div>
 
           {isMyTurn ? (
             <>
-              <span className="text-6xl sm:text-8xl">{currentCard.emoji}</span>
-              <div className="space-y-2 sm:space-y-4">
+              <span className="text-5xl sm:text-7xl">{currentCard.emoji}</span>
+              <div className="space-y-2">
                 <div className="flex items-center justify-center gap-2 group relative">
-                  <h4 className="font-headline text-sm sm:text-xl font-black uppercase tracking-[0.2em] text-primary">{currentCard.category}</h4>
-                  <HelpCircle size={16} className="text-primary/50 cursor-help" />
+                  <h4 className="font-headline text-xs sm:text-lg font-black uppercase tracking-[0.2em] text-primary">{currentCard.category}</h4>
+                  <HelpCircle size={14} className="text-primary/50 cursor-help" />
                   
                   <div className="absolute bottom-full mb-2 hidden group-hover:block w-64 bg-surface-container-highest p-3 rounded-xl border border-outline-variant/30 shadow-2xl z-50 text-left">
                     <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">{currentCard.category}</p>
                     <p className="text-[10px] text-on-surface-variant leading-tight normal-case font-body">
-                      {currentCard.category === 'ACTING' && 'Actúa la situación sin hablar. ¡Tus amigos deben adivinar!'}
-                      {currentCard.category === 'WHO SAID THIS' && '¿Quién dijo esta frase mítica? El grupo vota al culpable.'}
-                      {currentCard.category === 'EXPOSE' && 'Momento de la verdad. Responde con sinceridad o bebe.'}
-                      {currentCard.category === 'WHO IS MOST LIKELY' && 'Voten quién es más probable que haga esto.'}
-                      {currentCard.category === 'TABÚ' && 'Describe la palabra sin usar las prohibidas.'}
-                      {currentCard.category === 'TRUTH OR BOMB' && 'Responde la pregunta o explota (castigo del grupo).'}
-                      {!['ACTING', 'WHO SAID THIS', 'EXPOSE', 'WHO IS MOST LIKELY', 'TABÚ', 'TRUTH OR BOMB'].includes(currentCard.category) && 'Sigue las instrucciones de la carta para ganar puntos.'}
+                      {currentCard.category === 'ACTING' || currentCard.category === 'ACTUAR' ? 'Actúa la situación sin hablar. ¡Tus amigos deben adivinar!' :
+                       currentCard.category === 'WHO SAID THIS' || currentCard.category === 'WHO_SAID' ? '¿Quién dijo esta frase mítica? El grupo vota al culpable.' :
+                       currentCard.category === 'EXPOSE' ? 'Momento de la verdad. Responde con sinceridad o bebe.' :
+                       currentCard.category === 'WHO IS MOST LIKELY' ? 'Voten quién es más probable que haga esto.' :
+                       currentCard.category === 'TABÚ' || currentCard.category === 'TABU' ? 'Describe la palabra sin usar las prohibidas.' :
+                       currentCard.category === 'TRUTH OR BOMB' ? 'Responde la pregunta o explota (castigo del grupo).' :
+                       'Sigue las instrucciones de la carta para ganar puntos.'}
                     </p>
                   </div>
                 </div>
-                <p className="font-headline text-2xl sm:text-4xl md:text-5xl font-black text-on-surface leading-tight tracking-tighter italic">
+                <p className="font-headline text-xl sm:text-3xl md:text-4xl font-black text-on-surface leading-tight tracking-tighter italic">
                   "{currentCard.content}"
                 </p>
                 {currentCard.tabooWords && (
-                  <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-error/10 border border-error/20 rounded-2xl">
-                    <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-error mb-2">Palabras Prohibidas:</p>
-                    <div className="flex flex-wrap justify-center gap-2">
+                  <div className="mt-2 p-2 bg-error/10 border border-error/20 rounded-xl">
+                    <p className="text-[8px] font-black uppercase tracking-widest text-error mb-1">Palabras Prohibidas:</p>
+                    <div className="flex flex-wrap justify-center gap-1">
                       {currentCard.tabooWords.map(word => (
-                        <span key={word} className="bg-error text-on-error px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase">{word}</span>
+                        <span key={word} className="bg-error text-on-error px-2 py-0.5 rounded-full text-[8px] font-bold uppercase">{word}</span>
                       ))}
                     </div>
                   </div>
@@ -891,28 +825,18 @@ export default function App() {
               </div>
             </>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div className="relative">
-                <Skull size={120} className="text-primary/20 mx-auto animate-pulse" />
+                <Skull size={80} className="text-primary/20 mx-auto animate-pulse" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Star size={40} className="text-primary animate-spin" />
+                  <Star size={24} className="text-primary animate-spin" />
                 </div>
               </div>
-              <div className="space-y-2">
-                <h2 className="font-headline text-4xl sm:text-6xl font-black uppercase tracking-tighter text-on-surface">¡ADIVINA!</h2>
-                <p className="text-on-surface-variant font-body uppercase tracking-widest text-xs sm:text-sm font-black">
+              <div className="space-y-1">
+                <h2 className="font-headline text-3xl sm:text-5xl font-black uppercase tracking-tighter text-on-surface">¡ADIVINA!</h2>
+                <p className="text-on-surface-variant font-body uppercase tracking-widest text-[10px] font-black">
                   Presta atención a <span className="text-primary">{currentTurnPlayer?.name}</span>
                 </p>
-              </div>
-              <div className="flex justify-center gap-2">
-                {[1, 2, 3].map(i => (
-                  <motion.div
-                    key={i}
-                    animate={{ scale: [1, 1.5, 1] }}
-                    transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }}
-                    className="w-2 h-2 rounded-full bg-primary/40"
-                  />
-                ))}
               </div>
             </div>
           )}
@@ -948,20 +872,20 @@ export default function App() {
             )}
           </div>
 
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3">
+          <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
             {gameState.players.map((player) => (
               <button
                 key={player.id}
                 disabled={!isMyTurn}
                 onClick={() => voteWinner(player.id)}
-                className={`flex flex-col items-center gap-2 p-2 sm:p-3 rounded-2xl border transition-all ${
+                className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all ${
                   isMyTurn 
                     ? 'border-primary/30 bg-surface-container-low hover:border-primary hover:scale-105' 
                     : 'border-outline-variant/20 bg-surface-container-low opacity-80'
                 }`}
               >
-                <img src={player.avatar} alt={player.name} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full" />
-                <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-tight text-on-surface truncate w-full text-center">{player.name}</span>
+                <img src={player.avatar} alt={player.name} className="w-8 h-8 rounded-full" />
+                <span className="text-[8px] font-black uppercase tracking-tight text-on-surface truncate w-full text-center">{player.name}</span>
               </button>
             ))}
           </div>

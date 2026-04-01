@@ -21,14 +21,133 @@ export interface GameState {
   cards: GameCard[];
   currentCardIndex: number;
   timer: number;
-  isChaosMode: boolean;
-  isPenaltyMode: boolean;
+  mode: 'CHAOS' | 'PENALTY' | 'PRIMOS';
   currentTurnPlayerId: string | null;
   readyCount: number;
+  turnOrder: string[]; // List of player IDs in order
 }
 
 export const PREDEFINED_PLAYERS = [
   "Camichi", "Tim", "Ale", "Vane", "Nai", "David", "Cesar", "MG", "Rebe", "Lia", "Boji"
+];
+
+export const PRIMOS_CARDS: GameCard[] = [
+  // ACTUAR (50+ provided)
+  ...[
+    "Cancelar plan a último momento con excusa absurda",
+    "Responder 5 horas tarde como si nada",
+    "Decir 'ya voy' pero seguir en casa",
+    "Excusa ridícula tipo 'me dormí'",
+    "Entrar al chat, leer todo y no responder",
+    "Volver después de ghostear días",
+    "Prometer algo y olvidarte completamente",
+    "Responder con puro emoji",
+    "Hacer drama por algo mínimo",
+    "Decir 'no gasto más' y comprar igual",
+    "Mandar audio eterno",
+    "Responder 'voy pero veo'",
+    "Confundir todo en el grupo",
+    "Pelear por algo insignificante",
+    "Hacerse el ocupado estando online",
+    "Decir 'no vi el mensaje' cuando sí lo viste",
+    "Organizar plan y desaparecer",
+    "Responder tarde y sin contexto",
+    "Exagerar una historia",
+    "Decir 'todo bien' estando enojado",
+    "Responder con sarcasmo total",
+    "Aparecer justo cuando ya terminó el plan",
+    "Responder solo a una parte del chat",
+    "No entender nada pero opinar igual",
+    "Responder sin leer todo",
+    "Decir 'ahí veo' y nunca ver",
+    "Prometer llegar temprano y llegar tarde",
+    "Justificar algo injustificable",
+    "Ignorar pregunta directa",
+    "Responder fuera de contexto",
+    "Mandar sticker en momento serio",
+    "Cambiar tema incómodo",
+    "Responder solo con 'jajaja'",
+    "Aparecer solo para opinar",
+    "Responder todo tarde",
+    "Decir 'sí' y no hacer nada",
+    "Inventar excusa en el momento",
+    "Hacerte el distraído",
+    "Responder sin ganas",
+    "Reaccionar exagerado",
+    "Decir 'llego en 10' y tardar 1 hora",
+    "Responder solo con GIF",
+    "Olvidarte del plan completamente",
+    "Decir 'no puedo' sin razón",
+    "Reaccionar como si fuera grave",
+    "Responder con delay extremo",
+    "Decir 'todo chill' en caos",
+    "Aparecer solo cuando conviene",
+    "Responder con audio corto inútil",
+    "Confundir fechas del plan",
+    "Responder tarde y mal",
+    "Decir 'me olvidé'",
+    "Ignorar conversación activa",
+    "Responder sin sentido",
+    "Decir 'ahora sí' y no hacer nada",
+    "Responder automático",
+    "Reaccionar con enojo fake",
+    "Responder como robot",
+    "No seguir hilo de conversación",
+    "Cambiar versión de historia",
+    "Decir 'era joda'",
+    "Responder tarde y seco",
+    "Aparecer cuando ya terminó todo",
+    "Responder con '??'",
+    "Ignorar contexto total",
+    "Responder con excusa random",
+    "No entender chiste",
+    "Responder con delay incómodo",
+    "Hacerte el sorprendido",
+    "Responder contradictorio",
+    "Responder sin ganas total",
+    "Decir 'no sé' a todo",
+    "Responder evasivo",
+    "Responder tarde con excusa",
+    "Responder solo emojis",
+    "Ignorar mensajes largos",
+    "Responder con error",
+    "Hacerte el ocupado",
+    "Decir 'ok' a todo",
+    "Responder sin sentido final"
+  ].map((c, i) => ({ id: `primo-act-${i}`, category: "ACTUAR", content: c, emoji: "🎭" })),
+
+  // TABU
+  ...[
+    { content: "Excusa para no salir", taboo: ["mentira", "plan", "cancelar"] },
+    { content: "Llegar tarde siempre", taboo: ["hora", "esperar", "retraso"] },
+    { content: "Gastar sin culpa", taboo: ["plata", "comprar", "caro"] },
+    { content: "Audio eterno", taboo: ["mensaje", "voz", "minutos"] },
+    { content: "Plan improvisado", taboo: ["salir", "organizar", "grupo"] },
+    { content: "Ghostear chat", taboo: ["ignorar", "responder", "mensaje"] },
+    { content: "Chamuyo básico", taboo: ["hablar", "decir", "gustar"] },
+    { content: "Drama innecesario", taboo: ["problema", "conflicto", "exagerar"] },
+    { content: "Prometer y no cumplir", taboo: ["decir", "hacer", "mentir"] },
+    { content: "Plan que muere", taboo: ["grupo", "cancelar", "organizar"] },
+    { content: "Responder tarde", taboo: ["hora", "mensaje", "leer"] },
+    { content: "Excusa laboral", taboo: ["trabajo", "ocupado", "reunión"] },
+    { content: "Responder con meme", taboo: ["imagen", "gracioso", "chat"] },
+    { content: "Querer ahorrar", taboo: ["plata", "guardar", "gastar"] },
+    { content: "Organizar viaje", taboo: ["plan", "grupo", "fecha"] },
+  ].map((c, i) => ({ id: `primo-tab-${i}`, category: "TABÚ", content: c.content, emoji: "🗣️", tabooWords: c.taboo })),
+
+  // WHO SAID
+  ...[
+    "'ya llego'",
+    "'voy pero veo'",
+    "'no gasto más'",
+    "'no vi el mensaje'",
+    "'estaba ocupado'",
+    "'era joda'",
+    "'después vemos'",
+    "'yo no fui'",
+    "'me olvidé'",
+    "'todo bien'"
+  ].map((c, i) => ({ id: `primo-who-${i}`, category: "WHO SAID THIS", content: c, emoji: "🤔" })),
 ];
 
 export const DEFAULT_CARDS: GameCard[] = [
