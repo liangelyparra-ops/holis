@@ -139,11 +139,39 @@ export default function App() {
   const [tempNickname, setTempNickname] = useState('');
   const [papelitoInput, setPapelitoInput] = useState('');
   const [selectedAvatarSeed, setSelectedAvatarSeed] = useState<string | null>(null);
+  
+  const playSound = (url: string) => {
+    const audio = new Audio(url);
+    audio.volume = 0.4;
+    audio.play().catch(e => console.log("Audio play blocked", e));
+  };
+
+  const SOUNDS = {
+    NEXT: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3', // Pop
+    START: 'https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3', // Level up
+    FINISH: 'https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3',
+  };
   const [isUploading, setIsUploading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [showPlayersList, setShowPlayersList] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Play sound on card change
+  useEffect(() => {
+    if (gameState.status === 'GAME') {
+      playSound(SOUNDS.NEXT);
+    }
+  }, [gameState.currentCardIndex, gameState.status]);
+
+  useEffect(() => {
+    if (gameState.status === 'GAME' && gameState.currentCardIndex === 0 && (gameState.currentRound === 1 || !gameState.currentRound)) {
+      playSound(SOUNDS.START);
+    }
+    if (gameState.status === 'RESULTS') {
+      playSound(SOUNDS.FINISH);
+    }
+  }, [gameState.status, gameState.currentRound]);
 
   // Initialize Local User ID
   useEffect(() => {
@@ -428,7 +456,7 @@ export default function App() {
       if (mode !== 'PAPELITO') {
         updates.cards = mode === 'PRIMOS' ? shuffleAlternating(PRIMOS_CARDS) : shuffleArray(DEFAULT_CARDS);
       } else {
-        updates.papelitosPerPlayer = 3; // Default 3 papelitos
+        updates.papelitosPerPlayer = 1; // Default 1 papelito
       }
       await updateDoc(doc(db, 'games', GAME_ID), updates);
     } catch (err) {
@@ -447,7 +475,7 @@ export default function App() {
       if (playerIdx === -1) return;
       
       const currentPapelitos = players[playerIdx].papelitos || [];
-      if (currentPapelitos.length >= (snapshot.data().papelitosPerPlayer || 3)) return;
+      if (currentPapelitos.length >= (snapshot.data().papelitosPerPlayer || 1)) return;
 
       players[playerIdx].papelitos = [...currentPapelitos, papelitoInput.trim()];
       await updateDoc(gameRef, { players });
@@ -481,14 +509,18 @@ export default function App() {
     const updates: any = { players };
     
     if (data.mode === 'PAPELITO') {
-      if (data.currentCardIndex < data.cards.length - 1) {
+      const isLastCard = data.currentCardIndex >= data.cards.length - 1;
+      const isLastRound = (data.currentRound || 1) >= 3;
+
+      if (!isLastCard) {
         updates.currentCardIndex = data.currentCardIndex + 1;
         const turnOrder = data.turnOrder || players.map(p => p.id);
         const currentTurnIdx = turnOrder.indexOf(data.currentTurnPlayerId || '');
         const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
         updates.currentTurnPlayerId = turnOrder[nextTurnIdx];
         updates.timer = 90;
-      } else if ((data.currentRound || 1) < 3) {
+      } else if (!isLastRound) {
+        // Transition to next round
         updates.currentRound = (data.currentRound || 1) + 1;
         updates.currentCardIndex = 0;
         updates.cards = shuffleArray(data.cards);
@@ -799,7 +831,7 @@ export default function App() {
 
             {gameState.mode === 'PAPELITO' && (
               <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-secondary/20 shadow-xl space-y-4">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-secondary">Tus Papelitos ({myPlayer?.papelitos?.length || 0} / {gameState.papelitosPerPlayer || 3})</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-secondary">Tus Papelitos ({myPlayer?.papelitos?.length || 0} / {gameState.papelitosPerPlayer || 1})</h3>
                 <div className="flex gap-2">
                   <input 
                     type="text" 
@@ -811,7 +843,7 @@ export default function App() {
                   />
                   <button 
                     onClick={addPapelito}
-                    disabled={(myPlayer?.papelitos?.length || 0) >= (gameState.papelitosPerPlayer || 3)}
+                    disabled={(myPlayer?.papelitos?.length || 0) >= (gameState.papelitosPerPlayer || 1)}
                     className="p-2 bg-secondary text-on-secondary-fixed rounded-xl hover:scale-105 transition-all disabled:opacity-50"
                   >
                     <Check size={20} />
@@ -858,9 +890,9 @@ export default function App() {
             )}
             <button 
               onClick={setReady}
-              disabled={myPlayer?.isReady || gameState.players.length < 3 || (gameState.mode === 'PAPELITO' && (myPlayer?.papelitos?.length || 0) < (gameState.papelitosPerPlayer || 3))}
+              disabled={myPlayer?.isReady || gameState.players.length < 3 || (gameState.mode === 'PAPELITO' && (myPlayer?.papelitos?.length || 0) < (gameState.papelitosPerPlayer || 1))}
               className={`w-full py-6 rounded-3xl font-headline font-black text-2xl uppercase tracking-tighter shadow-lg transition-all active:scale-95 ${
-                myPlayer?.isReady || gameState.players.length < 3 || (gameState.mode === 'PAPELITO' && (myPlayer?.papelitos?.length || 0) < (gameState.papelitosPerPlayer || 3))
+                myPlayer?.isReady || gameState.players.length < 3 || (gameState.mode === 'PAPELITO' && (myPlayer?.papelitos?.length || 0) < (gameState.papelitosPerPlayer || 1))
                   ? 'bg-surface-container-highest text-on-surface-variant cursor-not-allowed' 
                   : 'bg-primary text-on-primary-fixed hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,137,171,0.4)]'
               }`}
@@ -956,6 +988,11 @@ export default function App() {
                        currentCard.category === 'WHO IS MOST LIKELY' ? 'Voten quién es más probable que haga esto.' :
                        currentCard.category === 'TABÚ' || currentCard.category === 'TABU' ? 'Describe la palabra sin usar las prohibidas.' :
                        currentCard.category === 'TRUTH OR BOMB' ? 'Responde la pregunta o explota (castigo del grupo).' :
+                       currentCard.category === 'PAPELITO' ? (
+                         gameState.currentRound === 1 ? 'Ronda 1: Describe el papelito usando todas las palabras que quieras (sin decir lo que está escrito).' :
+                         gameState.currentRound === 2 ? 'Ronda 2: Solo puedes decir UNA palabra para que adivinen.' :
+                         'Ronda 3: Solo puedes hacer mímica. ¡Shhh! No se permite hablar.'
+                       ) :
                        'Sigue las instrucciones de la carta para ganar puntos.'}
                     </p>
                   </div>
