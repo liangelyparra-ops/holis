@@ -24,7 +24,7 @@ import {
 import { doc, onSnapshot, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Toaster, toast } from 'sonner';
-import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS, PRIMOS_CARDS, PAPELITO_RANDOM_THEMES } from './types';
+import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS, PRIMOS_CARDS, PAPELITO_RANDOM_THEMES, HOLIS_CARDS } from './types';
 import { db } from './firebase';
 
 const USER_ID_KEY = 'party-game-user-id-v2';
@@ -178,6 +178,24 @@ export default function App() {
       playSound(SOUNDS.NEXT);
     }
   }, [gameState.currentCardIndex, gameState.status]);
+
+  // Show winner notification to everyone
+  useEffect(() => {
+    if (gameState.isShowingWinner && gameState.lastWinnerName) {
+      if (gameState.lastWinnerId === 'none') {
+        toast.error("Nadie adivinó... ❌", {
+          description: "¡A la próxima!",
+          duration: 2000,
+        });
+      } else {
+        toast.success(`¡Punto para ${gameState.lastWinnerName}! 🏆`, {
+          description: "+10 puntos",
+          duration: 2000,
+        });
+        playSound(SOUNDS.WIN);
+      }
+    }
+  }, [gameState.isShowingWinner, gameState.lastWinnerName, gameState.lastWinnerId]);
 
   useEffect(() => {
     if (gameState.status === 'GAME' && gameState.currentCardIndex === 0 && (gameState.currentRound === 1 || !gameState.currentRound)) {
@@ -423,6 +441,8 @@ export default function App() {
       updates.status = 'GAME';
       updates.currentCardIndex = 0;
       updates.timer = 90;
+      updates.isShowingWinner = false;
+      updates.lastWinnerName = null;
       const turnOrder = shuffleArray(players.map(p => p.id));
       updates.turnOrder = turnOrder;
       updates.currentTurnPlayerId = turnOrder[0];
@@ -487,7 +507,7 @@ export default function App() {
     }
   };
 
-  const updateMode = async (mode: 'PAPELITO' | 'HOLIS' | 'PRIMOS') => {
+  const updateMode = async (mode: 'PAPELITO' | 'HOLIS' | 'PRIMOS' | 'WHATSAPP') => {
     try {
       const updates: any = {
         mode,
@@ -495,11 +515,13 @@ export default function App() {
       };
       if (mode === 'PRIMOS') {
         updates.cards = shuffleAlternating(PRIMOS_CARDS);
+      } else if (mode === 'HOLIS') {
+        updates.cards = shuffleAlternating(HOLIS_CARDS);
       } else if (mode === 'PAPELITO') {
         updates.papelitosPerPlayer = 1; // Default 1 papelito
         updates.papelitoTheme = 'libre'; // Default theme
         updates.papelitoCustomTheme = ''; // Default custom theme
-      } else if (mode === 'HOLIS') {
+      } else if (mode === 'WHATSAPP') {
         // Default to some cards if none uploaded yet
         updates.cards = shuffleArray(DEFAULT_CARDS);
       }
@@ -585,20 +607,30 @@ export default function App() {
       if (winnerIdx !== -1) {
         players[winnerIdx].score += 10;
         winnerName = players[winnerIdx].name;
-        toast.success(`¡Punto para ${winnerName}! 🏆`, {
-          description: "+10 puntos",
-          duration: 2000,
-        });
-        playSound(SOUNDS.WIN);
       }
     }
+
+    // Phase 1: Show winner to everyone
+    try {
+      await updateDoc(gameRef, {
+        isShowingWinner: true,
+        lastWinnerId: winnerId || 'none',
+        lastWinnerName: winnerName || (winnerId ? 'Alguien' : 'Nadie'),
+        players
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
+      return;
+    }
+
+    // Wait for 2 seconds to let everyone see the notification
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Phase 2: Move to next card
     const updates: any = { 
       isShowingWinner: false,
       lastWinnerId: null,
-      lastWinnerName: null,
-      players
+      lastWinnerName: null
     };
     
     playSound(SOUNDS.NEXT_CARD);
@@ -882,7 +914,7 @@ export default function App() {
           <div className="space-y-4">
             <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-primary/20 shadow-xl space-y-4">
               <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Modo de Juego</h3>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 <button 
                   onClick={() => updateMode('PAPELITO')}
                   className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'PAPELITO' ? 'bg-secondary/10 border-secondary shadow-[0_0_15px_rgba(137,255,171,0.3)]' : 'bg-surface-container-low border-outline-variant/30 opacity-60'}`}
@@ -903,6 +935,13 @@ export default function App() {
                 >
                   <Users size={20} className={gameState.mode === 'PRIMOS' ? 'text-tertiary' : 'text-on-surface-variant'} />
                   <span className="text-[8px] font-black uppercase tracking-widest">Primos</span>
+                </button>
+                <button 
+                  onClick={() => updateMode('WHATSAPP')}
+                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'WHATSAPP' ? 'bg-error/10 border-error shadow-[0_0_15px_rgba(255,84,84,0.3)]' : 'bg-surface-container-low border-outline-variant/30 opacity-60'}`}
+                >
+                  <Upload size={20} className={gameState.mode === 'WHATSAPP' ? 'text-error' : 'text-on-surface-variant'} />
+                  <span className="text-[8px] font-black uppercase tracking-widest">Custom</span>
                 </button>
               </div>
             </div>
@@ -1023,26 +1062,12 @@ export default function App() {
             {gameState.mode === 'HOLIS' && (
               <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-primary/20 shadow-xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Mazo Personalizado</h3>
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Mazo Holis</h3>
                   <Flame size={14} className="text-primary/50" />
                 </div>
-                <p className="text-[10px] text-on-surface-variant font-body">Sube un archivo de texto para generar desafíos personalizados con IA.</p>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-surface-container-highest rounded-2xl border-2 border-dashed border-outline-variant/50 text-on-surface-variant hover:border-primary hover:text-primary transition-all disabled:opacity-50"
-                  >
-                    {isUploading ? <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" /> : <Upload size={18} />}
-                    <span className="text-[10px] font-black uppercase tracking-widest">{isUploading ? 'Generando...' : 'Subir TXT'}</span>
-                  </button>
-                  <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".txt" />
-                  <button 
-                    onClick={useDemoCards}
-                    className="px-4 py-3 bg-surface-container-highest rounded-2xl border-2 border-outline-variant/30 text-on-surface-variant hover:text-primary transition-all"
-                  >
-                    <HelpCircle size={18} />
-                  </button>
+                <p className="text-[10px] text-on-surface-variant font-body">Mazo pre-cargado con los mejores desafíos de Holis Game.</p>
+                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Mazo Listo 🔥</span>
                 </div>
               </div>
             )}
@@ -1056,6 +1081,35 @@ export default function App() {
                 <p className="text-[10px] text-on-surface-variant font-body">Mazo pre-cargado con chistes internos y desafíos de la familia.</p>
                 <div className="p-4 bg-tertiary/5 rounded-2xl border border-tertiary/10">
                   <span className="text-[10px] font-black uppercase tracking-widest text-tertiary">Mazo Listo 🔥</span>
+                </div>
+              </div>
+            )}
+
+            {gameState.mode === 'WHATSAPP' && (
+              <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-error/20 shadow-xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-error">Mazo WhatsApp (IA)</h3>
+                  <Upload size={14} className="text-error/50" />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-[10px] text-on-surface font-black uppercase tracking-widest">¿Cómo funciona?</p>
+                  <ol className="text-[9px] text-on-surface-variant font-body list-decimal list-inside space-y-1">
+                    <li>Ve a tu grupo de WhatsApp</li>
+                    <li>Ajustes {'>'} Exportar chat (sin archivos)</li>
+                    <li>Sube el archivo .txt aquí</li>
+                    <li>¡Generamos desafíos basados en sus chistes!</li>
+                  </ol>
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-surface-container-highest rounded-2xl border-2 border-dashed border-outline-variant/50 text-on-surface-variant hover:border-error hover:text-error transition-all disabled:opacity-50"
+                  >
+                    {isUploading ? <div className="w-4 h-4 border-2 border-error border-t-transparent rounded-full animate-spin" /> : <Upload size={18} />}
+                    <span className="text-[10px] font-black uppercase tracking-widest">{isUploading ? 'Generando...' : 'Subir Chat (.txt)'}</span>
+                  </button>
+                  <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".txt" />
                 </div>
               </div>
             )}
@@ -1147,9 +1201,15 @@ export default function App() {
               </div>
               
               <div className="flex items-center gap-2 bg-surface-container-high px-3 py-2 rounded-full border border-primary/20 shadow-xl">
-                {gameState.mode === 'HOLIS' ? <Flame className="text-primary" size={16} /> : gameState.mode === 'PRIMOS' ? <Users className="text-tertiary" size={16} /> : <Star className="text-secondary" size={16} />}
+                {gameState.mode === 'HOLIS' ? <Flame className="text-primary" size={16} /> : 
+                 gameState.mode === 'PRIMOS' ? <Users className="text-tertiary" size={16} /> : 
+                 gameState.mode === 'WHATSAPP' ? <Upload className="text-error" size={16} /> :
+                 <Star className="text-secondary" size={16} />}
                 <span className="font-headline font-black text-[10px] uppercase tracking-widest text-on-surface">
-                  {gameState.mode === 'HOLIS' ? 'Holis' : gameState.mode === 'PRIMOS' ? 'Primos' : `Papelito R${gameState.currentRound}`}
+                  {gameState.mode === 'HOLIS' ? 'Holis' : 
+                   gameState.mode === 'PRIMOS' ? 'Primos' : 
+                   gameState.mode === 'WHATSAPP' ? 'Custom' :
+                   `Papelito R${gameState.currentRound}`}
                 </span>
               </div>
             </div>

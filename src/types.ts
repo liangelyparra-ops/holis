@@ -24,7 +24,7 @@ export interface GameState {
   cards: GameCard[];
   currentCardIndex: number;
   timer: number;
-  mode: 'PAPELITO' | 'HOLIS' | 'PRIMOS';
+  mode: 'PAPELITO' | 'HOLIS' | 'PRIMOS' | 'WHATSAPP';
   currentTurnPlayerId: string | null;
   readyCount: number;
   turnOrder: string[]; // List of player IDs in order
@@ -113,7 +113,7 @@ export const PRIMOS_CARDS: GameCard[] = [
   ].map((c, i) => ({ id: `primo-who-${i}`, category: "QUIÉN DIJO ESTO", content: c.content, emoji: "🤔", answer: c.answer })),
 ];
 
-export const DEFAULT_CARDS: GameCard[] = [
+export const HOLIS_CARDS: GameCard[] = [
   // 🎭 ACTING (20)
   ...[
     "Alguien diciendo “voy” y cancelando",
@@ -136,7 +136,7 @@ export const DEFAULT_CARDS: GameCard[] = [
     "Mensajes confusos",
     "Drama innecesario",
     "Volver como si nada después de ghostear"
-  ].map((c, i) => ({ id: `act-${i}`, category: "ACTING", content: c, emoji: "🎭" })),
+  ].map((c, i) => ({ id: `holis-act-${i}`, category: "ACTING", content: c, emoji: "🎭" })),
 
   // 🤔 WHO SAID THIS (20)
   ...[
@@ -160,7 +160,7 @@ export const DEFAULT_CARDS: GameCard[] = [
     "“No tengo batería”",
     "“Estoy ocupada/o”",
     "“Después hablamos”"
-  ].map((c, i) => ({ id: `who-${i}`, category: "WHO SAID THIS", content: c, emoji: "🤔" })),
+  ].map((c, i) => ({ id: `holis-who-${i}`, category: "WHO SAID THIS", content: c, emoji: "🤔" })),
 
   // 🔥 EXPOSE (20)
   ...[
@@ -184,7 +184,7 @@ export const DEFAULT_CARDS: GameCard[] = [
     "Algo que te arrepentís de decir",
     "¿Quién pone más excusas?",
     "¿Quién es más impredecible?"
-  ].map((c, i) => ({ id: `exp-${i}`, category: "EXPOSE", content: c, emoji: "🔥" })),
+  ].map((c, i) => ({ id: `holis-exp-${i}`, category: "EXPOSE", content: c, emoji: "🔥" })),
 
   // ☠️ WHO IS MOST LIKELY (15)
   ...[
@@ -203,24 +203,24 @@ export const DEFAULT_CARDS: GameCard[] = [
     "Más confiable",
     "Más caótico/a",
     "Más rompe planes"
-  ].map((c, i) => ({ id: `likely-${i}`, category: "WHO IS MOST LIKELY", content: c, emoji: "☠️" })),
+  ].map((c, i) => ({ id: `holis-likely-${i}`, category: "WHO IS MOST LIKELY", content: c, emoji: "☠️" })),
 
   // 🗣️ TABÚ (15)
-  { id: "tab-1", category: "TABÚ", content: "Gastos", emoji: "🗣️", tabooWords: ["plata", "dinero", "caro"] },
-  { id: "tab-2", category: "TABÚ", content: "Principiante", emoji: "🗣️", tabooWords: ["nuevo", "empezar", "aprender"] },
-  { id: "tab-3", category: "TABÚ", content: "Excusa", emoji: "🗣️", tabooWords: ["mentira", "razón", "evitar"] },
-  { id: "tab-4", category: "TABÚ", content: "Plan", emoji: "🗣️", tabooWords: ["salir", "noche", "organizar"] },
-  { id: "tab-5", category: "TABÚ", content: "Cancelar", emoji: "🗣️", tabooWords: ["no ir", "último momento", "baja"] },
-  { id: "tab-6", category: "TABÚ", content: "Drama", emoji: "🗣️", tabooWords: ["problema", "exagerar", "conflicto"] },
-  { id: "tab-7", category: "TABÚ", content: "Grupo", emoji: "🗣️", tabooWords: ["chat", "amigos", "WhatsApp"] },
-  { id: "tab-8", category: "TABÚ", content: "Mentira", emoji: "🗣️", tabooWords: ["falso", "verdad", "invento"] },
-  { id: "tab-9", category: "TABÚ", content: "After", emoji: "🗣️", tabooWords: ["fiesta", "noche", "boliche"] },
-  { id: "tab-10", category: "TABÚ", content: "Ahorro", emoji: "🗣️", tabooWords: ["guardar", "plata", "gastar"] },
-  { id: "tab-11", category: "TABÚ", content: "Desaparecer", emoji: "🗣️", tabooWords: ["ghostear", "irse", "no responder"] },
-  { id: "tab-12", category: "TABÚ", content: "Chamuyo", emoji: "🗣️", tabooWords: ["hablar", "conquistar", "decir"] },
-  { id: "tab-13", category: "TABÚ", content: "Tarde", emoji: "🗣️", tabooWords: ["retraso", "hora", "llegar"] },
-  { id: "tab-14", category: "TABÚ", content: "Audio", emoji: "🗣️", tabooWords: ["voz", "mensaje", "escuchar"] },
-  { id: "tab-15", category: "TABÚ", content: "Excusas", emoji: "🗣️", tabooWords: ["justificar", "evitar", "mentira"] },
+  { id: "holis-tab-1", category: "TABÚ", content: "Gastos", emoji: "🗣️", tabooWords: ["plata", "dinero", "caro"] },
+  { id: "holis-tab-2", category: "TABÚ", content: "Principiante", emoji: "🗣️", tabooWords: ["nuevo", "empezar", "aprender"] },
+  { id: "holis-tab-3", category: "TABÚ", content: "Excusa", emoji: "🗣️", tabooWords: ["mentira", "razón", "evitar"] },
+  { id: "holis-tab-4", category: "TABÚ", content: "Plan", emoji: "🗣️", tabooWords: ["salir", "noche", "organizar"] },
+  { id: "holis-tab-5", category: "TABÚ", content: "Cancelar", emoji: "🗣️", tabooWords: ["no ir", "último momento", "baja"] },
+  { id: "holis-tab-6", category: "TABÚ", content: "Drama", emoji: "🗣️", tabooWords: ["problema", "exagerar", "conflicto"] },
+  { id: "holis-tab-7", category: "TABÚ", content: "Grupo", emoji: "🗣️", tabooWords: ["chat", "amigos", "WhatsApp"] },
+  { id: "holis-tab-8", category: "TABÚ", content: "Mentira", emoji: "🗣️", tabooWords: ["falso", "verdad", "invento"] },
+  { id: "holis-tab-9", category: "TABÚ", content: "After", emoji: "🗣️", tabooWords: ["fiesta", "noche", "boliche"] },
+  { id: "holis-tab-10", category: "TABÚ", content: "Ahorro", emoji: "🗣️", tabooWords: ["guardar", "plata", "gastar"] },
+  { id: "holis-tab-11", category: "TABÚ", content: "Desaparecer", emoji: "🗣️", tabooWords: ["ghostear", "irse", "no responder"] },
+  { id: "holis-tab-12", category: "TABÚ", content: "Chamuyo", emoji: "🗣️", tabooWords: ["hablar", "conquistar", "decir"] },
+  { id: "holis-tab-13", category: "TABÚ", content: "Tarde", emoji: "🗣️", tabooWords: ["retraso", "hora", "llegar"] },
+  { id: "holis-tab-14", category: "TABÚ", content: "Audio", emoji: "🗣️", tabooWords: ["voz", "mensaje", "escuchar"] },
+  { id: "holis-tab-15", category: "TABÚ", content: "Excusas", emoji: "🗣️", tabooWords: ["justificar", "evitar", "mentira"] },
 
   // 💣 TRUTH OR BOMB (10)
   ...[
@@ -234,5 +234,7 @@ export const DEFAULT_CARDS: GameCard[] = [
     "¿Qué cambiarías del grupo?",
     "¿Tu peor momento en el chat?",
     "¿Quién es el más falso?"
-  ].map((c, i) => ({ id: `truth-${i}`, category: "TRUTH OR BOMB", content: c, emoji: "💣" })),
+  ].map((c, i) => ({ id: `holis-truth-${i}`, category: "TRUTH OR BOMB", content: c, emoji: "💣" })),
 ];
+
+export const DEFAULT_CARDS: GameCard[] = HOLIS_CARDS;
