@@ -492,10 +492,12 @@ export default function App() {
         console.log("Initializing Gemini API...");
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
-          throw new Error("GEMINI_API_KEY no encontrada en el entorno.");
+          console.error("GEMINI_API_KEY is missing from process.env");
+          throw new Error("La llave de API (GEMINI_API_KEY) no está configurada. Por favor, revisa los secretos en el menú de configuración.");
         }
 
         const ai = new GoogleGenAI({ apiKey });
+        console.log("Calling generateContent with model gemini-3-flash-preview...");
         const response = await ai.models.generateContent({
           model: "gemini-3-flash-preview",
           contents: `Eres un experto en crear juegos de fiesta. Basándote en el siguiente historial de chat de WhatsApp, genera 30 cartas divertidas para el juego "Holis Game".
@@ -523,7 +525,7 @@ export default function App() {
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  category: { type: Type.STRING, enum: ["QUIÉN DIJO ESTO", "TABÚ", "ACTUAR"] },
+                  category: { type: Type.STRING, description: "La categoría de la carta: QUIÉN DIJO ESTO, TABÚ o ACTUAR" },
                   content: { type: Type.STRING },
                   emoji: { type: Type.STRING },
                   answer: { type: Type.STRING },
@@ -540,8 +542,16 @@ export default function App() {
         });
 
         console.log("Gemini response received");
+        if (!response.text) {
+          throw new Error("La IA no devolvió ninguna respuesta. Intenta con un chat más corto.");
+        }
+
         const generatedData = JSON.parse(response.text);
         console.log("Generated cards count:", generatedData.length);
+
+        if (!Array.isArray(generatedData) || generatedData.length === 0) {
+          throw new Error("La IA no pudo generar cartas válidas a partir de este chat.");
+        }
 
         const newCards = shuffleArray(generatedData.map((c: any, i: number) => ({ 
           ...c, 
@@ -550,9 +560,13 @@ export default function App() {
         
         await updateDoc(doc(db, 'games', GAME_ID), { cards: newCards });
         toast.success("¡Mazo personalizado generado con éxito! 🔥");
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error generating cards:", error);
-        toast.error("Error al generar cartas con IA. Asegúrate de que el archivo sea un .txt de WhatsApp.");
+        const errorMessage = error.message || "Error desconocido";
+        toast.error(`Error al generar cartas: ${errorMessage}`, {
+          description: "Asegúrate de que el archivo sea un .txt de WhatsApp y que la API Key esté configurada.",
+          duration: 5000
+        });
         // Fallback to default cards if generation fails
         await updateDoc(doc(db, 'games', GAME_ID), { cards: shuffleArray(DEFAULT_CARDS) });
       } finally {
