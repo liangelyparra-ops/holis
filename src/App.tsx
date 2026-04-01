@@ -457,18 +457,65 @@ export default function App() {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      console.log("No file selected");
+      return;
+    }
 
+    console.log("File selected:", file.name, file.type, file.size);
     setIsUploading(true);
     const reader = new FileReader();
+    
+    reader.onerror = (err) => {
+      console.error("FileReader error:", err);
+      toast.error("Error al leer el archivo.");
+      setIsUploading(false);
+    };
+
     reader.onload = async (event) => {
-      const text = event.target?.result as string;
+      let text = event.target?.result as string;
+      console.log("File read successfully, length:", text.length);
+      
+      if (!text || text.trim().length < 10) {
+        toast.error("El archivo parece estar vacío o es demasiado corto.");
+        setIsUploading(false);
+        return;
+      }
+
+      // Truncate text if it's too long to avoid token limits (approx 30k characters is safe for flash)
+      if (text.length > 30000) {
+        console.log("Truncating text from", text.length, "to 30000");
+        text = text.substring(0, 30000);
+      }
+
       try {
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        console.log("Initializing Gemini API...");
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+          throw new Error("GEMINI_API_KEY no encontrada en el entorno.");
+        }
+
+        const ai = new GoogleGenAI({ apiKey });
         const response = await ai.models.generateContent({
           model: "gemini-3-flash-preview",
-          contents: `Genera una lista de 20 cartas para un juego de fiesta basado en este texto: "${text}". 
-          Devuelve un JSON con este formato: [{ "category": "TITULO", "content": "DESCRIPCION", "emoji": "EMOJI" }]`,
+          contents: `Eres un experto en crear juegos de fiesta. Basándote en el siguiente historial de chat de WhatsApp, genera 30 cartas divertidas para el juego "Holis Game".
+          
+          El chat es: """${text}"""
+
+          Debes generar cartas en estas 3 categorías específicas, extrayendo nombres reales y frases del chat:
+          1. "QUIÉN DIJO ESTO": Frases icónicas, divertidas o polémicas dichas por personas en el chat. El 'content' es la frase exacta (sin el nombre) y el 'answer' es el nombre de la persona que la dijo.
+          2. "TABÚ": Palabras, temas o "chistes internos" recurrentes en el chat. El 'content' es la palabra principal y 'tabooWords' son 3 palabras relacionadas que NO se pueden decir para describirla.
+          3. "ACTUAR": Situaciones, manías o comportamientos típicos de los integrantes del grupo que se mencionen o se deduzcan del chat. El 'content' es la acción corta y el 'context' es una breve descripción de cómo actuarla.
+
+          Devuelve un JSON que cumpla estrictamente con este formato:
+          [{ 
+            "category": "QUIÉN DIJO ESTO" | "TABÚ" | "ACTUAR", 
+            "content": "texto principal", 
+            "emoji": "un emoji relacionado",
+            "answer": "nombre (solo para QUIÉN DIJO ESTO)",
+            "tabooWords": ["palabra1", "palabra2", "palabra3"] (solo para TABÚ),
+            "context": "descripción de la actuación" (solo para ACTUAR)
+          }]`,
           config: {
             responseMimeType: "application/json",
             responseSchema: {
@@ -476,9 +523,15 @@ export default function App() {
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  category: { type: Type.STRING },
+                  category: { type: Type.STRING, enum: ["QUIÉN DIJO ESTO", "TABÚ", "ACTUAR"] },
                   content: { type: Type.STRING },
                   emoji: { type: Type.STRING },
+                  answer: { type: Type.STRING },
+                  tabooWords: { 
+                    type: Type.ARRAY, 
+                    items: { type: Type.STRING } 
+                  },
+                  context: { type: Type.STRING },
                 },
                 required: ["category", "content", "emoji"],
               },
@@ -486,14 +539,26 @@ export default function App() {
           },
         });
 
-        const newCards = shuffleArray(JSON.parse(response.text).map((c: any, i: number) => ({ ...c, id: `ai-${i}` })));
+        console.log("Gemini response received");
+        const generatedData = JSON.parse(response.text);
+        console.log("Generated cards count:", generatedData.length);
+
+        const newCards = shuffleArray(generatedData.map((c: any, i: number) => ({ 
+          ...c, 
+          id: `ai-${Date.now()}-${i}` 
+        })));
+        
         await updateDoc(doc(db, 'games', GAME_ID), { cards: newCards });
+        toast.success("¡Mazo personalizado generado con éxito! 🔥");
       } catch (error) {
         console.error("Error generating cards:", error);
-        alert("Error al generar cartas con IA. Usando mazo por defecto.");
+        toast.error("Error al generar cartas con IA. Asegúrate de que el archivo sea un .txt de WhatsApp.");
+        // Fallback to default cards if generation fails
         await updateDoc(doc(db, 'games', GAME_ID), { cards: shuffleArray(DEFAULT_CARDS) });
       } finally {
         setIsUploading(false);
+        // Reset file input
+        if (fileInputRef.current) fileInputRef.current.value = '';
       }
     };
     reader.readAsText(file);
@@ -1109,7 +1174,13 @@ export default function App() {
                     {isUploading ? <div className="w-4 h-4 border-2 border-error border-t-transparent rounded-full animate-spin" /> : <Upload size={18} />}
                     <span className="text-[10px] font-black uppercase tracking-widest">{isUploading ? 'Generando...' : 'Subir Chat (.txt)'}</span>
                   </button>
-                  <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".txt" />
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    onChange={handleFileUpload} 
+                    className="hidden" 
+                    accept=".txt,text/plain" 
+                  />
                 </div>
               </div>
             )}
@@ -1267,20 +1338,23 @@ export default function App() {
                   </div>
                 </div>
                 <p className="font-headline text-xl sm:text-3xl md:text-4xl font-black text-on-surface leading-tight tracking-tighter italic">
-                  "{currentCard.category === 'ACTUAR' ? currentCard.context : currentCard.content}"
+                  "{currentCard.content}"
                 </p>
-                {(currentCard.answer || (currentCard.category === 'ACTUAR' && currentCard.content)) && (
+                {currentCard.category === 'QUIÉN DIJO ESTO' && currentCard.answer && (
                   <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-2xl">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Respuesta:</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Dicho por:</p>
                     <p className="text-xl font-headline font-black text-on-surface">
-                      {currentCard.category === 'ACTUAR' ? currentCard.content : currentCard.answer}
+                      {currentCard.answer}
                     </p>
                   </div>
                 )}
-                {currentCard.context && currentCard.category !== 'ACTUAR' && (
-                  <p className="text-[10px] sm:text-xs text-on-surface-variant font-body mt-2 max-w-xs mx-auto">
-                    {currentCard.context}
-                  </p>
+                {currentCard.category === 'ACTUAR' && currentCard.context && (
+                  <div className="mt-2 p-2 bg-surface-container-highest border border-outline-variant/30 rounded-xl max-w-xs mx-auto">
+                    <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">Cómo actuar:</p>
+                    <p className="text-[10px] text-on-surface leading-tight font-body">
+                      {currentCard.context}
+                    </p>
+                  </div>
                 )}
                 {currentCard.tabooWords && (
                   <div className="mt-2 p-2 bg-error/10 border border-error/20 rounded-xl">
