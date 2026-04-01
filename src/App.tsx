@@ -147,15 +147,28 @@ export default function App() {
   const [papelitoInput, setPapelitoInput] = useState('');
   const [selectedAvatarSeed, setSelectedAvatarSeed] = useState<string | null>(localStorage.getItem(AVATAR_KEY) || 'avatar-1');
   const [showRoundAnimation, setShowRoundAnimation] = useState<number | null>(null);
+  const lastPlayedSoundRef = useRef<string | null>(null);
   
   const playSound = (url: string) => {
-    console.log(`Playing sound: ${url}`);
+    console.log(`[Sound] Attempting to play: ${url}`);
     const audio = new Audio(url);
-    audio.volume = 0.6;
-    audio.play().catch(e => {
-      console.warn("Audio play blocked or failed:", e);
-      // Try to play again on next interaction if blocked
-    });
+    audio.volume = 0.8;
+    
+    // Preload to improve start time
+    audio.preload = 'auto';
+    
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(error => {
+        console.warn("[Sound] Playback failed/blocked:", error);
+        if (error.name === 'NotAllowedError') {
+          toast.error("Audio bloqueado 🔇", {
+            description: "Haz clic en la pantalla para activar el sonido.",
+            duration: 3000,
+          });
+        }
+      });
+    }
   };
 
   const SOUNDS = {
@@ -176,12 +189,42 @@ export default function App() {
   const [userId, setUserId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Play sound on card change
+  // Consolidated Sound Manager
   useEffect(() => {
-    if (gameState.status === 'GAME' && gameState.currentCardIndex > 0) {
-      playSound(SOUNDS.NEXT);
+    if (gameState.status === 'GAME') {
+      if (gameState.currentCardIndex === 0) {
+        // Start of game or round
+        const playKey = `start-${gameState.currentRound || 1}`;
+        if (lastPlayedSoundRef.current !== playKey) {
+          // Small delay to ensure state is settled and UI has transitioned
+          const timer = setTimeout(() => {
+            console.log("[Sound] Triggering START sound now...");
+            playSound(SOUNDS.START);
+          }, 500);
+          lastPlayedSoundRef.current = playKey;
+          return () => clearTimeout(timer);
+        }
+      } else {
+        // Card change
+        const playKey = `card-${gameState.currentCardIndex}`;
+        if (lastPlayedSoundRef.current !== playKey) {
+          console.log(`[Sound] Triggering NEXT sound for card ${gameState.currentCardIndex}...`);
+          playSound(SOUNDS.NEXT);
+          lastPlayedSoundRef.current = playKey;
+        }
+      }
+    } else if (gameState.status === 'RESULTS') {
+      const playKey = 'results';
+      if (lastPlayedSoundRef.current !== playKey) {
+        console.log("[Sound] Triggering FINISH sound...");
+        playSound(SOUNDS.FINISH);
+        lastPlayedSoundRef.current = playKey;
+      }
+    } else {
+      // Reset when back to HOME or LOBBY
+      lastPlayedSoundRef.current = null;
     }
-  }, [gameState.currentCardIndex, gameState.status]);
+  }, [gameState.status, gameState.currentCardIndex, gameState.currentRound]);
 
   // Show winner notification to everyone
   useEffect(() => {
@@ -200,17 +243,6 @@ export default function App() {
       }
     }
   }, [gameState.isShowingWinner, gameState.lastWinnerName, gameState.lastWinnerId]);
-
-  useEffect(() => {
-    if (gameState.status === 'GAME' && gameState.currentCardIndex === 0) {
-      // Always play the intro sound when the game starts or a new round begins at index 0
-      // This covers both HOLIS and PAPELITO modes
-      playSound(SOUNDS.START);
-    }
-    if (gameState.status === 'RESULTS') {
-      playSound(SOUNDS.FINISH);
-    }
-  }, [gameState.status, gameState.currentCardIndex]);
 
   // Initialize Local User ID
   useEffect(() => {
@@ -291,15 +323,10 @@ export default function App() {
     return () => clearInterval(interval);
   }, [gameState.status, gameState.timer, gameState.players, userId, gameState.mode, gameState.turnOrder, gameState.currentTurnPlayerId, gameState.isShowingWinner]);
 
-  // Round Animation Logic
+  // Round Animation Logic (Visual only, sound handled by manager)
   useEffect(() => {
     if (gameState.status === 'GAME' && gameState.mode === 'PAPELITO' && gameState.currentRound) {
       setShowRoundAnimation(gameState.currentRound);
-      // Only play ROUND_START if it's NOT the first round (to avoid double playing with START)
-      // or if currentCardIndex is not 0 (though in PAPELITO rounds usually start at index 0)
-      if (gameState.currentRound > 1) {
-        playSound(SOUNDS.ROUND_START);
-      }
       const timer = setTimeout(() => setShowRoundAnimation(null), 3000);
       return () => clearTimeout(timer);
     }
