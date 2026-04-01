@@ -247,7 +247,7 @@ export default function App() {
         updatedPlayers = [newPlayer];
       }
 
-      const nextStatus = (currentStatus === 'HOME' || (currentStatus === 'GAME' && updatedPlayers.length <= 1)) 
+      const nextStatus = (currentStatus === 'HOME' || currentStatus === 'RESULTS' || (currentStatus === 'GAME' && updatedPlayers.length <= 1)) 
         ? 'LOBBY' 
         : currentStatus;
 
@@ -260,7 +260,7 @@ export default function App() {
         timer: existingData.timer !== undefined ? existingData.timer : 90,
         mode: existingData.mode || 'CHAOS',
         currentTurnPlayerId: existingData.currentTurnPlayerId || null,
-        readyCount: nextStatus === 'LOBBY' ? 0 : (existingData.readyCount || 0),
+        readyCount: updatedPlayers.filter(p => p.isReady).length,
         turnOrder: existingData.turnOrder || [],
       });
       
@@ -284,13 +284,15 @@ export default function App() {
         const players = (data.players || []) as Player[];
         const filteredPlayers = players.filter(p => p.id !== userId);
         
-        const updates: any = { players: filteredPlayers };
+        const updates: any = { 
+          players: filteredPlayers,
+          readyCount: filteredPlayers.filter(p => p.isReady).length
+        };
         
-        const me = players.find(p => p.id === userId);
-        if (me?.isReady) {
-          updates.readyCount = Math.max(0, (data.readyCount || 0) - 1);
+        if (filteredPlayers.length <= 1 && data.status === 'GAME') {
+          updates.status = 'LOBBY';
         }
-        
+
         if (filteredPlayers.length === 0) {
           updates.status = 'HOME';
           updates.readyCount = 0;
@@ -323,14 +325,14 @@ export default function App() {
     if (playerIdx === -1 || players[playerIdx].isReady) return;
 
     players[playerIdx].isReady = true;
-    const newReadyCount = (snapshot.data().readyCount || 0) + 1;
+    const readyPlayersCount = players.filter(p => p.isReady).length;
 
     const updates: any = {
       players,
-      readyCount: newReadyCount
+      readyCount: readyPlayersCount
     };
 
-    if (newReadyCount === players.length && players.length >= 3) {
+    if (readyPlayersCount === players.length && players.length >= 3) {
       updates.status = 'GAME';
       updates.currentCardIndex = 0;
       updates.timer = 90;
@@ -489,7 +491,7 @@ export default function App() {
     // Shuffle cards if they are exhausted or for a fresh start
     let shuffledCards = data.cards;
     if (data.currentCardIndex >= data.cards.length - (players.length * 3)) {
-      shuffledCards = shuffleArray(data.cards);
+      shuffledCards = data.mode === 'PRIMOS' ? shuffleAlternating(PRIMOS_CARDS) : shuffleArray(data.cards);
     }
 
     try {
@@ -659,8 +661,15 @@ export default function App() {
             <Users className="text-primary" size={24} />
             <h2 className="font-headline text-xl sm:text-2xl font-black uppercase tracking-tighter text-on-surface">Lobby</h2>
           </div>
-          <div className="bg-primary/10 px-4 py-1 rounded-full border border-primary/20">
+          <div className="bg-primary/10 px-4 py-1 rounded-full border border-primary/20 flex items-center gap-2">
             <span className="text-[10px] font-black uppercase tracking-widest text-primary">Esperando Jugadores</span>
+            <button 
+              onClick={resetGame}
+              className="p-1 hover:bg-primary/20 rounded-full transition-all text-primary"
+              title="Reiniciar Sala"
+            >
+              <AlertCircle size={14} />
+            </button>
           </div>
         </div>
 
