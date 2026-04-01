@@ -589,7 +589,9 @@ export default function App() {
 
       if (!isLastCard) {
         // In PAPELITO, current player keeps turn until timer runs out
+        // User requested to reset the timer after each word
         updates.currentCardIndex = latestData.currentCardIndex + 1;
+        updates.timer = 90;
       } else if (!isLastRound) {
         // Transition to next round
         updates.currentRound = (latestData.currentRound || 1) + 1;
