@@ -219,7 +219,7 @@ export default function App() {
 
   // Timer Logic (Client-side sync)
   useEffect(() => {
-    if (gameState.status !== 'GAME' || !userId) return;
+    if (gameState.status !== 'GAME' || !userId || gameState.isShowingWinner) return;
 
     // Only the first player (host-ish) handles the timer to avoid multiple decrements
     const isHost = gameState.players[0]?.id === userId;
@@ -232,6 +232,8 @@ export default function App() {
         }).catch(err => handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`));
       } else {
         if (gameState.mode === 'PAPELITO') {
+          // On timeout in Papelito, we just pass the turn but keep the same card
+          // so the next player can try to explain it.
           const turnOrder = gameState.turnOrder || gameState.players.map(p => p.id);
           const currentTurnIdx = turnOrder.indexOf(gameState.currentTurnPlayerId || '');
           const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
@@ -249,7 +251,7 @@ export default function App() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [gameState.status, gameState.timer, gameState.players, userId, gameState.mode, gameState.turnOrder, gameState.currentTurnPlayerId]);
+  }, [gameState.status, gameState.timer, gameState.players, userId, gameState.mode, gameState.turnOrder, gameState.currentTurnPlayerId, gameState.isShowingWinner]);
 
   const joinGame = async () => {
     if (!tempNickname.trim() || !selectedAvatarSeed) return;
@@ -584,31 +586,29 @@ export default function App() {
     };
     
     if (latestData.mode === 'PAPELITO') {
-      const isLastCard = latestData.currentCardIndex >= latestData.cards.length - 1;
+      const isLastCard = latestData.currentCardIndex >= (latestData.cards?.length || 0) - 1;
       const isLastRound = (latestData.currentRound || 1) >= 3;
 
       if (!isLastCard) {
-        // User requested to rotate turn after each word
+        // Move to next card and rotate turn
         updates.currentCardIndex = latestData.currentCardIndex + 1;
         updates.timer = 90;
         
-        // Pass turn to next player
         const turnOrder = latestData.turnOrder || latestData.players.map(p => p.id);
         const currentTurnIdx = turnOrder.indexOf(latestData.currentTurnPlayerId || '');
         const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
         updates.currentTurnPlayerId = turnOrder[nextTurnIdx];
       } else if (!isLastRound) {
-        // Transition to next round
+        // Transition to next round, reshuffle cards, and rotate turn
         updates.currentRound = (latestData.currentRound || 1) + 1;
         updates.currentCardIndex = 0;
-        updates.cards = shuffleArray(latestData.cards);
-        
-        // Pass turn to next player for the new round
+        updates.cards = shuffleArray(latestData.cards || []);
+        updates.timer = 90;
+
         const turnOrder = latestData.turnOrder || latestData.players.map(p => p.id);
         const currentTurnIdx = turnOrder.indexOf(latestData.currentTurnPlayerId || '');
         const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
         updates.currentTurnPlayerId = turnOrder[nextTurnIdx];
-        updates.timer = 90;
       } else {
         updates.status = 'RESULTS';
       }
