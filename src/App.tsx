@@ -800,7 +800,7 @@ export default function App() {
                     <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">{currentCard.category}</p>
                     <p className="text-[10px] text-on-surface-variant leading-tight normal-case font-body">
                       {currentCard.category === 'ACTING' || currentCard.category === 'ACTUAR' ? 'Actúa la situación sin hablar. ¡Tus amigos deben adivinar!' :
-                       currentCard.category === 'WHO SAID THIS' || currentCard.category === 'WHO_SAID' ? '¿Quién dijo esta frase mítica? El grupo vota al culpable.' :
+                       currentCard.category === 'WHO SAID THIS' || currentCard.category === 'WHO_SAID' || currentCard.category === 'QUIÉN DIJO ESTO' ? '¿Quién dijo esta frase mítica? El grupo vota al culpable.' :
                        currentCard.category === 'EXPOSE' ? 'Momento de la verdad. Responde con sinceridad o bebe.' :
                        currentCard.category === 'WHO IS MOST LIKELY' ? 'Voten quién es más probable que haga esto.' :
                        currentCard.category === 'TABÚ' || currentCard.category === 'TABU' ? 'Describe la palabra sin usar las prohibidas.' :
@@ -812,6 +812,17 @@ export default function App() {
                 <p className="font-headline text-xl sm:text-3xl md:text-4xl font-black text-on-surface leading-tight tracking-tighter italic">
                   "{currentCard.content}"
                 </p>
+                {currentCard.answer && (
+                  <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-2xl">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Respuesta:</p>
+                    <p className="text-xl font-headline font-black text-on-surface">{currentCard.answer}</p>
+                  </div>
+                )}
+                {currentCard.context && (
+                  <p className="text-[10px] sm:text-xs text-on-surface-variant font-body mt-2 max-w-xs mx-auto">
+                    {currentCard.context}
+                  </p>
+                )}
                 {currentCard.tabooWords && (
                   <div className="mt-2 p-2 bg-error/10 border border-error/20 rounded-xl">
                     <p className="text-[8px] font-black uppercase tracking-widest text-error mb-1">Palabras Prohibidas:</p>
