@@ -497,6 +497,7 @@ export default function App() {
       } else {
         updates.papelitosPerPlayer = 1; // Default 1 papelito
         updates.papelitoTheme = 'libre'; // Default theme
+        updates.papelitoCustomTheme = ''; // Default custom theme
       }
       await updateDoc(doc(db, 'games', GAME_ID), updates);
     } catch (err) {
@@ -504,7 +505,7 @@ export default function App() {
     }
   };
 
-  const updatePapelitoSettings = async (settings: { papelitosPerPlayer?: number, papelitoTheme?: string }) => {
+  const updatePapelitoSettings = async (settings: { papelitosPerPlayer?: number, papelitoTheme?: string, papelitoCustomTheme?: string }) => {
     try {
       await updateDoc(doc(db, 'games', GAME_ID), settings);
     } catch (err) {
@@ -516,12 +517,6 @@ export default function App() {
     const word = papelitoInput.trim();
     if (!word || !userId) return;
     
-    // Check if it's only one word
-    if (word.includes(' ')) {
-      alert("¡Solo una palabra por favor!");
-      return;
-    }
-
     const gameRef = doc(db, 'games', GAME_ID);
     try {
       const snapshot = await getDoc(gameRef);
@@ -947,21 +942,21 @@ export default function App() {
             </div>
 
             {gameState.mode === 'PAPELITO' && (
-              <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-secondary/20 shadow-xl space-y-4">
+              <div className="bg-surface-container-high p-4 rounded-[2rem] border-2 border-secondary/20 shadow-xl space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-secondary">Configuración Papelito</h3>
-                  <Settings size={14} className="text-secondary/50" />
+                  <h3 className="text-[9px] font-black uppercase tracking-widest text-secondary">Configuración Papelito</h3>
+                  <Settings size={12} className="text-secondary/50" />
                 </div>
                 
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant">Papelitos por persona</p>
-                    <div className="flex gap-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <p className="text-[7px] font-black uppercase tracking-widest text-on-surface-variant">Papelitos</p>
+                    <div className="flex gap-1">
                       {[1, 2, 3].map(num => (
                         <button
                           key={num}
                           onClick={() => updatePapelitoSettings({ papelitosPerPlayer: num })}
-                          className={`flex-1 py-2 rounded-xl border-2 transition-all font-headline font-black ${
+                          className={`flex-1 py-1.5 rounded-lg border transition-all font-headline font-black text-xs ${
                             gameState.papelitosPerPlayer === num 
                               ? 'bg-secondary/10 border-secondary text-secondary' 
                               : 'bg-surface-container-low border-outline-variant/30 text-on-surface-variant'
@@ -973,14 +968,14 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant">Tema de la partida</p>
-                    <div className="flex gap-2">
-                      {['libre', 'cine', 'comida', 'famosos'].map(t => (
+                  <div className="space-y-1">
+                    <p className="text-[7px] font-black uppercase tracking-widest text-on-surface-variant">Tema</p>
+                    <div className="flex gap-1">
+                      {['libre', 'custom'].map(t => (
                         <button
                           key={t}
                           onClick={() => updatePapelitoSettings({ papelitoTheme: t })}
-                          className={`flex-1 py-2 rounded-xl border-2 transition-all font-headline font-black text-[10px] uppercase ${
+                          className={`flex-1 py-1.5 rounded-lg border transition-all font-headline font-black text-[9px] uppercase ${
                             gameState.papelitoTheme === t 
                               ? 'bg-secondary/10 border-secondary text-secondary' 
                               : 'bg-surface-container-low border-outline-variant/30 text-on-surface-variant'
@@ -993,35 +988,51 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-outline-variant/20">
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-secondary mb-3">Tu Palabra ({myPlayer?.papelitos?.length || 0} / {gameState.papelitosPerPlayer || 1})</h3>
+                {gameState.papelitoTheme === 'custom' && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    className="overflow-hidden"
+                  >
+                    <input 
+                      type="text" 
+                      value={gameState.papelitoCustomTheme || ''}
+                      onChange={(e) => updatePapelitoSettings({ papelitoCustomTheme: e.target.value })}
+                      placeholder="Escribe el tema de la partida..."
+                      className="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-1.5 text-[10px] text-on-surface focus:border-secondary outline-none transition-all"
+                    />
+                  </motion.div>
+                )}
+
+                <div className="pt-3 border-t border-outline-variant/20">
+                  <h3 className="text-[9px] font-black uppercase tracking-widest text-secondary mb-2">Tu Frase ({myPlayer?.papelitos?.length || 0} / {gameState.papelitosPerPlayer || 1})</h3>
                   <div className="flex gap-2">
                     <input 
                       type="text" 
                       value={papelitoInput}
                       onChange={(e) => setPapelitoInput(e.target.value)}
-                      placeholder={gameState.papelitoTheme === 'libre' ? "Escribe una palabra..." : `Tema: ${gameState.papelitoTheme}...`}
-                      className="flex-1 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl px-4 py-2 text-on-surface focus:border-secondary outline-none transition-all"
+                      placeholder={gameState.papelitoTheme === 'libre' ? "Escribe una frase..." : `Tema: ${gameState.papelitoCustomTheme || '...'}...`}
+                      className="flex-1 bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-1.5 text-[10px] text-on-surface focus:border-secondary outline-none transition-all"
                       onKeyDown={(e) => e.key === 'Enter' && addPapelito()}
                     />
                     <button 
                       onClick={addPapelito}
                       disabled={(myPlayer?.papelitos?.length || 0) >= (gameState.papelitosPerPlayer || 1)}
-                      className="p-2 bg-secondary text-on-secondary-fixed rounded-xl hover:scale-105 transition-all disabled:opacity-50"
+                      className="p-1.5 bg-secondary text-on-secondary-fixed rounded-lg hover:scale-105 transition-all disabled:opacity-50"
                     >
-                      <Check size={20} />
+                      <Check size={16} />
                     </button>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {myPlayer?.papelitos?.map((p, i) => (
-                    <div key={i} className="flex items-center gap-1 bg-secondary/10 text-secondary px-3 py-1 rounded-full border border-secondary/20">
-                      <span className="text-[10px] font-black uppercase">{p}</span>
+                    <div key={i} className="flex items-center gap-1 bg-secondary/10 text-secondary px-2 py-0.5 rounded-full border border-secondary/20">
+                      <span className="text-[8px] font-black uppercase truncate max-w-[100px]">{p}</span>
                       <button 
                         onClick={() => removePapelito(i)}
                         className="hover:text-error transition-colors"
                       >
-                        <X size={12} />
+                        <X size={10} />
                       </button>
                     </div>
                   ))}
