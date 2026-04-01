@@ -5,6 +5,7 @@ export interface Player {
   score: number;
   isReady: boolean;
   isHost: boolean;
+  papelitos?: string[];
 }
 
 export interface GameCard {
@@ -23,10 +24,12 @@ export interface GameState {
   cards: GameCard[];
   currentCardIndex: number;
   timer: number;
-  mode: 'CHAOS' | 'PENALTY' | 'PRIMOS';
+  mode: 'CHAOS' | 'PENALTY' | 'PRIMOS' | 'PAPELITO';
   currentTurnPlayerId: string | null;
   readyCount: number;
   turnOrder: string[]; // List of player IDs in order
+  currentRound?: number; // For PAPELITO mode (1, 2, 3)
+  papelitosPerPlayer?: number;
 }
 
 export const PREDEFINED_PLAYERS = [

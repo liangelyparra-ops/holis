@@ -137,6 +137,7 @@ export default function App() {
 
   const [selectedNickname, setSelectedNickname] = useState<string | null>(null);
   const [tempNickname, setTempNickname] = useState('');
+  const [papelitoInput, setPapelitoInput] = useState('');
   const [selectedAvatarSeed, setSelectedAvatarSeed] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -222,7 +223,7 @@ export default function App() {
 
       const name = tempNickname.trim();
       const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedAvatarSeed}`;
-      const newPlayer: Player = { id: currentUserId, name, avatar, score: 0, isReady: false, isHost: false };
+      const newPlayer: Player = { id: currentUserId, name, avatar, score: 0, isReady: false, isHost: false, papelitos: [] };
       
       const gameRef = doc(db, 'games', GAME_ID);
       const snapshot = await getDoc(gameRef);
@@ -333,6 +334,24 @@ export default function App() {
     };
 
     if (readyPlayersCount === players.length && players.length >= 3) {
+      if (snapshot.data().mode === 'PAPELITO') {
+        const allPapelitos: GameCard[] = [];
+        players.forEach(p => {
+          if (p.papelitos) {
+            p.papelitos.forEach((text, i) => {
+              allPapelitos.push({
+                id: `papelito-${p.id}-${i}`,
+                category: 'PAPELITO',
+                content: text,
+                emoji: '📝'
+              });
+            });
+          }
+        });
+        updates.cards = shuffleArray(allPapelitos);
+        updates.currentRound = 1;
+      }
+      
       updates.status = 'GAME';
       updates.currentCardIndex = 0;
       updates.timer = 90;
@@ -400,14 +419,39 @@ export default function App() {
     }
   };
 
-  const updateMode = async (mode: 'CHAOS' | 'PENALTY' | 'PRIMOS') => {
+  const updateMode = async (mode: 'CHAOS' | 'PENALTY' | 'PRIMOS' | 'PAPELITO') => {
     try {
-      const cards = mode === 'PRIMOS' ? shuffleAlternating(PRIMOS_CARDS) : shuffleArray(DEFAULT_CARDS);
-      await updateDoc(doc(db, 'games', GAME_ID), {
+      const updates: any = {
         mode,
-        cards,
         currentCardIndex: 0
-      });
+      };
+      if (mode !== 'PAPELITO') {
+        updates.cards = mode === 'PRIMOS' ? shuffleAlternating(PRIMOS_CARDS) : shuffleArray(DEFAULT_CARDS);
+      } else {
+        updates.papelitosPerPlayer = 3; // Default 3 papelitos
+      }
+      await updateDoc(doc(db, 'games', GAME_ID), updates);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
+    }
+  };
+
+  const addPapelito = async () => {
+    if (!papelitoInput.trim() || !userId) return;
+    const gameRef = doc(db, 'games', GAME_ID);
+    try {
+      const snapshot = await getDoc(gameRef);
+      if (!snapshot.exists()) return;
+      const players = [...snapshot.data().players] as Player[];
+      const playerIdx = players.findIndex(p => p.id === userId);
+      if (playerIdx === -1) return;
+      
+      const currentPapelitos = players[playerIdx].papelitos || [];
+      if (currentPapelitos.length >= (snapshot.data().papelitosPerPlayer || 3)) return;
+
+      players[playerIdx].papelitos = [...currentPapelitos, papelitoInput.trim()];
+      await updateDoc(gameRef, { players });
+      setPapelitoInput('');
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
     }
@@ -435,18 +479,40 @@ export default function App() {
     }
 
     const updates: any = { players };
-    const totalTurns = players.length * 3;
-
-    if (data.currentCardIndex < totalTurns - 1 && data.currentCardIndex < data.cards.length - 1) {
-      updates.currentCardIndex = data.currentCardIndex + 1;
-      
-      const turnOrder = data.turnOrder || players.map(p => p.id);
-      const currentTurnIdx = turnOrder.indexOf(data.currentTurnPlayerId || '');
-      const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
-      updates.currentTurnPlayerId = turnOrder[nextTurnIdx];
-      updates.timer = 90;
+    
+    if (data.mode === 'PAPELITO') {
+      if (data.currentCardIndex < data.cards.length - 1) {
+        updates.currentCardIndex = data.currentCardIndex + 1;
+        const turnOrder = data.turnOrder || players.map(p => p.id);
+        const currentTurnIdx = turnOrder.indexOf(data.currentTurnPlayerId || '');
+        const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
+        updates.currentTurnPlayerId = turnOrder[nextTurnIdx];
+        updates.timer = 90;
+      } else if ((data.currentRound || 1) < 3) {
+        updates.currentRound = (data.currentRound || 1) + 1;
+        updates.currentCardIndex = 0;
+        updates.cards = shuffleArray(data.cards);
+        const turnOrder = data.turnOrder || players.map(p => p.id);
+        const currentTurnIdx = turnOrder.indexOf(data.currentTurnPlayerId || '');
+        const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
+        updates.currentTurnPlayerId = turnOrder[nextTurnIdx];
+        updates.timer = 90;
+      } else {
+        updates.status = 'RESULTS';
+      }
     } else {
-      updates.status = 'RESULTS';
+      const totalTurns = players.length * 3;
+      if (data.currentCardIndex < totalTurns - 1 && data.currentCardIndex < data.cards.length - 1) {
+        updates.currentCardIndex = data.currentCardIndex + 1;
+        
+        const turnOrder = data.turnOrder || players.map(p => p.id);
+        const currentTurnIdx = turnOrder.indexOf(data.currentTurnPlayerId || '');
+        const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
+        updates.currentTurnPlayerId = turnOrder[nextTurnIdx];
+        updates.timer = 90;
+      } else {
+        updates.status = 'RESULTS';
+      }
     }
 
     try {
@@ -468,6 +534,8 @@ export default function App() {
         currentTurnPlayerId: null,
         readyCount: 0,
         turnOrder: [],
+        currentRound: 1,
+        papelitosPerPlayer: 3,
       });
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, `games/${GAME_ID}`);
@@ -486,7 +554,7 @@ export default function App() {
     if (!snapshot.exists()) return;
 
     const data = snapshot.data();
-    const players = data.players.map((p: Player) => ({ ...p, score: 0, isReady: false }));
+    const players = data.players.map((p: Player) => ({ ...p, score: 0, isReady: false, papelitos: [] }));
     
     // Shuffle cards if they are exhausted or for a fresh start
     let shuffledCards = data.cards;
@@ -677,7 +745,7 @@ export default function App() {
           <div className="space-y-4">
             <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-primary/20 shadow-xl space-y-4">
               <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Configuración</h3>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 <button 
                   onClick={() => updateMode('CHAOS')}
                   className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'CHAOS' ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(255,137,171,0.3)]' : 'bg-surface-container-low border-outline-variant/30 opacity-60'}`}
@@ -698,6 +766,13 @@ export default function App() {
                 >
                   <Users size={20} className={gameState.mode === 'PRIMOS' ? 'text-tertiary' : 'text-on-surface-variant'} />
                   <span className="text-[8px] font-black uppercase tracking-widest">Primos</span>
+                </button>
+                <button 
+                  onClick={() => updateMode('PAPELITO')}
+                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'PAPELITO' ? 'bg-secondary/10 border-secondary shadow-[0_0_15px_rgba(137,255,171,0.3)]' : 'bg-surface-container-low border-outline-variant/30 opacity-60'}`}
+                >
+                  <Star size={20} className={gameState.mode === 'PAPELITO' ? 'text-secondary' : 'text-on-surface-variant'} />
+                  <span className="text-[8px] font-black uppercase tracking-widest">Papelito</span>
                 </button>
               </div>
             </div>
@@ -721,6 +796,36 @@ export default function App() {
                 </button>
               </div>
             </div>
+
+            {gameState.mode === 'PAPELITO' && (
+              <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-secondary/20 shadow-xl space-y-4">
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-secondary">Tus Papelitos ({myPlayer?.papelitos?.length || 0} / {gameState.papelitosPerPlayer || 3})</h3>
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    value={papelitoInput}
+                    onChange={(e) => setPapelitoInput(e.target.value)}
+                    placeholder="Escribe algo random..."
+                    className="flex-1 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl px-4 py-2 text-on-surface focus:border-secondary outline-none transition-all"
+                    onKeyDown={(e) => e.key === 'Enter' && addPapelito()}
+                  />
+                  <button 
+                    onClick={addPapelito}
+                    disabled={(myPlayer?.papelitos?.length || 0) >= (gameState.papelitosPerPlayer || 3)}
+                    className="p-2 bg-secondary text-on-secondary-fixed rounded-xl hover:scale-105 transition-all disabled:opacity-50"
+                  >
+                    <Check size={20} />
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {myPlayer?.papelitos?.map((p, i) => (
+                    <span key={i} className="text-[10px] font-black uppercase bg-secondary/10 text-secondary px-3 py-1 rounded-full border border-secondary/20">
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -753,9 +858,9 @@ export default function App() {
             )}
             <button 
               onClick={setReady}
-              disabled={myPlayer?.isReady || gameState.players.length < 3}
+              disabled={myPlayer?.isReady || gameState.players.length < 3 || (gameState.mode === 'PAPELITO' && (myPlayer?.papelitos?.length || 0) < (gameState.papelitosPerPlayer || 3))}
               className={`w-full py-6 rounded-3xl font-headline font-black text-2xl uppercase tracking-tighter shadow-lg transition-all active:scale-95 ${
-                myPlayer?.isReady || gameState.players.length < 3
+                myPlayer?.isReady || gameState.players.length < 3 || (gameState.mode === 'PAPELITO' && (myPlayer?.papelitos?.length || 0) < (gameState.papelitosPerPlayer || 3))
                   ? 'bg-surface-container-highest text-on-surface-variant cursor-not-allowed' 
                   : 'bg-primary text-on-primary-fixed hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,137,171,0.4)]'
               }`}
@@ -792,17 +897,28 @@ export default function App() {
             <ChevronRight className="rotate-180" size={24} />
           </button>
           
-          <div className="flex-1 flex justify-center gap-2">
-            <div className="flex items-center gap-2 bg-surface-container-high px-3 py-2 rounded-full border border-primary/20 shadow-xl">
-              <Timer className="text-primary" size={16} />
-              <span className="font-headline font-black text-lg text-on-surface">{gameState.timer}s</span>
-            </div>
-            
-            <div className="flex items-center gap-2 bg-surface-container-high px-3 py-2 rounded-full border border-primary/20 shadow-xl">
-              {gameState.mode === 'CHAOS' ? <Flame className="text-primary" size={16} /> : gameState.mode === 'PENALTY' ? <Skull className="text-error" size={16} /> : <Users className="text-tertiary" size={16} />}
-              <span className="font-headline font-black text-[10px] uppercase tracking-widest text-on-surface">
-                {gameState.mode === 'CHAOS' ? 'Caos' : gameState.mode === 'PENALTY' ? 'Penalty' : 'Primos'}
-              </span>
+          <div className="flex-1 flex flex-col items-center gap-2">
+            {gameState.mode === 'PAPELITO' && (
+              <div className="bg-secondary/10 border border-secondary/20 px-4 py-1 rounded-full">
+                <p className="text-[8px] font-black uppercase tracking-widest text-secondary text-center">
+                  {gameState.currentRound === 1 ? 'Ronda 1: Descripción' : 
+                   gameState.currentRound === 2 ? 'Ronda 2: Una palabra' : 
+                   'Ronda 3: Mímica'}
+                </p>
+              </div>
+            )}
+            <div className="flex justify-center gap-2">
+              <div className="flex items-center gap-2 bg-surface-container-high px-3 py-2 rounded-full border border-primary/20 shadow-xl">
+                <Timer className="text-primary" size={16} />
+                <span className="font-headline font-black text-lg text-on-surface">{gameState.timer}s</span>
+              </div>
+              
+              <div className="flex items-center gap-2 bg-surface-container-high px-3 py-2 rounded-full border border-primary/20 shadow-xl">
+                {gameState.mode === 'CHAOS' ? <Flame className="text-primary" size={16} /> : gameState.mode === 'PENALTY' ? <Skull className="text-error" size={16} /> : gameState.mode === 'PRIMOS' ? <Users className="text-tertiary" size={16} /> : <Star className="text-secondary" size={16} />}
+                <span className="font-headline font-black text-[10px] uppercase tracking-widest text-on-surface">
+                  {gameState.mode === 'CHAOS' ? 'Caos' : gameState.mode === 'PENALTY' ? 'Penalty' : gameState.mode === 'PRIMOS' ? 'Primos' : `Papelito R${gameState.currentRound}`}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -819,7 +935,7 @@ export default function App() {
             <motion.div 
               className="h-full bg-primary"
               initial={{ width: 0 }}
-              animate={{ width: `${((gameState.currentCardIndex + 1) / (gameState.players.length * 3)) * 100}%` }}
+              animate={{ width: `${((gameState.currentCardIndex + 1) / (gameState.mode === 'PAPELITO' ? gameState.cards.length : (gameState.players.length * 3))) * 100}%` }}
             />
           </div>
 
