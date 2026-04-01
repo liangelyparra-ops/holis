@@ -30,6 +30,7 @@ export interface GameState {
   turnOrder: string[]; // List of player IDs in order
   currentRound?: number; // For PAPELITO mode (1, 2, 3)
   papelitosPerPlayer?: number;
+  papelitoTheme?: string; // 'libre' or a specific theme
   lastWinnerId?: string | null;
   lastWinnerName?: string | null;
   isShowingWinner?: boolean;

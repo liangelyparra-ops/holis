@@ -16,20 +16,25 @@ import {
   User,
   Info,
   HelpCircle,
-  X
+  X,
+  Settings,
+  Type as TypeIcon
 } from 'lucide-react';
 import { doc, onSnapshot, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { GoogleGenAI, Type } from "@google/genai";
+import { Toaster, toast } from 'sonner';
 import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS, PRIMOS_CARDS } from './types';
 import { db } from './firebase';
 
-const USER_ID_KEY = 'party-game-user-id';
+const USER_ID_KEY = 'party-game-user-id-v2';
+const NICKNAME_KEY = 'party-game-nickname';
+const AVATAR_KEY = 'party-game-avatar';
 
 function getOrCreateUserId() {
-  let id = sessionStorage.getItem(USER_ID_KEY);
+  let id = localStorage.getItem(USER_ID_KEY);
   if (!id) {
     id = `guest-${Math.random().toString(36).substring(2, 9)}`;
-    sessionStorage.setItem(USER_ID_KEY, id);
+    localStorage.setItem(USER_ID_KEY, id);
   }
   return id;
 }
@@ -136,10 +141,11 @@ export default function App() {
     turnOrder: [],
   });
 
-  const [selectedNickname, setSelectedNickname] = useState<string | null>(null);
-  const [tempNickname, setTempNickname] = useState('');
+  const [selectedNickname, setSelectedNickname] = useState<string | null>(localStorage.getItem(NICKNAME_KEY));
+  const [tempNickname, setTempNickname] = useState(localStorage.getItem(NICKNAME_KEY) || '');
   const [papelitoInput, setPapelitoInput] = useState('');
-  const [selectedAvatarSeed, setSelectedAvatarSeed] = useState<string | null>(null);
+  const [selectedAvatarSeed, setSelectedAvatarSeed] = useState<string | null>(localStorage.getItem(AVATAR_KEY) || 'avatar-1');
+  const [showRoundAnimation, setShowRoundAnimation] = useState<number | null>(null);
   
   const playSound = (url: string) => {
     const audio = new Audio(url);
@@ -148,9 +154,16 @@ export default function App() {
   };
 
   const SOUNDS = {
-    NEXT: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3', // Pop
-    START: 'https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3', // Level up
-    FINISH: 'https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3',
+    JOIN: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
+    START: 'https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3',
+    VOTE: 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3',
+    WIN: 'https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3',
+    TICK: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3',
+    NEXT_CARD: 'https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3',
+    ROUND_START: 'https://assets.mixkit.co/active_storage/sfx/1433/1433-preview.mp3',
+    TIMEOUT: 'https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3',
+    NEXT: 'https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3',
+    FINISH: 'https://assets.mixkit.co/active_storage/sfx/1433/1433-preview.mp3',
   };
   const [isUploading, setIsUploading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -253,6 +266,16 @@ export default function App() {
     return () => clearInterval(interval);
   }, [gameState.status, gameState.timer, gameState.players, userId, gameState.mode, gameState.turnOrder, gameState.currentTurnPlayerId, gameState.isShowingWinner]);
 
+  // Round Animation Logic
+  useEffect(() => {
+    if (gameState.status === 'GAME' && gameState.mode === 'PAPELITO' && gameState.currentRound) {
+      setShowRoundAnimation(gameState.currentRound);
+      playSound(SOUNDS.ROUND_START);
+      const timer = setTimeout(() => setShowRoundAnimation(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [gameState.currentRound, gameState.status, gameState.mode]);
+
   const joinGame = async () => {
     if (!tempNickname.trim() || !selectedAvatarSeed) return;
 
@@ -307,6 +330,8 @@ export default function App() {
         turnOrder: existingData.turnOrder || [],
       });
       
+      localStorage.setItem(NICKNAME_KEY, name);
+      localStorage.setItem(AVATAR_KEY, selectedAvatarSeed);
       setSelectedNickname(name);
     } catch (error) {
       console.error("Error joining game:", error);
@@ -471,8 +496,17 @@ export default function App() {
         updates.cards = mode === 'PRIMOS' ? shuffleAlternating(PRIMOS_CARDS) : shuffleArray(DEFAULT_CARDS);
       } else {
         updates.papelitosPerPlayer = 1; // Default 1 papelito
+        updates.papelitoTheme = 'libre'; // Default theme
       }
       await updateDoc(doc(db, 'games', GAME_ID), updates);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
+    }
+  };
+
+  const updatePapelitoSettings = async (settings: { papelitosPerPlayer?: number, papelitoTheme?: string }) => {
+    try {
+      await updateDoc(doc(db, 'games', GAME_ID), settings);
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
     }
@@ -547,78 +581,58 @@ export default function App() {
       if (winnerIdx !== -1) {
         players[winnerIdx].score += 10;
         winnerName = players[winnerIdx].name;
+        toast.success(`¡Punto para ${winnerName}! 🏆`, {
+          description: "+10 puntos",
+          duration: 2000,
+        });
+        playSound(SOUNDS.WIN);
       }
     }
-
-    // Phase 1: Show winner announcement
-    try {
-      await updateDoc(gameRef, { 
-        players,
-        lastWinnerId: winnerId,
-        lastWinnerName: winnerName,
-        isShowingWinner: true
-      });
-    } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
-      return;
-    }
-
-    // Wait 3 seconds
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    // Fetch latest state to avoid race conditions
-    let latestSnapshot;
-    try {
-      latestSnapshot = await getDoc(gameRef);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.GET, `games/${GAME_ID}`);
-      return;
-    }
-    if (!latestSnapshot.exists()) return;
-    const latestData = latestSnapshot.data() as GameState;
-    if (latestData.status !== 'GAME') return;
 
     // Phase 2: Move to next card
     const updates: any = { 
       isShowingWinner: false,
       lastWinnerId: null,
-      lastWinnerName: null
+      lastWinnerName: null,
+      players
     };
     
-    if (latestData.mode === 'PAPELITO') {
-      const isLastCard = latestData.currentCardIndex >= (latestData.cards?.length || 0) - 1;
-      const isLastRound = (latestData.currentRound || 1) >= 3;
+    playSound(SOUNDS.NEXT_CARD);
+
+    if (data.mode === 'PAPELITO') {
+      const isLastCard = data.currentCardIndex >= (data.cards?.length || 0) - 1;
+      const isLastRound = (data.currentRound || 1) >= 3;
 
       if (!isLastCard) {
         // Move to next card and rotate turn
-        updates.currentCardIndex = latestData.currentCardIndex + 1;
+        updates.currentCardIndex = data.currentCardIndex + 1;
         updates.timer = 90;
         
-        const turnOrder = latestData.turnOrder || latestData.players.map(p => p.id);
-        const currentTurnIdx = turnOrder.indexOf(latestData.currentTurnPlayerId || '');
+        const turnOrder = data.turnOrder || data.players.map(p => p.id);
+        const currentTurnIdx = turnOrder.indexOf(data.currentTurnPlayerId || '');
         const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
         updates.currentTurnPlayerId = turnOrder[nextTurnIdx];
       } else if (!isLastRound) {
         // Transition to next round, reshuffle cards, and rotate turn
-        updates.currentRound = (latestData.currentRound || 1) + 1;
+        updates.currentRound = (data.currentRound || 1) + 1;
         updates.currentCardIndex = 0;
-        updates.cards = shuffleArray(latestData.cards || []);
+        updates.cards = shuffleArray(data.cards || []);
         updates.timer = 90;
 
-        const turnOrder = latestData.turnOrder || latestData.players.map(p => p.id);
-        const currentTurnIdx = turnOrder.indexOf(latestData.currentTurnPlayerId || '');
+        const turnOrder = data.turnOrder || data.players.map(p => p.id);
+        const currentTurnIdx = turnOrder.indexOf(data.currentTurnPlayerId || '');
         const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
         updates.currentTurnPlayerId = turnOrder[nextTurnIdx];
       } else {
         updates.status = 'RESULTS';
       }
     } else {
-      const totalTurns = latestData.players.length * 3;
-      if (latestData.currentCardIndex < totalTurns - 1 && latestData.currentCardIndex < latestData.cards.length - 1) {
-        updates.currentCardIndex = latestData.currentCardIndex + 1;
+      const totalTurns = data.players.length * 3;
+      if (data.currentCardIndex < totalTurns - 1 && data.currentCardIndex < data.cards.length - 1) {
+        updates.currentCardIndex = data.currentCardIndex + 1;
         
-        const turnOrder = latestData.turnOrder || latestData.players.map(p => p.id);
-        const currentTurnIdx = turnOrder.indexOf(latestData.currentTurnPlayerId || '');
+        const turnOrder = data.turnOrder || data.players.map(p => p.id);
+        const currentTurnIdx = turnOrder.indexOf(data.currentTurnPlayerId || '');
         const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
         updates.currentTurnPlayerId = turnOrder[nextTurnIdx];
         updates.timer = 90;
@@ -805,32 +819,44 @@ export default function App() {
           </div>
         </div>
 
-        <button 
-          onClick={joinGame}
-          disabled={!tempNickname.trim() || !selectedAvatarSeed}
-          className={`w-full py-6 rounded-3xl font-headline font-black text-2xl uppercase tracking-tighter shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3 ${
-            !tempNickname.trim() || !selectedAvatarSeed
-              ? 'bg-surface-container-highest text-on-surface-variant cursor-not-allowed' 
-              : 'bg-primary text-on-primary-fixed hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,137,171,0.4)]'
-          }`}
-        >
-          <span>ENTRAR AL LOBBY</span>
-          <ChevronRight />
-        </button>
-
-        <div className="pt-6 border-t border-outline-variant/20 space-y-4">
+        {GAME_ID !== 'global-party' ? (
+          <button 
+            onClick={joinGame}
+            disabled={!tempNickname.trim() || !selectedAvatarSeed}
+            className={`w-full py-6 rounded-3xl font-headline font-black text-2xl uppercase tracking-tighter shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3 ${
+              !tempNickname.trim() || !selectedAvatarSeed
+                ? 'bg-surface-container-highest text-on-surface-variant cursor-not-allowed' 
+                : 'bg-primary text-on-primary-fixed hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,137,171,0.4)]'
+            }`}
+          >
+            <span>ENTRAR A LA SALA</span>
+            <ChevronRight />
+          </button>
+        ) : (
           <button 
             onClick={createPrivateRoom}
-            className="w-full bg-surface-container-highest text-on-surface font-headline font-bold py-4 rounded-2xl flex items-center justify-center gap-2 border-2 border-outline-variant/30 hover:bg-surface-bright transition-all"
+            className="w-full py-6 bg-primary text-on-primary-fixed font-headline font-black text-2xl uppercase tracking-tighter rounded-3xl shadow-lg hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,137,171,0.4)] active:scale-95 flex items-center justify-center gap-3 transition-all"
           >
-            <Users size={20} />
+            <Users size={24} />
             CREAR SALA PRIVADA
           </button>
+        )}
+
+        <div className="pt-6 border-t border-outline-variant/20 space-y-4">
+          {GAME_ID !== 'global-party' && (
+            <button 
+              onClick={createPrivateRoom}
+              className="w-full bg-surface-container-highest text-on-surface font-headline font-bold py-4 rounded-2xl flex items-center justify-center gap-2 border-2 border-outline-variant/30 hover:bg-surface-bright transition-all"
+            >
+              <Users size={20} />
+              CREAR OTRA SALA
+            </button>
+          )}
           
           <div className="flex items-center justify-center gap-2 px-4 py-2 bg-surface-variant/30 rounded-full w-fit mx-auto">
             <div className={`w-2 h-2 rounded-full ${GAME_ID === 'global-party' ? 'bg-tertiary' : 'bg-primary animate-pulse'}`}></div>
             <span className="text-[10px] text-on-surface-variant uppercase font-black tracking-widest">
-              {GAME_ID === 'global-party' ? 'SALA GLOBAL' : `SALA: ${GAME_ID}`}
+              {GAME_ID === 'global-party' ? 'SIN SALA SELECCIONADA' : `SALA: ${GAME_ID}`}
             </span>
           </div>
         </div>
@@ -922,23 +948,70 @@ export default function App() {
 
             {gameState.mode === 'PAPELITO' && (
               <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-secondary/20 shadow-xl space-y-4">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-secondary">Tu Palabra ({myPlayer?.papelitos?.length || 0} / {gameState.papelitosPerPlayer || 1})</h3>
-                <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    value={papelitoInput}
-                    onChange={(e) => setPapelitoInput(e.target.value)}
-                    placeholder="Escribe una sola palabra..."
-                    className="flex-1 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl px-4 py-2 text-on-surface focus:border-secondary outline-none transition-all"
-                    onKeyDown={(e) => e.key === 'Enter' && addPapelito()}
-                  />
-                  <button 
-                    onClick={addPapelito}
-                    disabled={(myPlayer?.papelitos?.length || 0) >= (gameState.papelitosPerPlayer || 1)}
-                    className="p-2 bg-secondary text-on-secondary-fixed rounded-xl hover:scale-105 transition-all disabled:opacity-50"
-                  >
-                    <Check size={20} />
-                  </button>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-secondary">Configuración Papelito</h3>
+                  <Settings size={14} className="text-secondary/50" />
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant">Papelitos por persona</p>
+                    <div className="flex gap-2">
+                      {[1, 2, 3].map(num => (
+                        <button
+                          key={num}
+                          onClick={() => updatePapelitoSettings({ papelitosPerPlayer: num })}
+                          className={`flex-1 py-2 rounded-xl border-2 transition-all font-headline font-black ${
+                            gameState.papelitosPerPlayer === num 
+                              ? 'bg-secondary/10 border-secondary text-secondary' 
+                              : 'bg-surface-container-low border-outline-variant/30 text-on-surface-variant'
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant">Tema de la partida</p>
+                    <div className="flex gap-2">
+                      {['libre', 'cine', 'comida', 'famosos'].map(t => (
+                        <button
+                          key={t}
+                          onClick={() => updatePapelitoSettings({ papelitoTheme: t })}
+                          className={`flex-1 py-2 rounded-xl border-2 transition-all font-headline font-black text-[10px] uppercase ${
+                            gameState.papelitoTheme === t 
+                              ? 'bg-secondary/10 border-secondary text-secondary' 
+                              : 'bg-surface-container-low border-outline-variant/30 text-on-surface-variant'
+                          }`}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-outline-variant/20">
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-secondary mb-3">Tu Palabra ({myPlayer?.papelitos?.length || 0} / {gameState.papelitosPerPlayer || 1})</h3>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      value={papelitoInput}
+                      onChange={(e) => setPapelitoInput(e.target.value)}
+                      placeholder={gameState.papelitoTheme === 'libre' ? "Escribe una palabra..." : `Tema: ${gameState.papelitoTheme}...`}
+                      className="flex-1 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl px-4 py-2 text-on-surface focus:border-secondary outline-none transition-all"
+                      onKeyDown={(e) => e.key === 'Enter' && addPapelito()}
+                    />
+                    <button 
+                      onClick={addPapelito}
+                      disabled={(myPlayer?.papelitos?.length || 0) >= (gameState.papelitosPerPlayer || 1)}
+                      className="p-2 bg-secondary text-on-secondary-fixed rounded-xl hover:scale-105 transition-all disabled:opacity-50"
+                    >
+                      <Check size={20} />
+                    </button>
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {myPlayer?.papelitos?.map((p, i) => (
@@ -1058,8 +1131,16 @@ export default function App() {
           key={gameState.currentCardIndex}
           initial={{ rotateY: 90, opacity: 0 }}
           animate={{ rotateY: 0, opacity: 1 }}
-          className="w-full aspect-[4/3] max-w-2xl bg-surface-container-high rounded-[2rem] border-4 border-primary/30 shadow-[0_0_60px_rgba(255,137,171,0.15)] p-6 flex flex-col items-center justify-center text-center gap-4 relative overflow-hidden"
+          className={`w-full aspect-[4/3] max-w-2xl bg-surface-container-high rounded-[2rem] border-4 shadow-[0_0_60px_rgba(255,137,171,0.15)] p-6 flex flex-col items-center justify-center text-center gap-4 relative overflow-hidden transition-all duration-500 ${
+            isMyTurn ? 'border-primary animate-pulse-border' : 'border-primary/30'
+          }`}
         >
+          {isMyTurn && (
+            <div className="absolute top-4 right-4 bg-primary text-on-primary-fixed px-3 py-1 rounded-full flex items-center gap-2 animate-bounce">
+              <Star size={12} fill="currentColor" />
+              <span className="text-[10px] font-black uppercase tracking-widest">¡TU TURNO!</span>
+            </div>
+          )}
           <div className="absolute top-0 left-0 w-full h-2 bg-primary/20">
             <motion.div 
               className="h-full bg-primary"
@@ -1327,6 +1408,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#0e0e0e] text-on-surface font-body selection:bg-primary/30 overflow-x-hidden">
+      <Toaster position="top-right" richColors closeButton />
       {/* Background Decoration */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-1/4 -left-1/4 w-full h-full neon-glow-pink animate-pulse"></div>
@@ -1390,6 +1472,34 @@ export default function App() {
       {/* Main Content */}
       <main className="relative z-10 w-full min-h-screen flex items-center justify-center pt-20">
         <AnimatePresence mode="wait">
+          {showRoundAnimation && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.5 }}
+              className="fixed inset-0 z-[200] flex items-center justify-center bg-[#0e0e0e]/90 backdrop-blur-2xl"
+            >
+              <div className="text-center space-y-6">
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.2, 1] }}
+                  transition={{ duration: 0.5, repeat: 3 }}
+                >
+                  <Star size={120} className="text-secondary mx-auto drop-shadow-[0_0_30px_rgba(137,255,171,0.6)]" />
+                </motion.div>
+                <div className="space-y-2">
+                  <h2 className="font-headline text-6xl sm:text-8xl font-black uppercase tracking-tighter text-secondary italic">
+                    RONDA {showRoundAnimation}
+                  </h2>
+                  <p className="font-headline text-2xl sm:text-4xl font-black uppercase tracking-widest text-on-surface">
+                    {showRoundAnimation === 1 ? 'Descripción' : 
+                     showRoundAnimation === 2 ? 'Una Palabra' : 
+                     'Mímica'}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {!selectedNickname || gameState.status === 'HOME' ? (
             renderHome()
           ) : (

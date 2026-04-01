@@ -35,6 +35,11 @@
   --font-headline: "Epilogue", sans-serif;
   --font-body: "Be Vietnam Pro", sans-serif;
   --font-label: "Space Grotesk", sans-serif;
+
+  @keyframes pulse-border {
+    0%, 100% { border-color: var(--color-primary); box-shadow: 0 0 20px rgba(255, 137, 171, 0.2); }
+    50% { border-color: white; box-shadow: 0 0 40px rgba(255, 137, 171, 0.5); }
+  }
 }
 
 @layer base {
