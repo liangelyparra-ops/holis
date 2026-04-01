@@ -754,21 +754,8 @@ export default function App() {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-4xl w-full p-8 space-y-12 text-center"
+      className="max-w-4xl w-full p-8 text-center"
     >
-      <div className="space-y-4">
-        <motion.div
-          animate={{ rotate: [0, -5, 5, 0] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="inline-block"
-        >
-          <Gamepad2 size={60} className="text-[#ff89ab] mx-auto drop-shadow-[0_0_15px_rgba(255,137,171,0.5)]" />
-        </motion.div>
-        <p className="text-xs sm:text-sm text-on-surface-variant font-body max-w-lg mx-auto uppercase tracking-widest font-black">
-          Entrar al desmadre...
-        </p>
-      </div>
-
       <div className="max-w-md mx-auto space-y-6 sm:space-y-8 bg-surface-container-high p-6 sm:p-8 rounded-3xl sm:rounded-[2.5rem] border-2 border-primary/20 shadow-2xl">
         <div className="space-y-4">
           <label className="block text-left text-[10px] font-black uppercase tracking-widest text-primary ml-4">Tu Apodo / Nombre</label>
