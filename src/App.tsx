@@ -231,14 +231,25 @@ export default function App() {
           timer: gameState.timer - 1
         }).catch(err => handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`));
       } else {
-        updateDoc(doc(db, 'games', GAME_ID), {
-          status: 'RESULTS'
-        }).catch(err => handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`));
+        if (gameState.mode === 'PAPELITO') {
+          const turnOrder = gameState.turnOrder || gameState.players.map(p => p.id);
+          const currentTurnIdx = turnOrder.indexOf(gameState.currentTurnPlayerId || '');
+          const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
+          
+          updateDoc(doc(db, 'games', GAME_ID), {
+            currentTurnPlayerId: turnOrder[nextTurnIdx],
+            timer: 90
+          }).catch(err => handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`));
+        } else {
+          updateDoc(doc(db, 'games', GAME_ID), {
+            status: 'RESULTS'
+          }).catch(err => handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`));
+        }
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [gameState.status, gameState.timer, gameState.players, userId]);
+  }, [gameState.status, gameState.timer, gameState.players, userId, gameState.mode, gameState.turnOrder, gameState.currentTurnPlayerId]);
 
   const joinGame = async () => {
     if (!tempNickname.trim() || !selectedAvatarSeed) return;
@@ -553,6 +564,18 @@ export default function App() {
     // Wait 3 seconds
     await new Promise(resolve => setTimeout(resolve, 3000));
 
+    // Fetch latest state to avoid race conditions
+    let latestSnapshot;
+    try {
+      latestSnapshot = await getDoc(gameRef);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.GET, `games/${GAME_ID}`);
+      return;
+    }
+    if (!latestSnapshot.exists()) return;
+    const latestData = latestSnapshot.data() as GameState;
+    if (latestData.status !== 'GAME') return;
+
     // Phase 2: Move to next card
     const updates: any = { 
       isShowingWinner: false,
@@ -560,24 +583,22 @@ export default function App() {
       lastWinnerName: null
     };
     
-    if (data.mode === 'PAPELITO') {
-      const isLastCard = data.currentCardIndex >= data.cards.length - 1;
-      const isLastRound = (data.currentRound || 1) >= 3;
+    if (latestData.mode === 'PAPELITO') {
+      const isLastCard = latestData.currentCardIndex >= latestData.cards.length - 1;
+      const isLastRound = (latestData.currentRound || 1) >= 3;
 
       if (!isLastCard) {
-        updates.currentCardIndex = data.currentCardIndex + 1;
-        const turnOrder = data.turnOrder || players.map(p => p.id);
-        const currentTurnIdx = turnOrder.indexOf(data.currentTurnPlayerId || '');
-        const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
-        updates.currentTurnPlayerId = turnOrder[nextTurnIdx];
-        updates.timer = 90;
+        // In PAPELITO, current player keeps turn until timer runs out
+        updates.currentCardIndex = latestData.currentCardIndex + 1;
       } else if (!isLastRound) {
         // Transition to next round
-        updates.currentRound = (data.currentRound || 1) + 1;
+        updates.currentRound = (latestData.currentRound || 1) + 1;
         updates.currentCardIndex = 0;
-        updates.cards = shuffleArray(data.cards);
-        const turnOrder = data.turnOrder || players.map(p => p.id);
-        const currentTurnIdx = turnOrder.indexOf(data.currentTurnPlayerId || '');
+        updates.cards = shuffleArray(latestData.cards);
+        
+        // Pass turn to next player for the new round
+        const turnOrder = latestData.turnOrder || latestData.players.map(p => p.id);
+        const currentTurnIdx = turnOrder.indexOf(latestData.currentTurnPlayerId || '');
         const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
         updates.currentTurnPlayerId = turnOrder[nextTurnIdx];
         updates.timer = 90;
@@ -585,12 +606,12 @@ export default function App() {
         updates.status = 'RESULTS';
       }
     } else {
-      const totalTurns = players.length * 3;
-      if (data.currentCardIndex < totalTurns - 1 && data.currentCardIndex < data.cards.length - 1) {
-        updates.currentCardIndex = data.currentCardIndex + 1;
+      const totalTurns = latestData.players.length * 3;
+      if (latestData.currentCardIndex < totalTurns - 1 && latestData.currentCardIndex < latestData.cards.length - 1) {
+        updates.currentCardIndex = latestData.currentCardIndex + 1;
         
-        const turnOrder = data.turnOrder || players.map(p => p.id);
-        const currentTurnIdx = turnOrder.indexOf(data.currentTurnPlayerId || '');
+        const turnOrder = latestData.turnOrder || latestData.players.map(p => p.id);
+        const currentTurnIdx = turnOrder.indexOf(latestData.currentTurnPlayerId || '');
         const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
         updates.currentTurnPlayerId = turnOrder[nextTurnIdx];
         updates.timer = 90;
