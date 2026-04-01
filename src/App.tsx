@@ -149,9 +149,13 @@ export default function App() {
   const [showRoundAnimation, setShowRoundAnimation] = useState<number | null>(null);
   
   const playSound = (url: string) => {
+    console.log(`Playing sound: ${url}`);
     const audio = new Audio(url);
-    audio.volume = 0.4;
-    audio.play().catch(e => console.log("Audio play blocked", e));
+    audio.volume = 0.6;
+    audio.play().catch(e => {
+      console.warn("Audio play blocked or failed:", e);
+      // Try to play again on next interaction if blocked
+    });
   };
 
   const SOUNDS = {
@@ -161,7 +165,7 @@ export default function App() {
     WIN: 'https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3',
     TICK: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3',
     NEXT_CARD: 'https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3',
-    ROUND_START: 'https://assets.mixkit.co/active_storage/sfx/1433/1433-preview.mp3',
+    ROUND_START: 'https://raw.githubusercontent.com/liangely/holis-game/main/estan-listos-chicos.mp3',
     TIMEOUT: 'https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3',
     NEXT: 'https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3',
     FINISH: 'https://assets.mixkit.co/active_storage/sfx/1433/1433-preview.mp3',
@@ -200,12 +204,13 @@ export default function App() {
   useEffect(() => {
     if (gameState.status === 'GAME' && gameState.currentCardIndex === 0) {
       // Always play the intro sound when the game starts or a new round begins at index 0
+      // This covers both HOLIS and PAPELITO modes
       playSound(SOUNDS.START);
     }
     if (gameState.status === 'RESULTS') {
       playSound(SOUNDS.FINISH);
     }
-  }, [gameState.status, gameState.currentRound, gameState.currentCardIndex]);
+  }, [gameState.status, gameState.currentCardIndex]);
 
   // Initialize Local User ID
   useEffect(() => {
@@ -290,7 +295,11 @@ export default function App() {
   useEffect(() => {
     if (gameState.status === 'GAME' && gameState.mode === 'PAPELITO' && gameState.currentRound) {
       setShowRoundAnimation(gameState.currentRound);
-      playSound(SOUNDS.ROUND_START);
+      // Only play ROUND_START if it's NOT the first round (to avoid double playing with START)
+      // or if currentCardIndex is not 0 (though in PAPELITO rounds usually start at index 0)
+      if (gameState.currentRound > 1) {
+        playSound(SOUNDS.ROUND_START);
+      }
       const timer = setTimeout(() => setShowRoundAnimation(null), 3000);
       return () => clearTimeout(timer);
     }
@@ -398,6 +407,11 @@ export default function App() {
 
   const setReady = async () => {
     if (!userId) return;
+    
+    // Unlock audio on user interaction
+    const silentAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
+    silentAudio.play().catch(() => {});
+
     const gameRef = doc(db, 'games', GAME_ID);
     let snapshot;
     try {
