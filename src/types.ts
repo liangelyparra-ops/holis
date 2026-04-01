@@ -24,7 +24,7 @@ export interface GameState {
   cards: GameCard[];
   currentCardIndex: number;
   timer: number;
-  mode: 'CHAOS' | 'PENALTY' | 'PRIMOS' | 'PAPELITO';
+  mode: 'PAPELITO' | 'HOLIS' | 'PRIMOS';
   currentTurnPlayerId: string | null;
   readyCount: number;
   turnOrder: string[]; // List of player IDs in order
@@ -39,6 +39,13 @@ export interface GameState {
 
 export const PREDEFINED_PLAYERS = [
   "Camichi", "Tim", "Ale", "Vane", "Nai", "David", "Cesar", "MG", "Rebe", "Lia", "Boji"
+];
+
+export const PAPELITO_RANDOM_THEMES = [
+  "Películas de Terror", "Comida Venezolana", "Personajes de Disney", "Cosas que hay en una maleta",
+  "Famosos que me caen mal", "Canciones de Reggaeton", "Lugares para ir de vacaciones",
+  "Cosas que haces cuando estás borracho", "Superhéroes", "Marcas de Carros", "Animales en peligro de extinción",
+  "Cosas que huelen mal", "Profesiones extrañas", "Objetos de oficina", "Frases de mamá"
 ];
 
 export const PRIMOS_CARDS: GameCard[] = [

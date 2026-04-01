@@ -18,12 +18,13 @@ import {
   HelpCircle,
   X,
   Settings,
+  Shuffle,
   Type as TypeIcon
 } from 'lucide-react';
 import { doc, onSnapshot, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Toaster, toast } from 'sonner';
-import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS, PRIMOS_CARDS } from './types';
+import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS, PRIMOS_CARDS, PAPELITO_RANDOM_THEMES } from './types';
 import { db } from './firebase';
 
 const USER_ID_KEY = 'party-game-user-id-v2';
@@ -135,7 +136,7 @@ export default function App() {
     cards: DEFAULT_CARDS,
     currentCardIndex: 0,
     timer: 90,
-    mode: 'CHAOS',
+    mode: 'PAPELITO',
     currentTurnPlayerId: null,
     readyCount: 0,
     turnOrder: [],
@@ -217,7 +218,7 @@ export default function App() {
           cards: shuffleArray(DEFAULT_CARDS),
           currentCardIndex: 0,
           timer: 90,
-          mode: 'CHAOS',
+          mode: 'PAPELITO',
           currentTurnPlayerId: null,
           readyCount: 0,
           turnOrder: [],
@@ -324,7 +325,7 @@ export default function App() {
         cards: existingData.cards || DEFAULT_CARDS,
         currentCardIndex: existingData.currentCardIndex || 0,
         timer: existingData.timer !== undefined ? existingData.timer : 90,
-        mode: existingData.mode || 'CHAOS',
+        mode: existingData.mode || 'PAPELITO',
         currentTurnPlayerId: existingData.currentTurnPlayerId || null,
         readyCount: updatedPlayers.filter(p => p.isReady).length,
         turnOrder: existingData.turnOrder || [],
@@ -486,18 +487,21 @@ export default function App() {
     }
   };
 
-  const updateMode = async (mode: 'CHAOS' | 'PENALTY' | 'PRIMOS' | 'PAPELITO') => {
+  const updateMode = async (mode: 'PAPELITO' | 'HOLIS' | 'PRIMOS') => {
     try {
       const updates: any = {
         mode,
         currentCardIndex: 0
       };
-      if (mode !== 'PAPELITO') {
-        updates.cards = mode === 'PRIMOS' ? shuffleAlternating(PRIMOS_CARDS) : shuffleArray(DEFAULT_CARDS);
-      } else {
+      if (mode === 'PRIMOS') {
+        updates.cards = shuffleAlternating(PRIMOS_CARDS);
+      } else if (mode === 'PAPELITO') {
         updates.papelitosPerPlayer = 1; // Default 1 papelito
         updates.papelitoTheme = 'libre'; // Default theme
         updates.papelitoCustomTheme = ''; // Default custom theme
+      } else if (mode === 'HOLIS') {
+        // Default to some cards if none uploaded yet
+        updates.cards = shuffleArray(DEFAULT_CARDS);
       }
       await updateDoc(doc(db, 'games', GAME_ID), updates);
     } catch (err) {
@@ -511,6 +515,11 @@ export default function App() {
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
     }
+  };
+
+  const shufflePapelitoTheme = async () => {
+    const randomTheme = PAPELITO_RANDOM_THEMES[Math.floor(Math.random() * PAPELITO_RANDOM_THEMES.length)];
+    await updatePapelitoSettings({ papelitoTheme: 'custom', papelitoCustomTheme: randomTheme });
   };
 
   const addPapelito = async () => {
@@ -651,7 +660,7 @@ export default function App() {
         cards: shuffleArray(DEFAULT_CARDS),
         currentCardIndex: 0,
         timer: 90,
-        mode: 'CHAOS',
+        mode: 'PAPELITO',
         currentTurnPlayerId: null,
         readyCount: 0,
         turnOrder: [],
@@ -872,21 +881,21 @@ export default function App() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-primary/20 shadow-xl space-y-4">
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Configuración</h3>
-              <div className="grid grid-cols-4 gap-2">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Modo de Juego</h3>
+              <div className="grid grid-cols-3 gap-2">
                 <button 
-                  onClick={() => updateMode('CHAOS')}
-                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'CHAOS' ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(255,137,171,0.3)]' : 'bg-surface-container-low border-outline-variant/30 opacity-60'}`}
+                  onClick={() => updateMode('PAPELITO')}
+                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'PAPELITO' ? 'bg-secondary/10 border-secondary shadow-[0_0_15px_rgba(137,255,171,0.3)]' : 'bg-surface-container-low border-outline-variant/30 opacity-60'}`}
                 >
-                  <Flame size={20} className={gameState.mode === 'CHAOS' ? 'text-primary' : 'text-on-surface-variant'} />
-                  <span className="text-[8px] font-black uppercase tracking-widest">Caos</span>
+                  <Star size={20} className={gameState.mode === 'PAPELITO' ? 'text-secondary' : 'text-on-surface-variant'} />
+                  <span className="text-[8px] font-black uppercase tracking-widest">Papelito</span>
                 </button>
                 <button 
-                  onClick={() => updateMode('PENALTY')}
-                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'PENALTY' ? 'bg-error/10 border-error shadow-[0_0_15px_rgba(255,84,84,0.3)]' : 'bg-surface-container-low border-outline-variant/30 opacity-60'}`}
+                  onClick={() => updateMode('HOLIS')}
+                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'HOLIS' ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(255,137,171,0.3)]' : 'bg-surface-container-low border-outline-variant/30 opacity-60'}`}
                 >
-                  <Skull size={20} className={gameState.mode === 'PENALTY' ? 'text-error' : 'text-on-surface-variant'} />
-                  <span className="text-[8px] font-black uppercase tracking-widest">Penalty</span>
+                  <Flame size={20} className={gameState.mode === 'HOLIS' ? 'text-primary' : 'text-on-surface-variant'} />
+                  <span className="text-[8px] font-black uppercase tracking-widest">Holis</span>
                 </button>
                 <button 
                   onClick={() => updateMode('PRIMOS')}
@@ -895,33 +904,6 @@ export default function App() {
                   <Users size={20} className={gameState.mode === 'PRIMOS' ? 'text-tertiary' : 'text-on-surface-variant'} />
                   <span className="text-[8px] font-black uppercase tracking-widest">Primos</span>
                 </button>
-                <button 
-                  onClick={() => updateMode('PAPELITO')}
-                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'PAPELITO' ? 'bg-secondary/10 border-secondary shadow-[0_0_15px_rgba(137,255,171,0.3)]' : 'bg-surface-container-low border-outline-variant/30 opacity-60'}`}
-                >
-                  <Star size={20} className={gameState.mode === 'PAPELITO' ? 'text-secondary' : 'text-on-surface-variant'} />
-                  <span className="text-[8px] font-black uppercase tracking-widest">Papelito</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-primary/20 shadow-xl space-y-4">
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Mazo Personalizado</h3>
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-surface-container-highest rounded-2xl border-2 border-dashed border-outline-variant/50 text-on-surface-variant hover:border-primary hover:text-primary transition-all"
-                >
-                  <Upload size={18} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Subir TXT</span>
-                </button>
-                <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".txt" />
-                <button 
-                  onClick={useDemoCards}
-                  className="px-4 py-3 bg-surface-container-highest rounded-2xl border-2 border-outline-variant/30 text-on-surface-variant hover:text-primary transition-all"
-                >
-                  <HelpCircle size={18} />
-                </button>
               </div>
             </div>
 
@@ -929,7 +911,15 @@ export default function App() {
               <div className="bg-surface-container-high p-4 rounded-[2rem] border-2 border-secondary/20 shadow-xl space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-[9px] font-black uppercase tracking-widest text-secondary">Configuración Papelito</h3>
-                  <Settings size={12} className="text-secondary/50" />
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => toast.info("Papelito: 3 Rondas. 1: Descripción libre, 2: Una sola palabra, 3: Mímica.")}
+                      className="text-secondary/50 hover:text-secondary transition-colors"
+                    >
+                      <Info size={14} />
+                    </button>
+                    <Settings size={12} className="text-secondary/50" />
+                  </div>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
@@ -968,6 +958,12 @@ export default function App() {
                           {t}
                         </button>
                       ))}
+                      <button
+                        onClick={shufflePapelitoTheme}
+                        className="p-1.5 rounded-lg border border-outline-variant/30 bg-surface-container-low text-on-surface-variant hover:border-secondary hover:text-secondary transition-all"
+                      >
+                        <Shuffle size={12} />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1020,6 +1016,46 @@ export default function App() {
                       </button>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {gameState.mode === 'HOLIS' && (
+              <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-primary/20 shadow-xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Mazo Personalizado</h3>
+                  <Flame size={14} className="text-primary/50" />
+                </div>
+                <p className="text-[10px] text-on-surface-variant font-body">Sube un archivo de texto para generar desafíos personalizados con IA.</p>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-surface-container-highest rounded-2xl border-2 border-dashed border-outline-variant/50 text-on-surface-variant hover:border-primary hover:text-primary transition-all disabled:opacity-50"
+                  >
+                    {isUploading ? <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" /> : <Upload size={18} />}
+                    <span className="text-[10px] font-black uppercase tracking-widest">{isUploading ? 'Generando...' : 'Subir TXT'}</span>
+                  </button>
+                  <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".txt" />
+                  <button 
+                    onClick={useDemoCards}
+                    className="px-4 py-3 bg-surface-container-highest rounded-2xl border-2 border-outline-variant/30 text-on-surface-variant hover:text-primary transition-all"
+                  >
+                    <HelpCircle size={18} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {gameState.mode === 'PRIMOS' && (
+              <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-tertiary/20 shadow-xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-tertiary">Mazo Primos</h3>
+                  <Users size={14} className="text-tertiary/50" />
+                </div>
+                <p className="text-[10px] text-on-surface-variant font-body">Mazo pre-cargado con chistes internos y desafíos de la familia.</p>
+                <div className="p-4 bg-tertiary/5 rounded-2xl border border-tertiary/10">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-tertiary">Mazo Listo 🔥</span>
                 </div>
               </div>
             )}
@@ -1111,9 +1147,9 @@ export default function App() {
               </div>
               
               <div className="flex items-center gap-2 bg-surface-container-high px-3 py-2 rounded-full border border-primary/20 shadow-xl">
-                {gameState.mode === 'CHAOS' ? <Flame className="text-primary" size={16} /> : gameState.mode === 'PENALTY' ? <Skull className="text-error" size={16} /> : gameState.mode === 'PRIMOS' ? <Users className="text-tertiary" size={16} /> : <Star className="text-secondary" size={16} />}
+                {gameState.mode === 'HOLIS' ? <Flame className="text-primary" size={16} /> : gameState.mode === 'PRIMOS' ? <Users className="text-tertiary" size={16} /> : <Star className="text-secondary" size={16} />}
                 <span className="font-headline font-black text-[10px] uppercase tracking-widest text-on-surface">
-                  {gameState.mode === 'CHAOS' ? 'Caos' : gameState.mode === 'PENALTY' ? 'Penalty' : gameState.mode === 'PRIMOS' ? 'Primos' : `Papelito R${gameState.currentRound}`}
+                  {gameState.mode === 'HOLIS' ? 'Holis' : gameState.mode === 'PRIMOS' ? 'Primos' : `Papelito R${gameState.currentRound}`}
                 </span>
               </div>
             </div>
