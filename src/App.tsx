@@ -465,7 +465,15 @@ export default function App() {
   };
 
   const addPapelito = async () => {
-    if (!papelitoInput.trim() || !userId) return;
+    const word = papelitoInput.trim();
+    if (!word || !userId) return;
+    
+    // Check if it's only one word
+    if (word.includes(' ')) {
+      alert("¡Solo una palabra por favor!");
+      return;
+    }
+
     const gameRef = doc(db, 'games', GAME_ID);
     try {
       const snapshot = await getDoc(gameRef);
@@ -477,7 +485,7 @@ export default function App() {
       const currentPapelitos = players[playerIdx].papelitos || [];
       if (currentPapelitos.length >= (snapshot.data().papelitosPerPlayer || 1)) return;
 
-      players[playerIdx].papelitos = [...currentPapelitos, papelitoInput.trim()];
+      players[playerIdx].papelitos = [...currentPapelitos, word];
       await updateDoc(gameRef, { players });
       setPapelitoInput('');
     } catch (err) {
@@ -486,6 +494,7 @@ export default function App() {
   };
 
   const voteWinner = async (winnerId: string) => {
+    if (gameState.isShowingWinner) return;
     const gameRef = doc(db, 'games', GAME_ID);
     let snapshot;
     try {
@@ -498,15 +507,38 @@ export default function App() {
 
     const data = snapshot.data() as GameState;
     const players = [...data.players];
+    let winnerName = null;
     
     if (winnerId) {
       const winnerIdx = players.findIndex(p => p.id === winnerId);
       if (winnerIdx !== -1) {
         players[winnerIdx].score += 10;
+        winnerName = players[winnerIdx].name;
       }
     }
 
-    const updates: any = { players };
+    // Phase 1: Show winner announcement
+    try {
+      await updateDoc(gameRef, { 
+        players,
+        lastWinnerId: winnerId,
+        lastWinnerName: winnerName,
+        isShowingWinner: true
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
+      return;
+    }
+
+    // Wait 3 seconds
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    // Phase 2: Move to next card
+    const updates: any = { 
+      isShowingWinner: false,
+      lastWinnerId: null,
+      lastWinnerName: null
+    };
     
     if (data.mode === 'PAPELITO') {
       const isLastCard = data.currentCardIndex >= data.cards.length - 1;
@@ -567,7 +599,10 @@ export default function App() {
         readyCount: 0,
         turnOrder: [],
         currentRound: 1,
-        papelitosPerPlayer: 3,
+        papelitosPerPlayer: 1,
+        lastWinnerId: null,
+        lastWinnerName: null,
+        isShowingWinner: false,
       });
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, `games/${GAME_ID}`);
@@ -601,7 +636,11 @@ export default function App() {
         cards: shuffledCards,
         readyCount: 0,
         currentCardIndex: 0,
-        timer: 90
+        timer: 90,
+        lastWinnerId: null,
+        lastWinnerName: null,
+        isShowingWinner: false,
+        currentRound: 1
       });
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
@@ -634,7 +673,11 @@ export default function App() {
         cards: shuffledCards,
         readyCount: 0,
         currentCardIndex: 0,
-        timer: 90
+        timer: 90,
+        lastWinnerId: null,
+        lastWinnerName: null,
+        isShowingWinner: false,
+        currentRound: 1
       });
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
@@ -831,13 +874,13 @@ export default function App() {
 
             {gameState.mode === 'PAPELITO' && (
               <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-secondary/20 shadow-xl space-y-4">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-secondary">Tus Papelitos ({myPlayer?.papelitos?.length || 0} / {gameState.papelitosPerPlayer || 1})</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-secondary">Tu Palabra ({myPlayer?.papelitos?.length || 0} / {gameState.papelitosPerPlayer || 1})</h3>
                 <div className="flex gap-2">
                   <input 
                     type="text" 
                     value={papelitoInput}
                     onChange={(e) => setPapelitoInput(e.target.value)}
-                    placeholder="Escribe algo random..."
+                    placeholder="Escribe una sola palabra..."
                     className="flex-1 bg-surface-container-low border-2 border-outline-variant/30 rounded-xl px-4 py-2 text-on-surface focus:border-secondary outline-none transition-all"
                     onKeyDown={(e) => e.key === 'Enter' && addPapelito()}
                   />
@@ -1043,6 +1086,37 @@ export default function App() {
           )}
         </motion.div>
 
+        <AnimatePresence>
+          {gameState.isShowingWinner && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.5 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-surface/80 backdrop-blur-md"
+            >
+              <div className="bg-surface-container-highest p-12 rounded-[3rem] border-4 border-primary shadow-[0_0_100px_rgba(255,137,171,0.4)] text-center space-y-6 relative overflow-hidden">
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                  className="absolute -top-24 -right-24 w-64 h-64 bg-primary/10 rounded-full blur-3xl"
+                />
+                <Trophy size={80} className="text-primary mx-auto animate-bounce" />
+                <div className="space-y-2">
+                  <h2 className="font-headline text-2xl sm:text-4xl font-black uppercase tracking-widest text-primary">¡Ganador de la Ronda!</h2>
+                  <p className="font-headline text-5xl sm:text-7xl font-black text-on-surface uppercase tracking-tighter italic">
+                    {gameState.lastWinnerName || '¡Nadie!'}
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-on-surface-variant font-black uppercase tracking-widest text-xs">
+                  <Star size={16} className="text-primary" />
+                  <span>+10 PUNTOS</span>
+                  <Star size={16} className="text-primary" />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="w-full bg-surface-container-high rounded-[2.5rem] p-6 sm:p-8 border-2 border-primary/20 shadow-2xl space-y-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -1065,7 +1139,8 @@ export default function App() {
                 </div>
                 <button
                   onClick={() => voteWinner('')}
-                  className="bg-surface-container-highest text-on-surface-variant px-4 py-2 rounded-full border border-outline-variant/30 text-[10px] font-black uppercase tracking-widest hover:bg-error/10 hover:text-error hover:border-error/30 transition-all"
+                  disabled={gameState.isShowingWinner}
+                  className="bg-surface-container-highest text-on-surface-variant px-4 py-2 rounded-full border border-outline-variant/30 text-[10px] font-black uppercase tracking-widest hover:bg-error/10 hover:text-error hover:border-error/30 transition-all disabled:opacity-50"
                 >
                   Nadie adivinó ❌
                 </button>
@@ -1077,10 +1152,10 @@ export default function App() {
             {gameState.players.map((player) => (
               <button
                 key={player.id}
-                disabled={!isMyTurn}
+                disabled={!isMyTurn || gameState.isShowingWinner}
                 onClick={() => voteWinner(player.id)}
                 className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all ${
-                  isMyTurn 
+                  isMyTurn && !gameState.isShowingWinner
                     ? 'border-primary/30 bg-surface-container-low hover:border-primary hover:scale-105' 
                     : 'border-outline-variant/20 bg-surface-container-low opacity-80'
                 }`}
