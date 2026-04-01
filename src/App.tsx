@@ -588,10 +588,15 @@ export default function App() {
       const isLastRound = (latestData.currentRound || 1) >= 3;
 
       if (!isLastCard) {
-        // In PAPELITO, current player keeps turn until timer runs out
-        // User requested to reset the timer after each word
+        // User requested to rotate turn after each word
         updates.currentCardIndex = latestData.currentCardIndex + 1;
         updates.timer = 90;
+        
+        // Pass turn to next player
+        const turnOrder = latestData.turnOrder || latestData.players.map(p => p.id);
+        const currentTurnIdx = turnOrder.indexOf(latestData.currentTurnPlayerId || '');
+        const nextTurnIdx = (currentTurnIdx + 1) % turnOrder.length;
+        updates.currentTurnPlayerId = turnOrder[nextTurnIdx];
       } else if (!isLastRound) {
         // Transition to next round
         updates.currentRound = (latestData.currentRound || 1) + 1;
