@@ -165,6 +165,7 @@ export default function App() {
     TIMEOUT: 'https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3',
     NEXT: 'https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3',
     FINISH: 'https://assets.mixkit.co/active_storage/sfx/1433/1433-preview.mp3',
+    GAME_START: 'https://raw.githubusercontent.com/liangely/holis-game/main/estan-listos-chicos.mp3',
   };
   const [isUploading, setIsUploading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -178,6 +179,13 @@ export default function App() {
       playSound(SOUNDS.NEXT);
     }
   }, [gameState.currentCardIndex, gameState.status]);
+
+  // Play intro sound when game starts
+  useEffect(() => {
+    if (gameState.status === 'GAME' && gameState.currentCardIndex === 0) {
+      playSound(SOUNDS.GAME_START);
+    }
+  }, [gameState.status]);
 
   // Show winner notification to everyone
   useEffect(() => {
