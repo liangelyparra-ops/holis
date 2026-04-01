@@ -156,7 +156,7 @@ export default function App() {
 
   const SOUNDS = {
     JOIN: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
-    START: 'https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3',
+    START: 'https://raw.githubusercontent.com/liangely/holis-game/main/estan-listos-chicos.mp3',
     VOTE: 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3',
     WIN: 'https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3',
     TICK: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3',
@@ -165,7 +165,6 @@ export default function App() {
     TIMEOUT: 'https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3',
     NEXT: 'https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3',
     FINISH: 'https://assets.mixkit.co/active_storage/sfx/1433/1433-preview.mp3',
-    GAME_START: 'https://raw.githubusercontent.com/liangely/holis-game/main/estan-listos-chicos.mp3',
   };
   const [isUploading, setIsUploading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -175,17 +174,10 @@ export default function App() {
 
   // Play sound on card change
   useEffect(() => {
-    if (gameState.status === 'GAME') {
+    if (gameState.status === 'GAME' && gameState.currentCardIndex > 0) {
       playSound(SOUNDS.NEXT);
     }
   }, [gameState.currentCardIndex, gameState.status]);
-
-  // Play intro sound when game starts
-  useEffect(() => {
-    if (gameState.status === 'GAME' && gameState.currentCardIndex === 0) {
-      playSound(SOUNDS.GAME_START);
-    }
-  }, [gameState.status]);
 
   // Show winner notification to everyone
   useEffect(() => {
@@ -206,13 +198,14 @@ export default function App() {
   }, [gameState.isShowingWinner, gameState.lastWinnerName, gameState.lastWinnerId]);
 
   useEffect(() => {
-    if (gameState.status === 'GAME' && gameState.currentCardIndex === 0 && (gameState.currentRound === 1 || !gameState.currentRound)) {
+    if (gameState.status === 'GAME' && gameState.currentCardIndex === 0) {
+      // Always play the intro sound when the game starts or a new round begins at index 0
       playSound(SOUNDS.START);
     }
     if (gameState.status === 'RESULTS') {
       playSound(SOUNDS.FINISH);
     }
-  }, [gameState.status, gameState.currentRound]);
+  }, [gameState.status, gameState.currentRound, gameState.currentCardIndex]);
 
   // Initialize Local User ID
   useEffect(() => {
