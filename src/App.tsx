@@ -762,17 +762,14 @@ export default function App() {
           transition={{ repeat: Infinity, duration: 2 }}
           className="inline-block"
         >
-          <Gamepad2 size={80} className="text-[#ff89ab] mx-auto drop-shadow-[0_0_15px_rgba(255,137,171,0.5)]" />
+          <Gamepad2 size={60} className="text-[#ff89ab] mx-auto drop-shadow-[0_0_15px_rgba(255,137,171,0.5)]" />
         </motion.div>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black italic text-[#ff89ab] font-headline tracking-tighter uppercase drop-shadow-[0_0_20px_rgba(255,137,171,0.4)]">
-          Holis fun party 🔥
-        </h1>
-        <p className="text-base sm:text-lg text-on-surface-variant font-body max-w-lg mx-auto">
-          ¡Personaliza tu entrada al desmadre! Elige un avatar y pon tu apodo.
+        <p className="text-xs sm:text-sm text-on-surface-variant font-body max-w-lg mx-auto uppercase tracking-widest font-black">
+          Entrar al desmadre...
         </p>
       </div>
 
-      <div className="max-w-md mx-auto space-y-8 bg-surface-container-high p-8 rounded-[2.5rem] border-2 border-primary/20 shadow-2xl">
+      <div className="max-w-md mx-auto space-y-6 sm:space-y-8 bg-surface-container-high p-6 sm:p-8 rounded-3xl sm:rounded-[2.5rem] border-2 border-primary/20 shadow-2xl">
         <div className="space-y-4">
           <label className="block text-left text-[10px] font-black uppercase tracking-widest text-primary ml-4">Tu Apodo / Nombre</label>
           <input 
@@ -818,7 +815,7 @@ export default function App() {
           <button 
             onClick={joinGame}
             disabled={!tempNickname.trim() || !selectedAvatarSeed}
-            className={`w-full py-6 rounded-3xl font-headline font-black text-2xl uppercase tracking-tighter shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3 ${
+            className={`w-full py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-headline font-black text-xl sm:text-2xl uppercase tracking-tighter shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3 ${
               !tempNickname.trim() || !selectedAvatarSeed
                 ? 'bg-surface-container-highest text-on-surface-variant cursor-not-allowed' 
                 : 'bg-primary text-on-primary-fixed hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,137,171,0.4)]'
@@ -830,7 +827,7 @@ export default function App() {
         ) : (
           <button 
             onClick={createPrivateRoom}
-            className="w-full py-6 bg-primary text-on-primary-fixed font-headline font-black text-2xl uppercase tracking-tighter rounded-3xl shadow-lg hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,137,171,0.4)] active:scale-95 flex items-center justify-center gap-3 transition-all"
+            className="w-full py-4 sm:py-6 bg-primary text-on-primary-fixed font-headline font-black text-xl sm:text-2xl uppercase tracking-tighter rounded-2xl sm:rounded-3xl shadow-lg hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,137,171,0.4)] active:scale-95 flex items-center justify-center gap-3 transition-all"
           >
             <Users size={24} />
             CREAR SALA PRIVADA
@@ -841,7 +838,7 @@ export default function App() {
           {GAME_ID !== 'global-party' && (
             <button 
               onClick={createPrivateRoom}
-              className="w-full bg-surface-container-highest text-on-surface font-headline font-bold py-4 rounded-2xl flex items-center justify-center gap-2 border-2 border-outline-variant/30 hover:bg-surface-bright transition-all"
+              className="w-full bg-surface-container-highest text-on-surface font-headline font-bold py-3 sm:py-4 text-sm sm:text-base rounded-2xl flex items-center justify-center gap-2 border-2 border-outline-variant/30 hover:bg-surface-bright transition-all"
             >
               <Users size={20} />
               CREAR OTRA SALA
@@ -1431,7 +1428,7 @@ export default function App() {
         <div className="flex items-center gap-3 cursor-pointer" onClick={goHome}>
           <Gamepad2 className="text-[#ff89ab]" size={20} sm:size={24} />
           <h1 className="text-lg sm:text-xl font-black italic text-[#ff89ab] drop-shadow-[0_0_10px_rgba(255,137,171,0.5)] font-headline tracking-tighter uppercase">
-            Holis fun party 🔥
+            Holis Game
           </h1>
         </div>
         
