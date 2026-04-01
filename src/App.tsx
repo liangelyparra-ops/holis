@@ -15,7 +15,8 @@ import {
   AlertCircle,
   User,
   Info,
-  HelpCircle
+  HelpCircle,
+  X
 } from 'lucide-react';
 import { doc, onSnapshot, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -493,6 +494,25 @@ export default function App() {
     }
   };
 
+  const removePapelito = async (index: number) => {
+    const gameRef = doc(db, 'games', GAME_ID);
+    try {
+      const snapshot = await getDoc(gameRef);
+      if (!snapshot.exists()) return;
+      const players = [...snapshot.data().players] as Player[];
+      const playerIdx = players.findIndex(p => p.id === userId);
+      if (playerIdx === -1) return;
+      
+      const currentPapelitos = players[playerIdx].papelitos || [];
+      const newPapelitos = currentPapelitos.filter((_, i) => i !== index);
+
+      players[playerIdx].papelitos = newPapelitos;
+      await updateDoc(gameRef, { players });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
+    }
+  };
+
   const voteWinner = async (winnerId: string) => {
     if (gameState.isShowingWinner) return;
     const gameRef = doc(db, 'games', GAME_ID);
@@ -894,9 +914,15 @@ export default function App() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {myPlayer?.papelitos?.map((p, i) => (
-                    <span key={i} className="text-[10px] font-black uppercase bg-secondary/10 text-secondary px-3 py-1 rounded-full border border-secondary/20">
-                      {p}
-                    </span>
+                    <div key={i} className="flex items-center gap-1 bg-secondary/10 text-secondary px-3 py-1 rounded-full border border-secondary/20">
+                      <span className="text-[10px] font-black uppercase">{p}</span>
+                      <button 
+                        onClick={() => removePapelito(i)}
+                        className="hover:text-error transition-colors"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>
