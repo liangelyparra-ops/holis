@@ -47,6 +47,32 @@ function shuffleArray<T>(array: T[]): T[] {
   return newArray;
 }
 
+function shuffleAlternating(cards: GameCard[]): GameCard[] {
+  const categories = Array.from(new Set(cards.map(c => c.category)));
+  const cardsByCategory: Record<string, GameCard[]> = {};
+  
+  categories.forEach(cat => {
+    cardsByCategory[cat] = shuffleArray(cards.filter(c => c.category === cat));
+  });
+
+  const result: GameCard[] = [];
+  let hasMore = true;
+  let index = 0;
+
+  while (hasMore) {
+    hasMore = false;
+    categories.forEach(cat => {
+      if (cardsByCategory[cat][index]) {
+        result.push(cardsByCategory[cat][index]);
+        hasMore = true;
+      }
+    });
+    index++;
+  }
+
+  return result;
+}
+
 const GAME_ID = getRoomId();
 
 enum OperationType {
@@ -374,7 +400,7 @@ export default function App() {
 
   const updateMode = async (mode: 'CHAOS' | 'PENALTY' | 'PRIMOS') => {
     try {
-      const cards = mode === 'PRIMOS' ? shuffleArray(PRIMOS_CARDS) : shuffleArray(DEFAULT_CARDS);
+      const cards = mode === 'PRIMOS' ? shuffleAlternating(PRIMOS_CARDS) : shuffleArray(DEFAULT_CARDS);
       await updateDoc(doc(db, 'games', GAME_ID), {
         mode,
         cards,
@@ -810,15 +836,17 @@ export default function App() {
                   </div>
                 </div>
                 <p className="font-headline text-xl sm:text-3xl md:text-4xl font-black text-on-surface leading-tight tracking-tighter italic">
-                  "{currentCard.content}"
+                  "{currentCard.category === 'ACTUAR' ? currentCard.context : currentCard.content}"
                 </p>
-                {currentCard.answer && (
+                {(currentCard.answer || (currentCard.category === 'ACTUAR' && currentCard.content)) && (
                   <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-2xl">
                     <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Respuesta:</p>
-                    <p className="text-xl font-headline font-black text-on-surface">{currentCard.answer}</p>
+                    <p className="text-xl font-headline font-black text-on-surface">
+                      {currentCard.category === 'ACTUAR' ? currentCard.content : currentCard.answer}
+                    </p>
                   </div>
                 )}
-                {currentCard.context && (
+                {currentCard.context && currentCard.category !== 'ACTUAR' && (
                   <p className="text-[10px] sm:text-xs text-on-surface-variant font-body mt-2 max-w-xs mx-auto">
                     {currentCard.context}
                   </p>
