@@ -226,12 +226,12 @@ export default function App() {
       if (gameState.lastWinnerId === 'none') {
         toast.error("Nadie adivinó... ❌", {
           description: "¡A la próxima!",
-          duration: 2000,
+          duration: 1500,
         });
       } else {
         toast.success(`¡Punto para ${gameState.lastWinnerName}! 🏆`, {
           description: "+10 puntos",
-          duration: 2000,
+          duration: 1500,
         });
         playSound(SOUNDS.WIN);
       }
@@ -738,8 +738,8 @@ export default function App() {
       return;
     }
 
-    // Wait for 2 seconds to let everyone see the notification
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Wait for 1 second to let everyone see the notification
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Phase 2: Move to next card
     const updates: any = { 
@@ -1241,16 +1241,18 @@ export default function App() {
               <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Jugadores ({gameState.players.length})</h3>
               <div className="grid grid-cols-4 gap-3 max-h-48 overflow-y-auto pr-2 scrollbar-hide">
                 {gameState.players.map((player) => (
-                  <div key={player.id} className="relative group">
-                    <img src={player.avatar} alt={player.name} className={`w-full aspect-square rounded-2xl border-2 transition-all ${player.isReady ? 'border-primary shadow-[0_0_10px_rgba(255,137,171,0.3)]' : 'border-outline-variant/30 opacity-50'}`} />
-                    {player.isReady && (
-                      <div className="absolute -top-1 -right-1 bg-primary text-on-primary-fixed p-1 rounded-full shadow-lg">
-                        <Check size={10} strokeWidth={4} />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 flex items-end p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="text-[8px] font-black uppercase bg-surface-container-highest/90 text-on-surface w-full text-center rounded py-0.5 truncate">{player.name}</span>
+                  <div key={player.id} className="flex flex-col items-center gap-1.5">
+                    <div className="relative w-full">
+                      <img src={player.avatar} alt={player.name} className={`w-full aspect-square rounded-2xl border-2 transition-all ${player.isReady ? 'border-primary shadow-[0_0_10px_rgba(255,137,171,0.3)]' : 'border-outline-variant/30 opacity-50'}`} />
+                      {player.isReady && (
+                        <div className="absolute -top-1 -right-1 bg-primary text-on-primary-fixed p-1 rounded-full shadow-lg">
+                          <Check size={10} strokeWidth={4} />
+                        </div>
+                      )}
                     </div>
+                    <span className="text-[9px] font-black uppercase tracking-tight text-on-surface text-center truncate w-full px-0.5">
+                      {player.name}
+                    </span>
                   </div>
                 ))}
               </div>
