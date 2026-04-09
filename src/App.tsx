@@ -161,12 +161,6 @@ export default function App() {
     if (playPromise !== undefined) {
       playPromise.catch(error => {
         console.warn("[Sound] Playback failed/blocked:", error);
-        if (error.name === 'NotAllowedError') {
-          toast.error("Audio bloqueado 🔇", {
-            description: "Haz clic en la pantalla para activar el sonido.",
-            duration: 3000,
-          });
-        }
       });
     }
   };
