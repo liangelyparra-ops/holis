@@ -1,5 +1,6 @@
 {
   "name": "Holis fun party",
   "description": "Lia Parra's UX Impact Deck portfolio featuring interactive case studies, design processes, design tenets, contact form, and her flagship Holis Party game.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
