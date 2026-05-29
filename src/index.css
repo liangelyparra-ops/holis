@@ -36,6 +36,7 @@
   --font-headline: "Montserrat", sans-serif;
   --font-body: "Inter", sans-serif;
   --font-label: "Inter", sans-serif;
+  --font-cursive: "Caveat", cursive;
 
   @keyframes pulse-border {
     0%, 100% { border-color: var(--color-primary); box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); }
