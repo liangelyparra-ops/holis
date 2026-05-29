@@ -955,18 +955,18 @@ export default function App() {
     >
       <div className="max-w-md mx-auto space-y-6 sm:space-y-8 bg-surface-container-high p-6 sm:p-8 rounded-3xl sm:rounded-[2.5rem] border-2 border-primary/20 shadow-2xl">
         <div className="space-y-4">
-          <label className="block text-left text-[10px] font-black uppercase tracking-widest text-primary ml-4">Tu Apodo / Nombre</label>
+          <label className="block text-left text-[10px] font-black uppercase tracking-widest text-primary ml-4">Your Nickname / Name</label>
           <input 
             type="text" 
             value={tempNickname}
             onChange={(e) => setTempNickname(e.target.value)}
-            placeholder="Ej: El Rey de la Fiesta"
+            placeholder="e.g. Party King"
             className="w-full bg-surface-container-highest border-2 border-outline-variant/30 rounded-2xl p-4 font-headline font-black uppercase text-on-surface focus:border-primary outline-none transition-all"
           />
         </div>
 
         <div className="space-y-4">
-          <label className="block text-left text-[10px] font-black uppercase tracking-widest text-primary ml-4">Elige tu Avatar</label>
+          <label className="block text-left text-[10px] font-black uppercase tracking-widest text-primary ml-4">Choose your Avatar</label>
           <div className="grid grid-cols-5 gap-3 max-h-48 overflow-y-auto p-2 scrollbar-hide">
             {Array.from({ length: 20 }).map((_, i) => {
               const seed = `avatar-${i + 1}`;
@@ -1005,7 +1005,7 @@ export default function App() {
                 : 'bg-primary text-on-primary-fixed hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,137,171,0.4)]'
             }`}
           >
-            <span>ENTRAR A LA SALA</span>
+            <span>ENTER ROOM</span>
             <ChevronRight />
           </button>
         ) : (
@@ -1014,7 +1014,7 @@ export default function App() {
             className="w-full py-4 sm:py-6 bg-primary text-on-primary-fixed font-headline font-black text-xl sm:text-2xl uppercase tracking-tighter rounded-2xl sm:rounded-3xl shadow-lg hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,137,171,0.4)] active:scale-95 flex items-center justify-center gap-3 transition-all"
           >
             <Users size={24} />
-            CREAR SALA PRIVADA
+            CREATE PRIVATE ROOM
           </button>
         )}
 
@@ -1025,14 +1025,14 @@ export default function App() {
               className="w-full bg-surface-container-highest text-on-surface font-headline font-bold py-3 sm:py-4 text-sm sm:text-base rounded-2xl flex items-center justify-center gap-2 border-2 border-outline-variant/30 hover:bg-surface-bright transition-all"
             >
               <Users size={20} />
-              CREAR OTRA SALA
+              CREATE ANOTHER ROOM
             </button>
           )}
           
           <div className="flex items-center justify-center gap-2 px-4 py-2 bg-surface-variant/30 rounded-full w-fit mx-auto">
             <div className={`w-2 h-2 rounded-full ${GAME_ID === 'global-party' ? 'bg-tertiary' : 'bg-primary animate-pulse'}`}></div>
             <span className="text-[10px] text-on-surface-variant uppercase font-black tracking-widest">
-              {GAME_ID === 'global-party' ? 'SIN SALA SELECCIONADA' : `SALA: ${GAME_ID}`}
+              {GAME_ID === 'global-party' ? 'NO ROOM SELECTED' : `ROOM: ${GAME_ID}`}
             </span>
           </div>
         </div>
@@ -1055,11 +1055,11 @@ export default function App() {
             <h2 className="font-headline text-xl sm:text-2xl font-black uppercase tracking-tighter text-on-surface">Lobby</h2>
           </div>
           <div className="bg-primary/10 px-4 py-1 rounded-full border border-primary/20 flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-primary">Esperando Jugadores</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-primary">Waiting for Players</span>
             <button 
               onClick={resetGame}
               className="p-1 hover:bg-primary/20 rounded-full transition-all text-primary"
-              title="Reiniciar Sala"
+              title="Reset Room"
             >
               <AlertCircle size={14} />
             </button>
@@ -1069,7 +1069,7 @@ export default function App() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-primary/20 shadow-xl space-y-4">
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Modo de Juego</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Game Mode</h3>
               <div className="grid grid-cols-4 gap-2">
                 <button 
                   onClick={() => updateMode('PAPELITO')}
@@ -1105,10 +1105,10 @@ export default function App() {
             {gameState.mode === 'PAPELITO' && (
               <div className="bg-surface-container-high p-4 rounded-[2rem] border-2 border-secondary/20 shadow-xl space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-[9px] font-black uppercase tracking-widest text-secondary">Configuración Papelito</h3>
+                  <h3 className="text-[9px] font-black uppercase tracking-widest text-secondary">Papelito Settings</h3>
                   <div className="flex items-center gap-2">
                     <button 
-                      onClick={() => toast.info("Papelito: 3 Rondas. 1: Descripción libre, 2: Una sola palabra, 3: Mímica.")}
+                      onClick={() => toast.info("Papelito: 3 Rounds. 1: Free Description, 2: Single Word, 3: Charades / Mimicry.")}
                       className="text-secondary/50 hover:text-secondary transition-colors"
                     >
                       <Info size={14} />
@@ -1138,9 +1138,9 @@ export default function App() {
                   </div>
 
                   <div className="space-y-1">
-                    <p className="text-[7px] font-black uppercase tracking-widest text-on-surface-variant">Tema</p>
+                    <p className="text-[7px] font-black uppercase tracking-widest text-on-surface-variant">Theme</p>
                     <div className="flex gap-1">
-                      {['libre', 'custom'].map(t => (
+                      {['free', 'custom'].map(t => (
                         <button
                           key={t}
                           onClick={() => updatePapelitoSettings({ papelitoTheme: t })}
@@ -1173,20 +1173,20 @@ export default function App() {
                       type="text" 
                       value={gameState.papelitoCustomTheme || ''}
                       onChange={(e) => updatePapelitoSettings({ papelitoCustomTheme: e.target.value })}
-                      placeholder="Escribe el tema de la partida..."
+                      placeholder="Write the round theme..."
                       className="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-1.5 text-[10px] text-on-surface focus:border-secondary outline-none transition-all"
                     />
                   </motion.div>
                 )}
 
                 <div className="pt-3 border-t border-outline-variant/20">
-                  <h3 className="text-[9px] font-black uppercase tracking-widest text-secondary mb-2">Tu Frase ({myPlayer?.papelitos?.length || 0} / {gameState.papelitosPerPlayer || 1})</h3>
+                  <h3 className="text-[9px] font-black uppercase tracking-widest text-secondary mb-2">Your Phrase ({myPlayer?.papelitos?.length || 0} / {gameState.papelitosPerPlayer || 1})</h3>
                   <div className="flex gap-2">
                     <input 
                       type="text" 
                       value={papelitoInput}
                       onChange={(e) => setPapelitoInput(e.target.value)}
-                      placeholder={gameState.papelitoTheme === 'libre' ? "Escribe una frase..." : `Tema: ${gameState.papelitoCustomTheme || '...'}...`}
+                      placeholder={gameState.papelitoTheme === 'free' ? "Write a phrase..." : `Theme: ${gameState.papelitoCustomTheme || '...'}...`}
                       className="flex-1 bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-1.5 text-[10px] text-on-surface focus:border-secondary outline-none transition-all"
                       onKeyDown={(e) => e.key === 'Enter' && addPapelito()}
                     />
@@ -1218,12 +1218,12 @@ export default function App() {
             {gameState.mode === 'HOLIS' && (
               <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-primary/20 shadow-xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Mazo Holis</h3>
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Holis Deck</h3>
                   <Flame size={14} className="text-primary/50" />
                 </div>
-                <p className="text-[10px] text-on-surface-variant font-body">Mazo pre-cargado con los mejores desafíos de Holis Game.</p>
+                <p className="text-[10px] text-on-surface-variant font-body">Pre-loaded deck with the best Holis Game challenges.</p>
                 <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Mazo Listo 🔥</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Deck Ready 🔥</span>
                 </div>
               </div>
             )}
@@ -1231,12 +1231,12 @@ export default function App() {
             {gameState.mode === 'PRIMOS' && (
               <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-tertiary/20 shadow-xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-tertiary">Mazo Primos</h3>
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-tertiary">Primos Deck</h3>
                   <Users size={14} className="text-tertiary/50" />
                 </div>
-                <p className="text-[10px] text-on-surface-variant font-body">Mazo pre-cargado con chistes internos y desafíos de la familia.</p>
+                <p className="text-[10px] text-on-surface-variant font-body">Pre-loaded deck with family jokes and customized challenges.</p>
                 <div className="p-4 bg-tertiary/5 rounded-2xl border border-tertiary/10">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-tertiary">Mazo Listo 🔥</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-tertiary">Deck Ready 🔥</span>
                 </div>
               </div>
             )}
@@ -1244,16 +1244,16 @@ export default function App() {
             {gameState.mode === 'WHATSAPP' && (
               <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-error/20 shadow-xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-error">Mazo WhatsApp (IA)</h3>
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-error">WhatsApp Deck (AI)</h3>
                   <Upload size={14} className="text-error/50" />
                 </div>
                 <div className="space-y-2">
-                  <p className="text-[10px] text-on-surface font-black uppercase tracking-widest">¿Cómo funciona?</p>
+                  <p className="text-[10px] text-on-surface font-black uppercase tracking-widest">How it works?</p>
                   <ol className="text-[9px] text-on-surface-variant font-body list-decimal list-inside space-y-1">
-                    <li>Ve a tu grupo de WhatsApp</li>
-                    <li>Ajustes {'>'} Exportar chat (sin archivos)</li>
-                    <li>Sube el archivo .txt aquí</li>
-                    <li>¡Generamos desafíos basados en sus chistes!</li>
+                    <li>Go to your WhatsApp group</li>
+                    <li>Settings {'>'} Export chat (without media)</li>
+                    <li>Upload the .txt Chat file here</li>
+                    <li>We generate custom challenges from your jokes!</li>
                   </ol>
                 </div>
                 <div className="flex gap-2">
@@ -1263,7 +1263,7 @@ export default function App() {
                     className="flex-1 flex items-center justify-center gap-2 py-3 bg-surface-container-highest rounded-2xl border-2 border-dashed border-outline-variant/50 text-on-surface-variant hover:border-error hover:text-error transition-all disabled:opacity-50"
                   >
                     {isUploading ? <div className="w-4 h-4 border-2 border-error border-t-transparent rounded-full animate-spin" /> : <Upload size={18} />}
-                    <span className="text-[10px] font-black uppercase tracking-widest">{isUploading ? 'Generando...' : 'Subir Chat (.txt)'}</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">{isUploading ? 'Generating...' : 'Upload Chat (.txt)'}</span>
                   </button>
                   <input 
                     type="file" 
@@ -1279,7 +1279,7 @@ export default function App() {
 
           <div className="space-y-4">
             <div className="bg-surface-container-high p-6 rounded-[2rem] border-2 border-primary/20 shadow-xl space-y-4">
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Jugadores ({gameState.players.length})</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Players ({gameState.players.length})</h3>
               <div className="grid grid-cols-4 gap-3 max-h-48 overflow-y-auto pr-2 scrollbar-hide">
                 {gameState.players.map((player) => (
                   <div key={player.id} className="flex flex-col items-center gap-1.5">
@@ -1303,7 +1303,7 @@ export default function App() {
               <div className="bg-error/10 border border-error/20 p-4 rounded-2xl flex items-center gap-3">
                 <AlertCircle size={20} className="text-error shrink-0" />
                 <p className="text-[10px] font-black uppercase tracking-widest text-error leading-tight">
-                  Se necesitan al menos 3 jugadores para iniciar la partida.
+                  You need at least 3 players to start the game.
                 </p>
               </div>
             )}
@@ -1316,10 +1316,10 @@ export default function App() {
                   : 'bg-primary text-on-primary-fixed hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,137,171,0.4)]'
               }`}
             >
-              {myPlayer?.isReady ? '¡ESTÁS LISTO! 🔥' : 'ESTOY LISTO'}
+              {myPlayer?.isReady ? 'YOU ARE READY! 🔥' : 'I AM READY'}
             </button>
             <p className="text-center text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
-              {gameState.readyCount} / {gameState.players.length} jugadores listos
+              {gameState.readyCount} / {gameState.players.length} players ready
             </p>
           </div>
         </div>
@@ -1352,9 +1352,9 @@ export default function App() {
             {gameState.mode === 'PAPELITO' && (
               <div className="bg-secondary/10 border border-secondary/20 px-4 py-1 rounded-full">
                 <p className="text-[8px] font-black uppercase tracking-widest text-secondary text-center">
-                  {gameState.currentRound === 1 ? 'Ronda 1: Descripción' : 
-                   gameState.currentRound === 2 ? 'Ronda 2: Una palabra' : 
-                   'Ronda 3: Mímica'}
+                  {gameState.currentRound === 1 ? 'Round 1: Description' : 
+                   gameState.currentRound === 2 ? 'Round 2: One Word' : 
+                   'Round 3: Mimicry'}
                 </p>
               </div>
             )}
@@ -1393,7 +1393,7 @@ export default function App() {
           {isMyTurn && (
             <div className="absolute top-4 right-4 bg-primary text-on-primary-fixed px-3 py-1 rounded-full flex items-center gap-2 animate-bounce">
               <Star size={12} fill="currentColor" />
-              <span className="text-[10px] font-black uppercase tracking-widest">¡TU TURNO!</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">YOUR TURN!</span>
             </div>
           )}
           <div className="absolute top-0 left-0 w-full h-2 bg-primary/20">
@@ -1415,18 +1415,18 @@ export default function App() {
                   <div className="absolute bottom-full mb-2 hidden group-hover:block w-64 bg-surface-container-highest p-3 rounded-xl border border-outline-variant/30 shadow-2xl z-50 text-left">
                     <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">{currentCard.category}</p>
                     <p className="text-[10px] text-on-surface-variant leading-tight normal-case font-body">
-                      {currentCard.category === 'ACTING' || currentCard.category === 'ACTUAR' ? 'Actúa la situación sin hablar. ¡Tus amigos deben adivinar!' :
-                       currentCard.category === 'WHO SAID THIS' || currentCard.category === 'WHO_SAID' || currentCard.category === 'QUIÉN DIJO ESTO' ? '¿Quién dijo esta frase mítica? El grupo vota al culpable.' :
-                       currentCard.category === 'EXPOSE' ? 'Momento de la verdad. Responde con sinceridad o bebe.' :
-                       currentCard.category === 'WHO IS MOST LIKELY' ? 'Voten quién es más probable que haga esto.' :
-                       currentCard.category === 'TABÚ' || currentCard.category === 'TABU' ? 'Describe la palabra sin usar las prohibidas.' :
-                       currentCard.category === 'TRUTH OR BOMB' ? 'Responde la pregunta o explota (castigo del grupo).' :
+                      {currentCard.category === 'ACTING' || currentCard.category === 'ACTUAR' ? 'Act out the situation without speaking. Your friends must guess!' :
+                       currentCard.category === 'WHO SAID THIS' || currentCard.category === 'WHO_SAID' || currentCard.category === 'QUIÉN DIJO ESTO' ? 'Who said this iconic quote? The group votes for the culprit.' :
+                       currentCard.category === 'EXPOSE' ? 'Moment of truth. Answer with absolute honesty or drink.' :
+                       currentCard.category === 'WHO IS MOST LIKELY' ? 'Vote on who is most likely to do this.' :
+                       currentCard.category === 'TABÚ' || currentCard.category === 'TABU' ? 'Describe the word without using the forbidden words.' :
+                       currentCard.category === 'TRUTH OR BOMB' ? 'Answer the question or explode (group punishment).' :
                        currentCard.category === 'PAPELITO' ? (
-                         gameState.currentRound === 1 ? 'Ronda 1: Describe el papelito usando todas las palabras que quieras (sin decir lo que está escrito).' :
-                         gameState.currentRound === 2 ? 'Ronda 2: Solo puedes decir UNA palabra para que adivinen.' :
-                         'Ronda 3: Solo puedes hacer mímica. ¡Shhh! No se permite hablar.'
+                         gameState.currentRound === 1 ? 'Round 1: Describe the paper slip using as many words as you want (without saying what is written).' :
+                         gameState.currentRound === 2 ? 'Round 2: You can only say ONE word for the guess.' :
+                         'Round 3: You can only do mimicry. Shhh! No talking allowed.'
                        ) :
-                       'Sigue las instrucciones de la carta para ganar puntos.'}
+                       'Follow the card instructions to win points.'}
                     </p>
                   </div>
                 </div>
@@ -1435,7 +1435,7 @@ export default function App() {
                 </p>
                 {currentCard.category === 'QUIÉN DIJO ESTO' && currentCard.answer && (
                   <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-2xl">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Dicho por:</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Said by:</p>
                     <p className="text-xl font-headline font-black text-on-surface">
                       {currentCard.answer}
                     </p>
@@ -1443,7 +1443,7 @@ export default function App() {
                 )}
                 {currentCard.category === 'ACTUAR' && currentCard.context && (
                   <div className="mt-2 p-2 bg-surface-container-highest border border-outline-variant/30 rounded-xl max-w-xs mx-auto">
-                    <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">Cómo actuar:</p>
+                    <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">How to act:</p>
                     <p className="text-[10px] text-on-surface leading-tight font-body">
                       {currentCard.context}
                     </p>
@@ -1451,7 +1451,7 @@ export default function App() {
                 )}
                 {currentCard.tabooWords && (
                   <div className="mt-2 p-2 bg-error/10 border border-error/20 rounded-xl">
-                    <p className="text-[8px] font-black uppercase tracking-widest text-error mb-1">Palabras Prohibidas:</p>
+                    <p className="text-[8px] font-black uppercase tracking-widest text-error mb-1">Forbidden Words:</p>
                     <div className="flex flex-wrap justify-center gap-1">
                       {currentCard.tabooWords.map(word => (
                         <span key={word} className="bg-error text-on-error px-2 py-0.5 rounded-full text-[8px] font-bold uppercase">{word}</span>
@@ -1470,9 +1470,9 @@ export default function App() {
                 </div>
               </div>
               <div className="space-y-1">
-                <h2 className="font-headline text-3xl sm:text-5xl font-black uppercase tracking-tighter text-on-surface">¡ADIVINA!</h2>
+                <h2 className="font-headline text-3xl sm:text-5xl font-black uppercase tracking-tighter text-on-surface">GUESS!</h2>
                 <p className="text-on-surface-variant font-body uppercase tracking-widest text-[10px] font-black">
-                  Presta atención a <span className="text-primary">{currentTurnPlayer?.name}</span>
+                  Pay attention to <span className="text-primary">{currentTurnPlayer?.name}</span>
                 </p>
               </div>
             </div>
@@ -1495,14 +1495,14 @@ export default function App() {
                 />
                 <Trophy size={80} className="text-primary mx-auto animate-bounce" />
                 <div className="space-y-2">
-                  <h2 className="font-headline text-2xl sm:text-4xl font-black uppercase tracking-widest text-primary">¡Ganador de la Ronda!</h2>
+                  <h2 className="font-headline text-2xl sm:text-4xl font-black uppercase tracking-widest text-primary">Round Winner!</h2>
                   <p className="font-headline text-5xl sm:text-7xl font-black text-on-surface uppercase tracking-tighter italic">
-                    {gameState.lastWinnerName || '¡Nadie!'}
+                    {gameState.lastWinnerName || 'Nobody!'}
                   </p>
                 </div>
                 <div className="flex items-center justify-center gap-2 text-on-surface-variant font-black uppercase tracking-widest text-xs">
                   <Star size={16} className="text-primary" />
-                  <span>+10 PUNTOS</span>
+                  <span>+10 POINTS</span>
                   <Star size={16} className="text-primary" />
                 </div>
               </div>
@@ -1520,7 +1520,7 @@ export default function App() {
                 </div>
               </div>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Turno de:</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Turn of:</p>
                 <p className="font-headline font-black text-xl text-on-surface uppercase">{currentTurnPlayer?.name}</p>
               </div>
             </div>
@@ -1528,14 +1528,14 @@ export default function App() {
               <div className="flex flex-col sm:flex-row items-center gap-3">
                 <div className="bg-primary/10 text-primary px-4 py-2 rounded-full border border-primary/20 flex items-center gap-2">
                   <AlertCircle size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">¡Es tu turno! No muestres tu pantalla</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest">IT'S YOUR TURN! DON'T SHOW YOUR SCREEN</span>
                 </div>
                 <button
                   onClick={() => voteWinner('')}
                   disabled={gameState.isShowingWinner}
                   className="bg-surface-container-highest text-on-surface-variant px-4 py-2 rounded-full border border-outline-variant/30 text-[10px] font-black uppercase tracking-widest hover:bg-error/10 hover:text-error hover:border-error/30 transition-all disabled:opacity-50"
                 >
-                  Nadie adivinó ❌
+                  Nobody Guessed ❌
                 </button>
               </div>
             )}
@@ -1576,26 +1576,26 @@ export default function App() {
             <Star size={32} className="text-on-primary-fixed animate-spin" />
           </div>
         </div>
-        <h2 className="font-headline text-3xl font-black uppercase tracking-tighter text-on-surface">Partida en Curso</h2>
+        <h2 className="font-headline text-3xl font-black uppercase tracking-tighter text-on-surface">Game in Progress</h2>
         <p className="text-on-surface-variant font-body">
-          ¡Llegaste justo a tiempo para el desmadre! Pero espera un toque, la partida ya arrancó.
+          You arrived just in time for the fun! However, the match has already started.
         </p>
       </div>
 
       <div className="bg-surface-container-highest p-6 rounded-3xl border border-outline-variant/30">
-        <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-2">Estado:</p>
-        <p className="font-headline font-black text-xl text-on-surface uppercase">ESTOY LISTO (ESPERANDO)</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-2">Status:</p>
+        <p className="font-headline font-black text-xl text-on-surface uppercase">I AM READY (WAITING)</p>
       </div>
 
       <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
-        Entrarás automáticamente en la siguiente ronda.
+        You will automatically enter on the next round.
       </p>
 
       <button 
         onClick={goHome}
         className="w-full py-4 bg-surface-container-low text-on-surface font-headline font-bold text-lg rounded-2xl border-2 border-outline-variant/30 hover:bg-surface-bright transition-all"
       >
-        VOLVER AL INICIO
+        BACK TO HOME
       </button>
     </motion.div>
   );
@@ -1611,7 +1611,7 @@ export default function App() {
       >
         <div className="space-y-4">
           <Trophy size={64} className="text-tertiary mx-auto drop-shadow-[0_0_20px_rgba(251,191,36,0.5)]" />
-          <h2 className="font-headline text-3xl sm:text-5xl font-black uppercase tracking-tighter text-on-surface">Puntuaciones Finales</h2>
+          <h2 className="font-headline text-3xl sm:text-5xl font-black uppercase tracking-tighter text-on-surface">Final Scores</h2>
         </div>
 
         <div className="space-y-3 sm:space-y-4">
@@ -1632,7 +1632,7 @@ export default function App() {
               </div>
               <div className="text-right">
                 <span className="font-headline font-black text-2xl sm:text-3xl text-primary">{player.score}</span>
-                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Puntos</p>
+                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Points</p>
               </div>
             </motion.div>
           ))}
@@ -1643,19 +1643,19 @@ export default function App() {
             onClick={continueWithPoints}
             className="w-full py-5 bg-tertiary text-on-tertiary-fixed font-headline font-black text-xl sm:text-2xl rounded-2xl sm:rounded-3xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
           >
-            CONTINUAR CON PUNTOS 🏆
+            CONTINUE WITH POINTS 🏆
           </button>
           <button 
             onClick={restartGame}
             className="w-full py-5 bg-primary text-on-primary-fixed font-headline font-black text-xl sm:text-2xl rounded-2xl sm:rounded-3xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
           >
-            NUEVA PARTIDA (RESET) 🔥
+            NEW GAME (RESET) 🔥
           </button>
           <button 
             onClick={goHome}
             className="w-full py-4 bg-surface-container-high text-on-surface font-headline font-bold text-lg rounded-2xl border-2 border-outline-variant/30 hover:bg-surface-bright transition-all"
           >
-            SALIR AL INICIO
+            EXIT TO LOBBY
           </button>
         </div>
       </motion.div>
@@ -1663,219 +1663,296 @@ export default function App() {
   };
 
   const [selectedProcessStep, setSelectedProcessStep] = useState(0);
-  const [expandedProject, setExpandedProject] = useState<'none' | 'luma'>('none');
+  const [expandedProject, setExpandedProject] = useState<'none' | 'illow' | 'aix' | 'portal'>('none');
 
   const renderImpact = () => {
     return (
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-8 space-y-16 py-8 text-left">
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-20 py-12 text-left">
         {/* Section Header */}
-        <div className="max-w-4xl">
-          <span className="font-headline font-semibold text-xs text-outline mb-4 block uppercase tracking-[0.2em]">
-            Portfolio Selection
+        <div className="max-w-3xl space-y-4">
+          <span className="font-sans font-semibold text-xs text-outline tracking-[0.25em] uppercase block">
+            Case Studies
           </span>
-          <h2 className="font-headline text-4xl sm:text-7xl font-extrabold text-primary mb-6 leading-none tracking-tight">
-            High-Stakes <br />Storytelling
+          <h2 className="font-headline text-4xl sm:text-6xl font-black text-neutral-900 tracking-tight leading-tighter">
+            User Experience <br />As a Growth Engine
           </h2>
-          <p className="font-body text-base sm:text-lg text-on-surface-variant max-w-2xl leading-relaxed">
-            A curation of strategic initiatives focused on user retention and brand equity. Every pixel is a response to a real business objective.
+          <p className="font-sans text-base sm:text-lg text-neutral-500 max-w-2xl leading-relaxed">
+            A curated portfolio matching strategic visual narratives to empirical outcomes. Every design decision serves to translate complex technical workflows into frictionless business assets.
           </p>
         </div>
 
-        {/* Featured Projects Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Project 1: Holis Party Game */}
-          <article className="group relative flex flex-col bg-surface-container-low border border-outline-variant p-6 sm:p-8 hover:border-primary transition-all duration-500 rounded-2xl shadow-sm">
-            <div className="flex flex-col gap-6 h-full">
-              <div className="flex justify-between items-start">
-                <div className="flex flex-wrap gap-2">
-                  <span className="bg-surface-container-highest px-3 py-1 font-headline text-[10px] font-black uppercase tracking-wider text-primary rounded-full">
-                    UX/UI Design
-                  </span>
-                  <span className="bg-surface-container-highest px-3 py-1 font-headline text-[10px] font-black uppercase tracking-wider text-primary rounded-full">
-                    Real-Time State
-                  </span>
-                  <span className="bg-surface-container-highest px-3 py-1 font-headline text-[10px] font-black uppercase tracking-wider text-primary rounded-full">
-                    Sound UX
-                  </span>
-                </div>
-                <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors">
-                  sports_esports
+        {/* Featured Case Studies Grid (Apple-style Bento Minimalist Grid) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          {/* Case 1: Illow to BigID Evolution */}
+          <article className="custom-glass border border-neutral-200/40 hover:border-black/10 rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-500 hover:shadow-lg">
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <span className="bg-neutral-100 text-neutral-800 px-3 py-1 font-sans text-[10px] font-bold tracking-wider uppercase rounded-full">
+                  Design Systems • Brand Origin
                 </span>
+                <span className="material-symbols-outlined text-neutral-400">trending_up</span>
               </div>
-
               <div className="space-y-3">
-                <h3 className="font-headline text-2xl sm:text-3xl font-extrabold text-primary tracking-tight">
-                  Holis Multiplayer Game Suite
+                <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
+                  Illow to BigID Evolution
                 </h3>
-                <p className="font-body text-sm sm:text-base text-on-surface-variant leading-relaxed">
-                  Desafío: Crear un ambiente interactivo de juego social multijugador con latencia ultrabaja, sincronización instantánea usando Firebase, y dinámicas de sonido inmersivas (incluyendo el famoso audio "Están listos chicos").
-                </p>
-                <p className="font-body text-sm font-semibold italic text-primary">
-                  Impacto: Diseñado desde cero, logrando flujos limpios que unen dispositivos de amigos en tiempo de espera récord de <span className="underline">0.5s</span>.
+                <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
+                  <strong>Challenge:</strong> Leading the branding, visual system, and user experience strategy from early-stage startup through its eventual, high-profile acquisition by enterprise titan BigID.
                 </p>
               </div>
-
-              {/* High-Fidelity Mockup (Visual Game Theme Showcase in Portfolio) */}
-              <div className="mt-auto relative w-full aspect-[16/10] bg-surface-container overflow-hidden border border-outline-variant rounded-xl group/img">
-                <div className="absolute inset-0 bg-[#0e0e0e] flex flex-col justify-center items-center p-6 text-center select-none">
-                  {/* Miniature Game UI mockup preview with live visual nodes */}
-                  <div className="space-y-4 max-w-xs scale-90 sm:scale-100 transition-transform duration-500 group-hover/img:scale-105">
-                    <div className="flex items-center justify-center gap-2 text-[#ff89ab] mb-2">
-                      <Gamepad2 className="animate-spin" style={{ animationDuration: '6s' }} />
-                      <span className="font-headline font-black text-sm uppercase tracking-widest">HOLIS GAME LOBBY</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="bg-surface-container-high border border-primary/20 p-2 rounded-xl text-center">
-                        <div className="w-8 h-8 rounded-full bg-[#ff89ab]/20 mx-auto border border-[#ff89ab] flex items-center justify-center text-xs">🐙</div>
-                        <div className="text-[8px] font-black uppercase mt-1 text-[#ff89ab]">Lia</div>
-                      </div>
-                      <div className="bg-surface-container-high border border-primary/20 p-2 rounded-xl text-center">
-                        <div className="w-8 h-8 rounded-full bg-[#00f4fe]/20 mx-auto border border-[#00f4fe] flex items-center justify-center text-xs">🐱</div>
-                        <div className="text-[8px] font-black uppercase mt-1 text-[#00f4fe]">Pedro</div>
-                      </div>
-                      <div className="bg-surface-container-high border border-[#69fd5d]/20 p-2 rounded-xl text-center">
-                        <div className="w-8 h-8 rounded-full bg-[#69fd5d]/20 mx-auto border border-[#69fd5d] flex items-center justify-center text-xs">🦊</div>
-                        <div className="text-[8px] font-black uppercase mt-1 text-[#69fd5d]">Lucas</div>
-                      </div>
-                    </div>
-                    <div className="bg-[#ff89ab]/10 border border-[#ff89ab]/30 p-2 rounded-lg text-[9px] font-headline font-bold text-[#ff89ab] tracking-wider uppercase">
-                      Están Listos Chicos • 0.8s Auto Start
-                    </div>
-                  </div>
-                </div>
+            </div>
+            <div className="mt-8 space-y-4">
+              <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic font-sans text-xs text-neutral-600">
+                <strong>Impact:</strong> Unified the marketing and product workflows under a robust design system, allowing seamless enterprise transition to process 10x more data.
               </div>
-
-              <div className="pt-4 border-t border-outline-variant">
-                <button
-                  onClick={() => {
-                    setActiveTab('GAMES');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  id="tab-btn-gostart"
-                  className="w-full py-3 px-6 bg-primary text-on-primary font-headline text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 group-hover:gap-5 transition-all text-center rounded-xl"
-                >
-                  Probar juego interactivo ahora
-                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                </button>
-              </div>
+              <button
+                onClick={() => setExpandedProject(expandedProject === 'illow' ? 'none' : 'illow')}
+                className="w-full py-2.5 px-4 bg-black text-white hover:bg-neutral-800 font-sans text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                {expandedProject === 'illow' ? 'Close case details' : 'Explore Case Study'}
+                <span className="material-symbols-outlined text-xs">
+                  {expandedProject === 'illow' ? 'expand_less' : 'east'}
+                </span>
+              </button>
             </div>
           </article>
 
-          {/* Project 2: LUMA Enterprise Security Arc */}
-          <article className="group relative flex flex-col bg-surface-container-low border border-outline-variant p-6 sm:p-8 hover:border-primary transition-all duration-500 rounded-2xl shadow-sm">
-            <div className="flex flex-col gap-6 h-full">
-              <div className="flex justify-between items-start">
-                <div className="flex flex-wrap gap-2">
-                  <span className="bg-surface-container-highest px-3 py-1 font-headline text-[10px] font-black uppercase tracking-wider text-primary rounded-full">
-                    SaaS Architecture
-                  </span>
-                  <span className="bg-surface-container-highest px-3 py-1 font-headline text-[10px] font-black uppercase tracking-wider text-primary rounded-full">
-                    UX Research
-                  </span>
-                  <span className="bg-surface-container-highest px-3 py-1 font-headline text-[10px] font-black uppercase tracking-wider text-primary rounded-full">
-                    Complex Systems
-                  </span>
-                </div>
-                <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors">
-                  blur_on
+          {/* Case 2: AIX Governance Hub */}
+          <article className="custom-glass border border-neutral-200/40 hover:border-black/10 rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-500 hover:shadow-lg">
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <span className="bg-neutral-100 text-neutral-800 px-3 py-1 font-sans text-[10px] font-bold tracking-wider uppercase rounded-full">
+                  AI Governance • UX Trust
                 </span>
+                <span className="material-symbols-outlined text-neutral-400">psychology</span>
               </div>
-
               <div className="space-y-3">
-                <h3 className="font-headline text-2xl sm:text-3xl font-extrabold text-primary tracking-tight">
-                  LUMA ARC Enterprise Security
+                <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
+                  AIX: Trustworthy Interfaces
                 </h3>
-                <p className="font-body text-sm sm:text-base text-on-surface-variant leading-relaxed">
-                  Desafío: Reestructuración y rediseño de flujos complejos de respuesta rápida para analistas de centros de seguridad (SOC). Reducción de la carga cognitiva durante picos de incidentes críticos.
+                <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
+                  <strong>Challenge:</strong> Designing intuitive explainer dashboards and agentic feedback cycles to help compliance officers supervise complex corporate algorithm behaviors securely.
                 </p>
-                <p className="font-body text-sm font-semibold italic text-primary">
-                  Impacto: Racionalización de flujos que disminuyó el tiempo de resolución en un <span className="underline">24%</span> sostenido.
-                </p>
-              </div>
-
-              {/* High-Fidelity Mockup Placeholder */}
-              <div className="mt-auto relative w-full aspect-[16/10] bg-surface-container overflow-hidden border border-outline-variant rounded-xl">
-                <img
-                  alt="LUMA Security Dashboard"
-                  className="w-full h-full object-cover grayscale-[0.4] group-hover:grayscale-0 transition-all duration-700"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCG-9kQuN_dEgMoTBXTOF7Wn4iU5mdPUKcSqzV-tviph-fNIOBXtsY141UZuiLeoeU54WQlyz8zfssUh5TmsxWfkfcNNeHOrfvJCxIClBV0ok95lh83wQqrkhxIfLMCqSHEUTpuUgFt83CIC6dyV_ycmQJ2VUD-awqYIDkV-agZPy5xr2btDjaDHhXfkCuM8ce6KpAbVKcjbAU5aOgKc8S93BPoL6bt--uJ6llKJLS4HaHKI44SS3OefDFD6ogS7D2ZddVeUf_C7fo1"
-                />
-              </div>
-
-              <div className="pt-4 border-t border-outline-variant">
-                <button
-                  onClick={() => setExpandedProject(expandedProject === 'luma' ? 'none' : 'luma')}
-                  id="tab-btn-detailprj"
-                  className="w-full py-3 px-6 border-2 border-primary text-primary font-headline text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary hover:text-on-primary transition-all rounded-xl"
-                >
-                  {expandedProject === 'luma' ? 'Cerrar caso de estudio' : 'Examinar Caso de Estudio'}
-                  <span className="material-symbols-outlined text-sm">
-                    {expandedProject === 'luma' ? 'keyboard_arrow_up' : 'open_in_new'}
-                  </span>
-                </button>
               </div>
             </div>
+            <div className="mt-8 space-y-4">
+              <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic font-sans text-xs text-neutral-600">
+                <strong>Impact:</strong> Achieved a secure reduction in operational governance errors and unlocked accelerated adoption rate on automated models.
+              </div>
+              <button
+                onClick={() => setExpandedProject(expandedProject === 'aix' ? 'none' : 'aix')}
+                className="w-full py-2.5 px-4 bg-black text-white hover:bg-neutral-800 font-sans text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                {expandedProject === 'aix' ? 'Close case details' : 'Explore Case Study'}
+                <span className="material-symbols-outlined text-xs">
+                  {expandedProject === 'aix' ? 'expand_less' : 'east'}
+                </span>
+              </button>
+            </div>
           </article>
+
+          {/* Case 3: Enterprise Portal Redesign */}
+          <article className="custom-glass border border-neutral-200/40 hover:border-black/10 rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-500 hover:shadow-lg">
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <span className="bg-neutral-100 text-neutral-800 px-3 py-1 font-sans text-[10px] font-bold tracking-wider uppercase rounded-full">
+                  Information Architecture
+                </span>
+                <span className="material-symbols-outlined text-neutral-400">grid_view</span>
+              </div>
+              <div className="space-y-3">
+                <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
+                  SaaS Portal Simplification
+                </h3>
+                <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
+                  <strong>Challenge:</strong> Streamlining nested setting tabs containing heavily dense compliance logic arrays into crisp tables, with beautiful, airy white-space hierarchies.
+                </p>
+              </div>
+            </div>
+            <div className="mt-8 space-y-4">
+              <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic font-sans text-xs text-neutral-600">
+                <strong>Impact:</strong> Decreased overall system task navigation durations by 45% through strict layout alignment and consistent grid grids.
+              </div>
+              <button
+                onClick={() => setExpandedProject(expandedProject === 'portal' ? 'none' : 'portal')}
+                className="w-full py-2.5 px-4 bg-black text-white hover:bg-neutral-800 font-sans text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                {expandedProject === 'portal' ? 'Close case details' : 'Explore Case Study'}
+                <span className="material-symbols-outlined text-xs">
+                  {expandedProject === 'portal' ? 'expand_less' : 'east'}
+                </span>
+              </button>
+            </div>
+          </article>
+
         </div>
 
-        {/* Expanded Case Study Area */}
-        <AnimatePresence>
-          {expandedProject === 'luma' && (
+        {/* Dynamic Expanded Case Study Panels (Smooth Slide/Fade Entrance) */}
+        <AnimatePresence mode="wait">
+          {expandedProject !== 'none' && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="bg-surface-container-low border-2 border-primary/20 p-6 sm:p-10 rounded-2xl overflow-hidden space-y-6"
+              key={expandedProject}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              className="bg-white/80 border border-neutral-200/50 p-6 sm:p-10 rounded-3xl shadow-md space-y-6 text-neutral-800 custom-glass"
             >
-              <h4 className="font-headline text-xl sm:text-2xl font-black uppercase tracking-tight text-primary">
-                Caso de Estudio: LUMA ARC Console Modernization
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm font-body text-on-surface-variant">
-                <div className="space-y-4">
-                  <p className="font-semibold text-primary uppercase text-xs tracking-wider font-headline">El Contexto de Alta Tensión</p>
-                  <p>
-                    Los profesionales de ciberseguridad operan bajo estados de constante estrés. Un panel con mala densidad de información y alertas confusas puede retrasar la toma de decisiones por segundos, permitiendo filtraciones severas.
-                  </p>
-                  <p className="font-semibold text-primary uppercase text-xs tracking-wider font-headline">La Solución Propuesta</p>
-                  <p>
-                    Introdujimos un sistema de jerarquía asimétrica con paneles de expansión colapsables, una gama visual neutra de alto contraste y esquemas dinámicos para priorizar alarmas rojas únicamente cuando es crucial.
-                  </p>
-                </div>
-                <div className="space-y-4">
-                  <p className="font-semibold text-primary uppercase text-xs tracking-wider font-headline">Métodos Utilizados</p>
-                  <ul className="list-disc pl-5 space-y-1">
-                    <li>Auditoría de navegación heurística de 10 puntos en directo.</li>
-                    <li>Wireframing repetitivo y pruebas contextuales de volumen cognitivo.</li>
-                    <li>Sistemas de UI consistentes basados en tokens para desarrollo inmediato.</li>
-                  </ul>
-                  <p className="font-semibold text-primary uppercase text-xs tracking-wider font-headline">Logro Métrico</p>
-                  <div className="bg-[#0b1c30] text-white p-4 rounded-xl border border-primary/20 font-headline font-black italic uppercase">
-                    Reducción del Triage de Alertas a 1.2s • 38% más rápido que la competencia.
+              {expandedProject === 'illow' && (
+                <div className="space-y-6">
+                  <div className="border-b border-neutral-100 pb-4">
+                    <span className="text-outline text-[10px] font-bold uppercase tracking-widest block mb-1">Empirical Deep-Dive</span>
+                    <h4 className="font-headline text-2xl font-bold text-neutral-900 uppercase">
+                      From Visual Startup to Enterprise Acquisition: Illow to BigID
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed">
+                    <div className="space-y-4">
+                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">The Mission & Vision</p>
+                      <p>
+                        Lia started her role as lead visual & marketing strategist for Illow. She designed the brand's identity, typography system, high-conversion landing pages, and interactive marketing funnels, effectively bridging the startup's visual appeal with real investor interest.
+                      </p>
+                      <p>
+                        This absolute control over aesthetics laid a profound groundwork, allowing her to comfortably establish the company's internal UX department from the ground up prior to acquisition.
+                      </p>
+                    </div>
+                    <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-100">
+                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Methodology & Adaptations</p>
+                      <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600">
+                        <li>Developed a streamlined Design System (UI Kit) translating marketing brand elements into reusable component code.</li>
+                        <li>Reduced engineering visual debt by 40%, aligning product development with marketing brand consistency.</li>
+                        <li>Redesigned complex data-consent tables and user dashboards for BigID's global compliance standards post-acquisition.</li>
+                      </ul>
+                      <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
+                        Acquisition Catalyst • 10x Data Processing Volume Ready
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {expandedProject === 'aix' && (
+                <div className="space-y-6">
+                  <div className="border-b border-neutral-100 pb-4">
+                    <span className="text-outline text-[10px] font-bold uppercase tracking-widest block mb-1">Empirical Deep-Dive</span>
+                    <h4 className="font-headline text-2xl font-bold text-neutral-900 uppercase">
+                      AIX: Trustworthy Interfaces for AI Governance
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed">
+                    <div className="space-y-4">
+                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">The Compliance Challenge</p>
+                      <p>
+                        Autonomous AI engines in complex B2B compliance workflows introduces substantial ambiguity. Risk auditors and officers struggle to trust automated decisions without explicit contextual logic.
+                      </p>
+                      <p>
+                        We designed state-of-the-art interactive explanation workflows under the **AIX frameworks**, providing explainable checkpoint structures for auditing algorithms instantly.
+                      </p>
+                    </div>
+                    <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-100">
+                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">UX Principles Applied</p>
+                      <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600">
+                        <li>Crafted micro-interactions and explicit warning metrics to clarify automated decision weight factors.</li>
+                        <li>Built interactive logic trees outlining chronological algorithmic decisions step-by-step.</li>
+                        <li>Reduced corporate friction in highly sensitive compliance risk assessments.</li>
+                      </ul>
+                      <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
+                        Trust First • Drastic Operational Error Reductions
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {expandedProject === 'portal' && (
+                <div className="space-y-6">
+                  <div className="border-b border-neutral-100 pb-4">
+                    <span className="text-outline text-[10px] font-bold uppercase tracking-widest block mb-1">Empirical Deep-Dive</span>
+                    <h4 className="font-headline text-2xl font-bold text-neutral-900 uppercase">
+                      SaaS Portal Redesign: Simplifying Nested Logic
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed">
+                    <div className="space-y-4">
+                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Overcoming Density Fatigue</p>
+                      <p>
+                        Enterprise clients were routinely overwhelmed by highly dense interfaces loaded with multi-level nested setting parameters, leading to delayed workflows and accidental misconfigurations.
+                      </p>
+                      <p>
+                        The redesign stripped down secondary visual noise, resulting in an clean grid system designed following strict interactive Fitts's and Hick's Laws.
+                      </p>
+                    </div>
+                    <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-100">
+                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Interactive Milestones</p>
+                      <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600">
+                        <li>Substituted raw checkboxes and toggles with structured grouped regions for high focus.</li>
+                        <li>Implemented an clean typography layout using Inter paired with space-efficient compact tables.</li>
+                        <li>Reduced required page travel times dramatically by 45%.</li>
+                      </ul>
+                      <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
+                        45% Navigation Speed Increase
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Metric Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 py-10 border-y border-outline-variant">
-          <div className="text-center space-y-1">
-            <div className="font-headline text-5xl sm:text-6xl font-black text-primary">24%</div>
-            <div className="font-headline text-[10px] font-black uppercase tracking-widest text-[#45474b]">
-              Retention Growth
+        {/* Flagship Technical Showcase Element: Holis Game Suite */}
+        <div className="custom-glass border border-neutral-200/40 rounded-[2.5rem] p-6 sm:p-12 space-y-8 shadow-sm">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-8 space-y-4">
+              <span className="bg-primary/5 border border-primary/25 text-primary px-3 py-1 font-sans text-[10px] font-extrabold uppercase tracking-widest rounded-full w-fit block">
+                Technical Mastery Showcase
+              </span>
+              <h3 className="font-headline text-2xl sm:text-4xl font-bold text-neutral-900 tracking-tight">
+                Flagship Project: Holis Social Party Game Suite
+              </h3>
+              <p className="font-sans text-sm sm:text-base text-neutral-500 leading-relaxed max-w-xl">
+                An immersive, real-time multiplayer application designed as a rigorous demonstration of interactive system design. Showcases low-latency state synchronizations and multimodal audio feedback loops.
+              </p>
+              <div className="flex flex-wrap gap-2 text-[10px] uppercase font-bold tracking-wider text-neutral-600">
+                <span className="bg-neutral-100 px-3 py-1 rounded-full">Firebase Firestore</span>
+                <span className="bg-neutral-100 px-3 py-1 rounded-full">Web Audio API</span>
+                <span className="bg-neutral-100 px-3 py-1 rounded-full">State Machine Orchestration</span>
+              </div>
+            </div>
+            
+            <div className="lg:col-span-4 flex flex-col justify-center h-full">
+              <button
+                onClick={() => {
+                  setActiveTab('GAMES');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="py-5 px-8 bg-black hover:bg-neutral-800 text-white font-sans text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-md flex items-center justify-center gap-3"
+              >
+                Launch Live Game Experience Test
+                <span className="material-symbols-outlined text-sm">sports_esports</span>
+              </button>
             </div>
           </div>
-          <div className="text-center border-y md:border-y-0 md:border-x border-outline-variant py-6 md:py-0 space-y-1">
-            <div className="font-headline text-5xl sm:text-6xl font-black text-primary">12+</div>
-            <div className="font-headline text-[10px] font-black uppercase tracking-widest text-[#45474b]">
-              End-to-end Flows
+        </div>
+
+        {/* Business Analytics Milestones Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 p-10 border-y border-neutral-200/45">
+          <div className="text-center space-y-1">
+            <div className="font-headline text-5xl sm:text-6xl font-black text-neutral-900 tracking-tight">10x</div>
+            <div className="font-sans text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+              Data Pipeline Scale Capability (BigID)
+            </div>
+          </div>
+          <div className="text-center border-y md:border-y-0 md:border-x border-neutral-200/45 py-6 md:py-0 space-y-1">
+            <div className="font-headline text-5xl sm:text-6xl font-black text-neutral-900 tracking-tight">40%</div>
+            <div className="font-sans text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+              Visual Debt Reduction (Illow Design System)
             </div>
           </div>
           <div className="text-center space-y-1">
-            <div className="font-headline text-5xl sm:text-6xl font-black text-primary">0.5s</div>
-            <div className="font-headline text-[10px] font-black uppercase tracking-widest text-[#45474b]">
-              Interaction Speed
+            <div className="font-headline text-5xl sm:text-6xl font-black text-neutral-900 tracking-tight">45%</div>
+            <div className="font-sans text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+              Navigation Velocity Gain
             </div>
           </div>
         </div>
@@ -1886,46 +1963,46 @@ export default function App() {
   const renderProcess = () => {
     const steps = [
       {
-        title: "Descubrir",
+        title: "Discover",
         icon: "search",
-        sub: "User Research & Audits",
-        desc: "Comprensión del contexto empresarial, análisis profundo de datos cualitativos y telemetry, mapas de empatía y entrevistas contextuales para aislar problemas reales."
+        sub: "Research & Audit",
+        desc: "Immersion into corporate environments, behavioral log studies, empathy mappings, and stakeholder interviews to explicitly catalog inefficiencies."
       },
       {
-        title: "Definir",
+        title: "Define",
         icon: "fact_check",
-        sub: "Architecture & Taxonomy",
-        desc: "Organización de la información, flujos, wireframes de baja fidelidad conceptuales para estructurar los cuellos de botella clave del usuario y proponer soluciones robustas."
+        sub: "Taxonomy & Flow",
+        desc: "Constructing system information hierarchies, drafting interactive logic wires, and modeling user states to alleviate friction bottlenecks."
       },
       {
-        title: "Diseñar",
+        title: "Design",
         icon: "palette",
-        sub: "High-Fidelity & Sounds",
-        desc: "Creación de interfaces fluidas enriquecidas con micro-interacciones, animaciones de transición y capas sonoras útiles, asegurando que la estética refuerce la utilidad del sistema."
+        sub: "Hi-Fi & Sound Systems",
+        desc: "Assembling beautiful high-contrast wireframes coupled with micro-animations, layout motions, and auditory confirmations that elevate task completion rates."
       },
       {
-        title: "Desarrollar",
+        title: "Deliver",
         icon: "terminal",
-        sub: "Precision Handoff",
-        desc: "Coordinación íntima de código con el equipo de ingeniería directa, garantizando coherencia en los tokens de diseño, optimización de renderizado y pruebas funcionales eficientes."
+        sub: "Rigorous Dev Handoff",
+        desc: "Partnering strictly with front-end engineers, packaging structured design tokens, writing code audit parameters, and verifying smooth production-ready rendering."
       }
     ];
 
     return (
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-8 space-y-12 py-8 text-left">
-        <div>
-          <span className="font-headline font-semibold text-xs text-outline mb-4 block uppercase tracking-[0.2em]">
-            Metodología de Trabajo
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-12 py-12 text-left">
+        <div className="space-y-4">
+          <span className="font-sans font-semibold text-xs text-outline tracking-[0.25em] uppercase block">
+            Core Methodology
           </span>
-          <h2 className="font-headline text-4xl sm:text-6xl font-extrabold text-primary mb-4 leading-none tracking-tight">
+          <h2 className="font-headline text-4xl sm:text-6xl font-black text-neutral-900 tracking-tight leading-none">
             The Double-Diamond Cycle
           </h2>
-          <p className="font-body text-base sm:text-lg text-on-surface-variant max-w-2xl">
-            Cada proyecto se somete a un filtro riguroso de iteración empírica. El diseño solo tiene éxito si responde a indicadores cualitativos medibles.
+          <p className="font-sans text-base sm:text-lg text-neutral-500 max-w-2xl leading-relaxed">
+            Every product journey is subjected to rigorous, repeatable iterative feedback loops. Visual quality is measured directly against core performance parameters.
           </p>
         </div>
 
-        {/* Interactive Step Timeline Navigation */}
+        {/* Apple-style steps selection timeline indicator */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {steps.map((st, idx) => {
             const isSelected = selectedProcessStep === idx;
@@ -1934,51 +2011,51 @@ export default function App() {
                 key={idx}
                 onClick={() => setSelectedProcessStep(idx)}
                 id={`proc-step-${idx}`}
-                className={`p-6 rounded-2xl border text-left transition-all ${
+                className={`p-6 rounded-3xl border transition-all text-left ${
                   isSelected
-                    ? 'bg-primary text-on-primary border-primary shadow-lg scale-[1.02]'
-                    : 'bg-surface-container-low border-outline-variant hover:border-primary text-on-surface'
+                    ? 'bg-black text-white border-black shadow-lg scale-[1.02]'
+                    : 'bg-white/80 border-neutral-200/50 hover:border-black/20 text-neutral-800'
                 }`}
               >
                 <div className="flex justify-between items-start mb-4">
                   <span className="material-symbols-outlined text-lg">{st.icon}</span>
-                  <span className={`font-headline text-[10px] font-black ${isSelected ? 'text-on-primary/60' : 'text-outline'}`}>0{idx + 1}</span>
+                  <span className={`font-sans text-[10px] font-black ${isSelected ? 'text-neutral-400' : 'text-neutral-400'}`}>0{idx + 1}</span>
                 </div>
-                <h3 className="font-headline text-lg font-black uppercase tracking-tight mb-1">{st.title}</h3>
-                <p className={`font-body text-[11px] uppercase tracking-wider ${isSelected ? 'text-on-primary-fixed/80' : 'text-on-surface-variant'}`}>{st.sub}</p>
+                <h3 className="font-headline text-base font-bold tracking-tight mb-1">{st.title}</h3>
+                <p className={`font-sans text-[10px] tracking-wider uppercase ${isSelected ? 'text-neutral-300' : 'text-neutral-500'}`}>{st.sub}</p>
               </button>
             );
           })}
         </div>
 
-        {/* Showcase of currently selected step details */}
-        <div className="bg-surface-container-low border border-outline-variant p-6 sm:p-10 rounded-3xl grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+        {/* Active Stage Overview Card */}
+        <div className="custom-glass border border-neutral-200/50 p-6 sm:p-10 rounded-[2.5rem] grid grid-cols-1 md:grid-cols-3 gap-8 items-center bg-white/80 shadow-sm">
           <div className="md:col-span-2 space-y-4">
-            <span className="text-primary uppercase font-headline text-xs font-black tracking-widest block">
-              Fase 0{selectedProcessStep + 1} de Investigación activa
+            <span className="text-neutral-400 uppercase font-sans text-[10px] font-extrabold tracking-widest block">
+              Phase 0{selectedProcessStep + 1} • Focus Deliverables
             </span>
-            <h4 className="font-headline text-2xl sm:text-3xl font-black text-primary uppercase">
+            <h4 className="font-headline text-2xl font-bold text-neutral-900 uppercase">
               {steps[selectedProcessStep].sub}
             </h4>
-            <p className="font-body text-base text-on-surface-variant leading-relaxed">
+            <p className="font-sans text-sm sm:text-base text-neutral-500 leading-relaxed">
               {steps[selectedProcessStep].desc}
             </p>
           </div>
-          <div className="bg-surface border border-outline-variant p-6 rounded-2xl space-y-4 flex flex-col justify-between aspect-square">
+          <div className="bg-neutral-50 border border-neutral-150 p-6 rounded-2xl flex flex-col justify-between aspect-square">
             <div>
-              <span className="material-symbols-outlined text-primary text-4xl mb-4">
+              <span className="material-symbols-outlined text-neutral-900 text-3xl mb-4">
                 {steps[selectedProcessStep].icon}
               </span>
-              <p className="font-headline text-xs font-black uppercase tracking-widest text-outline">Entregable Típico</p>
-              <p className="font-body text-sm font-bold text-primary mt-1">
-                {selectedProcessStep === 0 && "• Mapas de flujo con cuellos de botella identificados"}
-                {selectedProcessStep === 1 && "• Arquitectura de información estructurada y testeada"}
-                {selectedProcessStep === 2 && "• Prototipos interactivos de alta fidelidad con feedback táctil"}
-                {selectedProcessStep === 3 && "• Tokens JSON de diseño integrados y directos para Git"}
+              <p className="font-sans text-[10px] font-bold uppercase tracking-widest text-neutral-400">Typical Deliverable</p>
+              <p className="font-sans text-xs font-semibold text-neutral-800 mt-2">
+                {selectedProcessStep === 0 && "• Detailed flow blueprints with mapped system barriers"}
+                {selectedProcessStep === 1 && "• Scalable user information mapping layouts & navigation taxonomies"}
+                {selectedProcessStep === 2 && "• Advanced logic dashboards with integrated micro-interactions"}
+                {selectedProcessStep === 3 && "• Clean styled JSON design system dictionary integrations"}
               </p>
             </div>
-            <div className="bg-surface-container-high px-3 py-2 rounded-lg text-[10px] font-headline font-semibold text-primary uppercase tracking-tight text-center">
-              Listo para Implementación
+            <div className="bg-neutral-200/50 px-3 py-2 rounded-xl text-[10px] font-sans font-extrabold text-neutral-800 uppercase tracking-wider text-center mt-4">
+              Validated & Handoff Ready
             </div>
           </div>
         </div>
@@ -1988,72 +2065,73 @@ export default function App() {
 
   const renderVision = () => {
     return (
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-8 space-y-12 py-8 text-left">
-        <div>
-          <span className="font-headline font-semibold text-xs text-outline mb-4 block uppercase tracking-[0.2em]">
-            Filosofía de Diseño
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-16 py-12 text-left">
+        <div className="space-y-4">
+          <span className="font-sans font-semibold text-xs text-outline tracking-[0.25em] uppercase block">
+            Design Philosophy
           </span>
-          <h2 className="font-headline text-4xl sm:text-6xl font-extrabold text-primary mb-4 leading-none tracking-tight">
+          <h2 className="font-headline text-4xl sm:text-6xl font-black text-neutral-900 tracking-tight leading-none">
             Empathy Over Vanity
           </h2>
-          <p className="font-body text-base sm:text-lg text-on-surface-variant max-w-2xl leading-relaxed">
-            Un diseño de interfaz hermoso sin utilidad real es costoso y confuso. La verdadera exquisitez del diseño radica en reducir la resistencia invisible de los flujos digitales cotidianos.
+          <p className="font-sans text-base sm:text-lg text-neutral-500 max-w-2xl leading-relaxed">
+            Beautiful visual systems without actual high-stakes utility represents raw luxury noise. Designing with craft is about reducing the obscure frictional thresholds of sophisticated everyday systems.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-          {/* Quote Panel */}
-          <div className="bg-[#0b1c30] text-white p-8 sm:p-12 rounded-[2rem] flex flex-col justify-between border border-primary/20">
-            <span className="material-symbols-outlined text-4xl text-surface-container-high select-none">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch">
+          {/* Quote Panel (Elegant dark theme representation of Apple core guidelines) */}
+          <div className="bg-black text-white p-8 sm:p-12 rounded-[2.5rem] flex flex-col justify-between border border-neutral-800 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+            <span className="material-symbols-outlined text-4xl text-neutral-700 select-none">
               format_quote
             </span>
-            <p className="font-headline text-xl sm:text-2xl font-bold tracking-tight italic leading-relaxed my-6">
-              "El diseño de interacción no es estética pura; es música. Tiene silencios, acentos y picos de energía pensados para guiar los ojos del usuario sin que se dé cuenta."
+            <p className="font-sans text-lg sm:text-xl font-medium tracking-tight italic leading-relaxed my-8 text-neutral-200">
+              "Interaction design is not static artwork; it is akin to melody. It requires pauses, purposeful accents, and visual hierarchy coordinates to effortlessly guide attention."
             </p>
-            <div className="pt-6 border-t border-white/10 space-y-1">
-              <p className="font-headline font-black uppercase text-xs tracking-widest text-[#ff89ab]">
+            <div className="pt-6 border-t border-neutral-800 space-y-1">
+              <p className="font-sans font-black uppercase text-xs tracking-widest text-[#ff89ab]">
                 Lia Parra
               </p>
-              <p className="font-body text-[10px] uppercase text-white/50">
-                Senior Interaction Designer
+              <p className="font-sans text-[10px] uppercase text-neutral-400">
+                Senior UX & Interaction Designer
               </p>
             </div>
           </div>
 
           {/* Pillars List */}
-          <div className="space-y-6 flex flex-col justify-center">
+          <div className="space-y-8 flex flex-col justify-center">
             <div className="flex gap-4 items-start">
-              <span className="material-symbols-outlined p-2 bg-surface-container rounded-xl text-primary">
+              <span className="material-symbols-outlined p-2.5 bg-neutral-100 rounded-2xl text-neutral-900">
                 architecture
               </span>
               <div className="space-y-1">
-                <h3 className="font-headline text-lg font-black uppercase text-primary">Brutalismo Funcional</h3>
-                <p className="font-body text-sm text-on-surface-variant leading-relaxed">
-                  Eliminamos los distractores gráficos redundantes e innecesarios para poner el foco de atención 100% sobre las acciones prioritarias de tu producto.
+                <h3 className="font-headline text-base font-bold text-neutral-900 tracking-tight">Functional Brutalism</h3>
+                <p className="font-sans text-sm text-neutral-500 leading-relaxed">
+                  We eliminate excessive graphic clutter and redundancies to assert focus on the strategic primary interactions of your digital ecosystem.
                 </p>
               </div>
             </div>
 
             <div className="flex gap-4 items-start">
-              <span className="material-symbols-outlined p-2 bg-surface-container rounded-xl text-primary">
+              <span className="material-symbols-outlined p-2.5 bg-neutral-100 rounded-2xl text-neutral-900">
                 volume_up
               </span>
               <div className="space-y-1">
-                <h3 className="font-headline text-lg font-black uppercase text-primary">Sistemas Multimodales</h3>
-                <p className="font-body text-sm text-on-surface-variant leading-relaxed">
-                  Creemos en el feedback sonoro sutil. Como pudiste ver y experimentar en el "Holis Game Suite", la integración auditiva oportuna mejora el engagement hasta un 30%.
+                <h3 className="font-headline text-base font-bold text-neutral-900 tracking-tight">Multimodal Sensory Systems</h3>
+                <p className="font-sans text-sm text-neutral-500 leading-relaxed">
+                  Subtle, well-timed auditory checkpoints prevent error states. As verified within our live **Holis Social Suite** demonstration, integrated audio feedback drives user action retention.
                 </p>
               </div>
             </div>
 
             <div className="flex gap-4 items-start">
-              <span className="material-symbols-outlined p-2 bg-surface-container rounded-xl text-primary">
+              <span className="material-symbols-outlined p-2.5 bg-neutral-100 rounded-2xl text-neutral-900">
                 speed
               </span>
               <div className="space-y-1">
-                <h3 className="font-headline text-lg font-black uppercase text-primary">Velocidad como Característica</h3>
-                <p className="font-body text-sm text-on-surface-variant leading-relaxed">
-                  Un buen flujo que tarda en cargar es un mal flujo. Optimizamos interfaces y micro-animaciones para que corran a 60 FPS garantizados.
+                <h3 className="font-headline text-base font-bold text-neutral-900 tracking-tight">Velocity is a Metric</h3>
+                <p className="font-sans text-sm text-neutral-500 leading-relaxed">
+                  Friction is born from lag. We build and design layouts to render smooth animations at high target frames per second benchmarks.
                 </p>
               </div>
             </div>
@@ -2065,52 +2143,54 @@ export default function App() {
 
   const renderContact = () => {
     return (
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-8 space-y-12 py-8 text-left">
-        <div>
-          <span className="font-headline font-semibold text-xs text-outline mb-4 block uppercase tracking-[0.2em]">
-            Hablemos hoy en privado
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-16 py-12 text-left">
+        <div className="space-y-4">
+          <span className="font-sans font-semibold text-xs text-outline tracking-[0.25em] uppercase block">
+            Partner with Lia
           </span>
-          <h2 className="font-headline text-4xl sm:text-6xl font-extrabold text-primary mb-4 leading-none tracking-tight">
+          <h2 className="font-headline text-4xl sm:text-6xl font-black text-neutral-900 tracking-tight leading-tighter">
             Consultancy & Action
           </h2>
-          <p className="font-body text-base sm:text-lg text-on-surface-variant max-w-2xl leading-relaxed">
-            ¿Tienes un desafío de conversión, retención de usuarios, o quieres acelerar tu diseño de producto? Envíame un mensaje y te responderé en menos de 24 horas.
+          <p className="font-sans text-base sm:text-lg text-neutral-500 max-w-2xl leading-relaxed">
+            Need to solve immediate conversions boundaries, improve retention rates, or build clean corporate design languages? Leave a message or connect directly.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* Information block */}
-          <div className="bg-surface-container-low border border-outline-variant p-8 rounded-3xl space-y-6">
-            <h3 className="font-headline text-xl font-black uppercase text-primary tracking-tight">Lia Parra</h3>
-            <p className="font-body text-sm text-on-surface-variant leading-relaxed">
-              Consultora sénior de experiencia de usuario enfocada en diseñar y potenciar flujos interactivos de alto impacto empresarial.
-            </p>
-            <div className="space-y-3 pt-4 border-t border-outline-variant text-sm font-body">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-outline">mail</span>
-                <span className="text-on-surface-variant select-all">liangelyparra@gmail.com</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-outline">location_on</span>
-                <span className="text-on-surface-variant">Active • Remoto / Global</span>
+          <div className="custom-glass border border-neutral-200/40 p-8 sm:p-10 rounded-3xl space-y-8 flex flex-col justify-between">
+            <div className="space-y-6">
+              <h3 className="font-headline text-2xl font-bold text-neutral-900 tracking-tight">Lia Parra</h3>
+              <p className="font-sans text-sm text-neutral-500 leading-relaxed">
+                Senior product designer and experience strategist driving conversion, interactive interfaces, and cross-platform UX structures.
+              </p>
+              <div className="space-y-4 pt-6 border-t border-neutral-100 text-sm font-sans">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[#45474b]">mail</span>
+                  <span className="text-neutral-700 select-all font-medium">liangelyparra@gmail.com</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[#45474b]">location_on</span>
+                  <span className="text-neutral-700 font-medium">Remote • Global / Digital Sync</span>
+                </div>
               </div>
             </div>
 
-            <div className="flex gap-4 pt-4">
+            <div className="flex gap-6 pt-6 border-t border-neutral-100">
               <a 
                 href="https://linkedin.com"
                 target="_blank"
                 rel="noreferrer"
-                className="font-headline text-xs font-black uppercase text-primary hover:underline"
+                className="font-sans text-xs font-bold uppercase tracking-widest text-neutral-900 hover:opacity-75 transition-opacity"
               >
                 LinkedIn
               </a>
-              <span className="text-outline">•</span>
+              <span className="text-neutral-300">•</span>
               <a 
                 href="https://dribbble.com"
                 target="_blank"
                 rel="noreferrer"
-                className="font-headline text-xs font-black uppercase text-primary hover:underline"
+                className="font-sans text-xs font-bold uppercase tracking-widest text-neutral-900 hover:opacity-75 transition-opacity"
               >
                 Dribbble
               </a>
@@ -2118,12 +2198,12 @@ export default function App() {
           </div>
 
           {/* Contact form block */}
-          <div className="lg:col-span-2 bg-surface-container-lowest border-2 border-primary/20 p-8 sm:p-10 rounded-3xl shadow-sm">
+          <div className="lg:col-span-2 bg-white/80 border border-neutral-200/50 p-8 sm:p-10 rounded-3xl shadow-sm custom-glass">
             <form onSubmit={handleContactSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label htmlFor="contact-name" className="block text-xs font-headline font-black uppercase tracking-wider text-primary">
-                    Nombre Completo *
+                  <label htmlFor="contact-name" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500">
+                    Your Name *
                   </label>
                   <input
                     id="contact-name"
@@ -2131,13 +2211,13 @@ export default function App() {
                     required
                     value={contactName}
                     onChange={(e) => setContactName(e.target.value)}
-                    placeholder="Ej: Alejandro Smith"
-                    className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-3 text-sm font-body focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-on-surface"
+                    placeholder="e.g. Alex Smith"
+                    className="w-full bg-neutral-50 border border-neutral-200 rounded-xl p-3 text-sm font-sans focus:bg-white focus:border-black outline-none transition-all text-neutral-900"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="contact-email" className="block text-xs font-headline font-black uppercase tracking-wider text-primary">
-                    Enviar Correo Electrónico *
+                  <label htmlFor="contact-email" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500">
+                    Email Address *
                   </label>
                   <input
                     id="contact-email"
@@ -2145,18 +2225,18 @@ export default function App() {
                     required
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder="Ej: alejandro@luma.com"
-                    className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-3 text-sm font-body focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-on-surface"
+                    placeholder="e.g. alex@company.com"
+                    className="w-full bg-neutral-50 border border-neutral-200 rounded-xl p-3 text-sm font-sans focus:bg-white focus:border-black outline-none transition-all text-neutral-900"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-xs font-headline font-black uppercase tracking-wider text-primary">
-                  Área de Interés
+                <label className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500">
+                  Area of Collaboration
                 </label>
                 <div className="grid grid-cols-3 gap-2">
-                  {['Consultoría UX', 'Diseño de Producto', 'Game UX'].map((sub) => {
+                  {['UX Consultancy', 'Product Design', 'Game UX'].map((sub) => {
                     const isSelected = contactSubject === sub;
                     return (
                       <button
@@ -2164,10 +2244,10 @@ export default function App() {
                         type="button"
                         id={`subject-${sub.replace(/\s+/g, '-').toLowerCase()}`}
                         onClick={() => setContactSubject(sub)}
-                        className={`py-2 px-3 rounded-lg text-xs font-headline font-bold uppercase border tracking-wider transition-all ${
+                        className={`py-2.5 px-3 rounded-xl text-[10px] font-sans font-bold uppercase border tracking-wider transition-all ${
                           isSelected
-                            ? 'bg-primary text-on-primary border-primary font-black'
-                            : 'bg-surface border-outline-variant text-on-surface-variant hover:border-primary'
+                            ? 'bg-black text-white border-black shadow-md'
+                            : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-black'
                         }`}
                       >
                         {sub}
@@ -2178,8 +2258,8 @@ export default function App() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="contact-message" className="block text-xs font-headline font-black uppercase tracking-wider text-primary">
-                  Cuéntame sobre tu proyecto *
+                <label htmlFor="contact-message" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500">
+                  Tell me about your product challenge *
                 </label>
                 <textarea
                   id="contact-message"
@@ -2187,8 +2267,8 @@ export default function App() {
                   rows={4}
                   value={contactMessage}
                   onChange={(e) => setContactMessage(e.target.value)}
-                  placeholder="Detalla tu desafío de negocio o los plazos requeridos..."
-                  className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-3 text-sm font-body focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-on-surface"
+                  placeholder="Describe your design objectives, timelines or parameters..."
+                  className="w-full bg-neutral-50 border border-neutral-200 rounded-xl p-3 text-sm font-sans focus:bg-white focus:border-black outline-none transition-all text-neutral-900"
                 />
               </div>
 
@@ -2196,9 +2276,9 @@ export default function App() {
                 type="submit"
                 id="contact-form-submit-btn"
                 disabled={contactSubmitting}
-                className="w-full py-4 bg-primary text-on-primary font-headline text-xs font-black uppercase tracking-widest hover:opacity-90 disabled:opacity-50 transition-all rounded-xl shadow-md active:scale-95 flex items-center justify-center gap-2"
+                className="w-full py-4 bg-black text-white font-sans text-xs font-bold uppercase tracking-widest hover:bg-neutral-800 disabled:opacity-50 transition-all rounded-xl shadow-md active:scale-95 flex items-center justify-center gap-2"
               >
-                {contactSubmitting ? 'Procediendo a enviar...' : 'Enviar Solicitud'}
+                {contactSubmitting ? 'Sending inquiry...' : 'Send Message'}
                 <span className="material-symbols-outlined text-sm">send</span>
               </button>
             </form>
@@ -2237,17 +2317,17 @@ export default function App() {
       }`}>
         <div 
           onClick={() => { setActiveTab('IMPACT'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-          className="flex items-center gap-3 cursor-pointer select-none"
+          className="flex items-center gap-2 cursor-pointer select-none"
         >
           {activeTab === 'GAMES' ? (
-            <Gamepad2 className="text-[#ff89ab]" size={22} />
+            <Gamepad2 className="text-[#ff89ab]" size={20} />
           ) : (
-            <span className="material-symbols-outlined text-primary text-2xl">blur_on</span>
+            <span className="material-symbols-outlined text-neutral-800 text-xl font-bold">blur_on</span>
           )}
-          <h1 className={`font-headline text-lg sm:text-xl font-extrabold tracking-tighter uppercase ${
-            activeTab === 'GAMES' ? 'text-[#ff89ab] italic' : 'text-primary'
+          <h1 className={`font-sans text-lg font-black tracking-tight ${
+            activeTab === 'GAMES' ? 'text-[#ff89ab] italic font-headline' : 'text-neutral-900'
           }`}>
-            UX Impact Deck
+            Lia
           </h1>
         </div>
 
