@@ -161,6 +161,7 @@ export default function App() {
   const [contactMessage, setContactMessage] = useState('');
   const [contactSubmitting, setContactSubmitting] = useState(false);
   const [contactSubmitted, setContactSubmitted] = useState(false);
+  const [availableMenuOpen, setAvailableMenuOpen] = useState(false);
 
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1681,8 +1682,8 @@ export default function App() {
       <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-20 py-12 text-left">
         {/* Section Header */}
         <div className="max-w-3xl space-y-4">
-          <span className="font-sans font-semibold text-xs text-outline tracking-[0.25em] uppercase block">
-            Case Studies
+          <span className="font-sans text-[10px] font-black uppercase tracking-widest text-[#ff89ab] bg-[#ff89ab]/10 px-3 py-1 rounded-full w-fit block mb-1">
+            03 • Selected Accomplishments
           </span>
           <h2 className="font-headline text-4xl sm:text-6xl font-black text-neutral-900 tracking-tight leading-tighter">
             User Experience <br />As a Growth Engine
@@ -1706,10 +1707,10 @@ export default function App() {
           >
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <span className="bg-neutral-100 text-neutral-800 px-3 py-1 font-sans text-[10px] font-bold tracking-wider uppercase rounded-full">
+                <span className="bg-[#ff89ab]/10 text-[#ff89ab] px-3 py-1 font-sans text-[10px] font-black tracking-wider uppercase rounded-full">
                   UX Strategy • Brand Origin
                 </span>
-                <span className="material-symbols-outlined text-neutral-400">rocket_launch</span>
+                <span className="material-symbols-outlined text-[#ff89ab]">rocket_launch</span>
               </div>
               <div className="space-y-2">
                 <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
@@ -1780,10 +1781,10 @@ export default function App() {
           >
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <span className="bg-neutral-100 text-neutral-800 px-3 py-1 font-sans text-[10px] font-bold tracking-wider uppercase rounded-full">
+                <span className="bg-[#ff89ab]/10 text-[#ff89ab] px-3 py-1 font-sans text-[10px] font-black tracking-wider uppercase rounded-full">
                   Design Systems • M&A Integration
                 </span>
-                <span className="material-symbols-outlined text-neutral-400">trending_up</span>
+                <span className="material-symbols-outlined text-[#ff89ab]">trending_up</span>
               </div>
               <div className="space-y-2">
                 <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
@@ -1814,11 +1815,11 @@ export default function App() {
                     <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Methodology & Adaptations</p>
                     <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600">
                       <li>Developed a streamlined Design System (UI Kit) translating marketing brand elements into reusable component code.</li>
-                      <li>Reduced engineering visual debt by 40%, aligning product development with marketing brand consistency.</li>
+                      <li>Significantly reduced engineering visual debt, aligning product development with marketing brand consistency.</li>
                       <li>Redesigned complex data-consent tables and user dashboards for BigID's global compliance standards post-acquisition.</li>
                     </ul>
                     <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
-                      Acquisition Catalyst • 10x Data Processing Volume Ready
+                      Acquisition Catalyst • Enterprise Scale Orchestration Ready
                     </div>
                   </div>
                 </motion.div>
@@ -1828,7 +1829,7 @@ export default function App() {
             <div className="mt-8 space-y-4 font-sans">
               {expandedProject !== 'illow_evolution' && (
                 <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic text-xs text-neutral-600">
-                  <strong>Impact:</strong> Unified the marketing and product workflows under a robust design system, allowing seamless enterprise transition to process 10x more data.
+                  <strong>Impact:</strong> Unified the marketing and product workflows under a robust design system, allowing seamless enterprise transition to process complex high-volume compliance data.
                 </div>
               )}
               <button
@@ -1854,10 +1855,10 @@ export default function App() {
           >
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <span className="bg-neutral-100 text-neutral-800 px-3 py-1 font-sans text-[10px] font-bold tracking-wider uppercase rounded-full">
+                <span className="bg-[#ff89ab]/10 text-[#ff89ab] px-3 py-1 font-sans text-[10px] font-black tracking-wider uppercase rounded-full">
                   Information Architecture • Data Scale
                 </span>
-                <span className="material-symbols-outlined text-neutral-400">grid_view</span>
+                <span className="material-symbols-outlined text-[#ff89ab]">grid_view</span>
               </div>
               <div className="space-y-2">
                 <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
@@ -1892,7 +1893,7 @@ export default function App() {
                       <li>Successfully decreased auditor page travel durations and human identification errors.</li>
                     </ul>
                     <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
-                      45% Task Navigation Speed Increase
+                      Friction-Free Task Navigation Optimization
                     </div>
                   </div>
                 </motion.div>
@@ -1902,7 +1903,7 @@ export default function App() {
             <div className="mt-8 space-y-4 font-sans">
               {expandedProject !== 'bigid_cookie' && (
                 <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic text-xs text-neutral-600">
-                  <strong>Impact:</strong> Decreased overall system task navigation durations by 45% through strict layout alignment and non-fatiguing data hierarchies.
+                  <strong>Impact:</strong> Decreased overall system task navigation durations significantly through strict layout alignment and non-fatiguing data hierarchies.
                 </div>
               )}
               <button
@@ -1928,10 +1929,10 @@ export default function App() {
           >
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <span className="bg-neutral-100 text-neutral-800 px-3 py-1 font-sans text-[10px] font-bold tracking-wider uppercase rounded-full">
+                <span className="bg-[#ff89ab]/10 text-[#ff89ab] px-3 py-1 font-sans text-[10px] font-black tracking-wider uppercase rounded-full">
                   Luxury Branding • Portfolio Architecture
                 </span>
-                <span className="material-symbols-outlined text-neutral-400">palette</span>
+                <span className="material-symbols-outlined text-[#ff89ab]">palette</span>
               </div>
               <div className="space-y-2">
                 <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
@@ -1966,7 +1967,7 @@ export default function App() {
                       <li>Optimized high-resolution graphic rendering for immediate loading without visual stutter.</li>
                     </ul>
                     <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
-                      Luxury Preservation • 50% High-Ticket Lead Surge
+                      Luxury Preservation • Qualified High-Ticket Conversion
                     </div>
                   </div>
                 </motion.div>
@@ -1976,7 +1977,7 @@ export default function App() {
             <div className="mt-8 space-y-4 font-sans">
               {expandedProject !== 'bojana' && (
                 <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic text-xs text-neutral-600">
-                  <strong>Impact:</strong> Generated a 50% increase in qualified inquiries by framing structural portfolios inside an eye-catching luxury museum aesthetic.
+                  <strong>Impact:</strong> Generated substantial increase in qualified inquiries by framing structural portfolios inside an eye-catching luxury museum aesthetic.
                 </div>
               )}
               <button
@@ -2026,28 +2027,6 @@ export default function App() {
                 Launch Live Game Experience Test
                 <span className="material-symbols-outlined text-sm">sports_esports</span>
               </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Business Analytics Milestones Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 p-10 border-y border-neutral-200/45">
-          <div className="text-center space-y-1">
-            <div className="font-headline text-5xl sm:text-6xl font-black text-neutral-900 tracking-tight">10x</div>
-            <div className="font-sans text-[10px] font-bold uppercase tracking-widest text-neutral-400">
-              Data Pipeline Scale Capability (BigID)
-            </div>
-          </div>
-          <div className="text-center border-y md:border-y-0 md:border-x border-neutral-200/45 py-6 md:py-0 space-y-1">
-            <div className="font-headline text-5xl sm:text-6xl font-black text-neutral-900 tracking-tight">40%</div>
-            <div className="font-sans text-[10px] font-bold uppercase tracking-widest text-neutral-400">
-              Visual Debt Reduction (Illow Design System)
-            </div>
-          </div>
-          <div className="text-center space-y-1">
-            <div className="font-headline text-5xl sm:text-6xl font-black text-neutral-900 tracking-tight">45%</div>
-            <div className="font-sans text-[10px] font-bold uppercase tracking-widest text-neutral-400">
-              Navigation Velocity Gain
             </div>
           </div>
         </div>
@@ -2478,20 +2457,23 @@ export default function App() {
               window.scrollTo({ top: 0, behavior: 'smooth' }); 
             }
           }}
-          className="flex items-center gap-1.5 cursor-pointer select-none"
+          className={`flex items-center gap-1.5 px-4 py-2 border rounded-xl cursor-pointer select-none transition-all ${
+            activeTab === 'GAMES' 
+              ? 'border-[#ff89ab]/30 bg-black/40 hover:bg-black/60 shadow-[0_0_15px_rgba(255,137,171,0.15)] text-white' 
+              : 'border-neutral-950/15 bg-white/50 hover:bg-white hover:border-neutral-950/35 text-neutral-950'
+          }`}
         >
-          <h1 className={`font-cursive text-3.5xl font-bold tracking-wide leading-none lowercase ${
-            activeTab === 'GAMES' ? 'text-[#ff89ab]' : 'text-neutral-955 font-medium'
+          <h1 className={`font-cursive text-4xl font-extrabold tracking-wide leading-none lowercase ${
+            activeTab === 'GAMES' ? 'text-[#ff89ab]' : 'text-neutral-950'
           }`}>
             lia
           </h1>
-          {activeTab === 'GAMES' ? (
-            <span className="font-sans text-[11px] font-black text-neutral-300 tracking-wider">
-              - Papelito Game
-            </span>
-          ) : (
-            <span className="font-sans text-[11px] font-black text-[#ff89ab] tracking-wider">
-              ♡
+          <span className="font-sans text-xl font-black text-[#ff89ab] tracking-wider">
+            ♡
+          </span>
+          {activeTab === 'GAMES' && (
+            <span className="font-sans text-[9px] font-black tracking-widest text-[#ff89ab] bg-[#ff89ab]/10 px-1.5 py-0.5 rounded ml-1 uppercase">
+              Game
             </span>
           )}
         </div>
@@ -2502,8 +2484,8 @@ export default function App() {
             {[
               { id: 'IMPACT', label: 'Use Cases' },
               { id: 'VISION', label: 'My Vision' },
-              { id: 'GAMES', label: 'Papelito' },
-              { id: 'CONTACT', label: 'Contact' }
+              { id: 'GAMES', label: 'Game' },
+              { id: 'CONTACT', label: 'About' }
             ].map((tab) => {
               const isTabActive = activeTab === tab.id;
               return (
@@ -2528,15 +2510,76 @@ export default function App() {
 
         {/* Top Right Actions */}
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full shadow-xs border transition-colors ${
-            activeTab === 'GAMES'
-              ? 'bg-green-500/10 border-green-500/20 text-green-400'
-              : 'bg-green-50/60 border-green-200/40 text-green-700 font-sans'
-          }`}>
-            <span className="text-[8px] font-extrabold uppercase tracking-widest leading-none">
-              available
-            </span>
-            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shrink-0"></span>
+          <div className="relative">
+            <button 
+              onClick={() => setAvailableMenuOpen(!availableMenuOpen)}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full shadow-xs border transition-all cursor-pointer ${
+                activeTab === 'GAMES'
+                  ? 'bg-green-500/15 border-green-500/30 text-green-400 hover:bg-green-500/25'
+                  : 'bg-[#89ffab]/10 border-[#89ffab]/30 hover:bg-[#89ffab]/20 text-emerald-800 font-sans font-bold shadow-xs'
+              }`}
+            >
+              <span className="text-[9px] font-black uppercase tracking-widest leading-none">
+                available
+              </span>
+              <span className="w-1.5 h-1.5 bg-green-550 rounded-full animate-pulse shrink-0"></span>
+              <span className="material-symbols-outlined text-[12px] opacity-70">expand_more</span>
+            </button>
+
+            <AnimatePresence>
+              {availableMenuOpen && (
+                <>
+                  {/* Invisible backdrop to close menu when clicking outside */}
+                  <div 
+                    className="fixed inset-0 z-[19]" 
+                    onClick={() => setAvailableMenuOpen(false)}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className={`absolute right-0 mt-2 w-52 rounded-2xl p-2 shadow-xl border z-20 backdrop-blur-xl ${
+                      activeTab === 'GAMES'
+                        ? 'bg-[#121212]/95 border-neutral-800 text-white shadow-black/80 shadow-2xl'
+                        : 'bg-white/95 border-neutral-200/50 text-neutral-800 shadow-neutral-900/5 shadow-2xl'
+                    }`}
+                  >
+                    <div className="px-3 py-1.5 border-b border-neutral-200/10 mb-1">
+                      <p className="text-[9px] font-black uppercase tracking-widest text-[#ff89ab]">
+                        Let's Collaborate
+                      </p>
+                    </div>
+                    <a
+                      href="mailto:liangelyparra@gmail.com"
+                      onClick={() => setAvailableMenuOpen(false)}
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-bold transition-colors ${
+                        activeTab === 'GAMES'
+                          ? 'hover:bg-neutral-800 text-neutral-200'
+                          : 'hover:bg-neutral-50 text-neutral-800'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-sm">mail</span>
+                      Contact by Mail
+                    </a>
+                    <a
+                      href="https://wa.me/?text=Hello%20Lia!%20I%20saw%20your%20portfolio%20and%20would%20love%20to%20connect%20with%20you."
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => setAvailableMenuOpen(false)}
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-bold transition-colors ${
+                        activeTab === 'GAMES'
+                          ? 'hover:bg-neutral-800 text-neutral-200'
+                          : 'hover:bg-neutral-50 text-neutral-800'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-sm">chat</span>
+                      Contact by WhatsApp
+                    </a>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
           </div>
 
           {activeTab === 'GAMES' && myPlayer && (
@@ -2574,8 +2617,8 @@ export default function App() {
             {[
               { id: 'IMPACT', label: 'Use Cases' },
               { id: 'VISION', label: 'My Vision' },
-              { id: 'GAMES', label: 'Papelito' },
-              { id: 'CONTACT', label: 'Contact' }
+              { id: 'GAMES', label: 'Game' },
+              { id: 'CONTACT', label: 'About' }
             ].map((tab) => {
               const isTabActive = activeTab === tab.id;
               return (
@@ -2663,20 +2706,29 @@ export default function App() {
       </main>
 
       {/* Global Interactive Portfolio Footer */}
-      {activeTab !== 'GAMES' && (
-        <footer className="relative z-10 w-full border-t border-outline-variant/30 py-8 text-center bg-[#f8f9ff] text-on-surface-variant font-sans text-xs">
-          <div className="max-w-6xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div>
-              <p className="font-headline text-[10px] font-black uppercase tracking-widest text-primary">Lia Parra © 2026</p>
-              <p className="text-[10px] text-outline mt-0.5">Sénior Interaction Designer & Product Strategist</p>
-            </div>
-            <div className="flex gap-4">
-              <span className="material-symbols-outlined text-outline">verified_user</span>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-primary">Empirical Evidence & Quality UX</span>
-            </div>
+      <footer className={`relative z-10 w-full border-t py-8 font-sans text-xs transition-colors duration-300 ${
+        activeTab === 'GAMES'
+          ? 'bg-[#090909] text-neutral-400 border-neutral-800/60'
+          : 'bg-[#f8f9ff] text-neutral-500 border-neutral-200/45'
+      }`}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-12 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-left">
+          <div className="space-y-1">
+            <p className={`font-headline text-[11px] font-black uppercase tracking-widest ${
+              activeTab === 'GAMES' ? 'text-white' : 'text-neutral-950'
+            }`}>
+              Lia Parra. © 2026
+            </p>
+            <p className="text-[10px] uppercase tracking-wider font-bold">
+              Senior Staff Product & UX Designer
+            </p>
           </div>
-        </footer>
-      )}
+          <div className="sm:text-right space-y-0.5">
+            <p className="text-[10px] uppercase tracking-widest font-black text-[#ff89ab]">
+              B2B SAAS, AI & ENTERPRISE SYSTEMS
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
