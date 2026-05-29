@@ -162,6 +162,8 @@ export default function App() {
   const [contactSubmitting, setContactSubmitting] = useState(false);
   const [contactSubmitted, setContactSubmitted] = useState(false);
   const [availableMenuOpen, setAvailableMenuOpen] = useState(false);
+  const [useCaseFilter, setUseCaseFilter] = useState<'All' | 'UX Strategy' | 'Design Systems' | 'Information Architecture' | 'Luxury Branding'>('All');
+  const [showGameInstructions, setShowGameInstructions] = useState(true);
 
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,7 +183,7 @@ export default function App() {
       });
       setContactSubmitted(true);
       toast.success("¡Mensaje enviado con éxito! ✉️", {
-        description: "Lia responderá a tu solicitud de inmediato.",
+        description: "Responderé a tu solicitud de inmediato.",
         duration: 4000
       });
       setContactName('');
@@ -1011,22 +1013,22 @@ export default function App() {
           <button 
             onClick={joinGame}
             disabled={!tempNickname.trim() || !selectedAvatarSeed}
-            className={`w-full py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-headline font-black text-xl sm:text-2xl uppercase tracking-tighter shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3 ${
+            className={`w-full py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-headline font-black text-lg sm:text-2xl uppercase tracking-tight shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3 px-4 ${
               !tempNickname.trim() || !selectedAvatarSeed
                 ? 'bg-surface-container-highest text-on-surface-variant cursor-not-allowed' 
-                : 'bg-primary text-on-primary-fixed hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,137,171,0.4)]'
+                : 'bg-primary text-on-primary-fixed hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(255,137,171,0.3)]'
             }`}
           >
-            <span>ENTER ROOM</span>
-            <ChevronRight />
+            <span className="truncate">ENTER ROOM</span>
+            <ChevronRight className="shrink-0" />
           </button>
         ) : (
           <button 
             onClick={createPrivateRoom}
-            className="w-full py-4 sm:py-6 bg-primary text-on-primary-fixed font-headline font-black text-xl sm:text-2xl uppercase tracking-tighter rounded-2xl sm:rounded-3xl shadow-lg hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,137,171,0.4)] active:scale-95 flex items-center justify-center gap-3 transition-all"
+            className="w-full py-4 sm:py-6 bg-primary text-on-primary-fixed font-headline font-black text-lg sm:text-2xl uppercase tracking-tight rounded-2xl sm:rounded-3xl shadow-lg hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(255,137,171,0.3)] active:scale-95 flex items-center justify-center gap-3 px-4 transition-all"
           >
-            <Users size={24} />
-            CREATE PRIVATE ROOM
+            <Users size={22} className="shrink-0" />
+            <span className="truncate">CREATE PRIVATE ROOM</span>
           </button>
         )}
 
@@ -1034,10 +1036,10 @@ export default function App() {
           {GAME_ID !== 'global-party' && (
             <button 
               onClick={createPrivateRoom}
-              className="w-full bg-surface-container-highest text-on-surface font-headline font-bold py-3 sm:py-4 text-sm sm:text-base rounded-2xl flex items-center justify-center gap-2 border-2 border-outline-variant/30 hover:bg-surface-bright transition-all"
+              className="w-full bg-surface-container-highest text-on-surface font-headline font-bold py-3.5 sm:py-4 text-xs sm:text-base rounded-2xl flex items-center justify-center gap-2 border-2 border-outline-variant/30 hover:bg-surface-bright transition-all px-4"
             >
-              <Users size={20} />
-              CREATE ANOTHER ROOM
+              <Users size={18} className="shrink-0" />
+              <span className="truncate">CREATE ANOTHER ROOM</span>
             </button>
           )}
           
@@ -1693,304 +1695,349 @@ export default function App() {
           </p>
         </div>
 
+        {/* Category Filters (Mini Badges for Filtering) */}
+        <div className="flex flex-wrap items-center gap-2 pb-6 border-b border-neutral-200/40">
+          <span className="font-sans text-[10px] font-black uppercase tracking-widest text-neutral-400 mr-2">Filter achievements:</span>
+          {[
+            { id: 'All', label: 'All Use Cases' },
+            { id: 'UX Strategy', label: 'UX Strategy' },
+            { id: 'Design Systems', label: 'Design Systems' },
+            { id: 'Information Architecture', label: 'Information Architecture' },
+            { id: 'Luxury Branding', label: 'Luxury Branding' }
+          ].map((item) => {
+            const isSelected = useCaseFilter === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setUseCaseFilter(item.id as any);
+                  setExpandedProject('none'); // Collapse opened project when changing filters
+                }}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border cursor-pointer ${
+                  isSelected
+                    ? 'bg-black text-white border-black'
+                    : 'bg-white text-neutral-600 border-neutral-200/60 hover:border-neutral-400 hover:text-neutral-800'
+                }`}
+              >
+                {item.id !== 'All' && (
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSelected ? 'bg-white' : 'bg-[#ff89ab]'}`} />
+                )}
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Featured Case Studies Grid (Apple-style Bento Minimalist Grid) */}
         <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-8">
           
           {/* Case 1: Illow from the Beginning */}
-          <motion.article 
-            layout="position"
-            className={`custom-glass border rounded-[2rem] p-6 sm:p-10 flex flex-col justify-between transition-all duration-500 hover:shadow-xl ${
-              expandedProject === 'illow_start' 
-                ? 'md:col-span-2 border-neutral-900 shadow-2xl bg-white ring-1 ring-neutral-950/5' 
-                : 'md:col-span-1 border-neutral-200/40 hover:border-neutral-900/10 hover:bg-white'
-            }`}
-          >
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <span className="bg-[#ff89ab]/10 text-[#ff89ab] px-3 py-1 font-sans text-[10px] font-black tracking-wider uppercase rounded-full">
-                  UX Strategy • Brand Origin
-                </span>
-                <span className="material-symbols-outlined text-[#ff89ab]">rocket_launch</span>
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
-                  Illow from the Beginning
-                </h3>
-                <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
-                  <strong>Challenge:</strong> Designing the initial brand identity, visual systems, high-converting checkout funnels, and initial UX wireframes for an early-stage privacy tech startup from zero to one.
-                </p>
-              </div>
-
-              {/* Inline Expanded Deep-dive Content */}
-              {expandedProject === 'illow_start' && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="pt-6 mt-6 border-t border-neutral-100 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed text-neutral-800"
-                >
-                  <div className="space-y-4">
-                    <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">The Startup Spark</p>
-                    <p>
-                      Lia designed the startup's brand DNA, choosing color tokens, typography systems, and web architecture to resonate with developers and compliance officers alike. By controlling the complete zero-to-one design pipeline, she framed privacy compliance as a beautiful interactive asset.
-                    </p>
-                    <p>
-                      This aesthetic control laid a profound groundwork, allowing her to establish the company's internal UX department comfortably before scaling processes.
-                    </p>
-                  </div>
-                  <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-100">
-                    <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Methodology & Launch Actions</p>
-                    <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600">
-                      <li>Designed high-converting interactive landing pages for developer signups.</li>
-                      <li>Built user experience blueprints for the original modal cookie sliders to maximize consent collection.</li>
-                      <li>Attracted capital and early-stage trials by presenting interactive clickable high-contrast prototypes representing a mature product.</li>
-                    </ul>
-                    <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
-                      Zero-To-One Blueprint • Cohesive Privacy Identity
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-            
-            <div className="mt-8 space-y-4 font-sans">
-              {expandedProject !== 'illow_start' && (
-                <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic text-xs text-neutral-600">
-                  <strong>Impact:</strong> Secured early market traction under a cohesive product aesthetic, with the visual identity and user interface driving robust early-stage signups.
+          {(useCaseFilter === 'All' || useCaseFilter === 'UX Strategy') && (
+            <motion.article 
+              layout="position"
+              className={`custom-glass border rounded-[2rem] p-6 sm:p-10 flex flex-col justify-between transition-all duration-500 hover:shadow-xl ${
+                expandedProject === 'illow_start' 
+                  ? 'md:col-span-2 border-neutral-900 shadow-2xl bg-white ring-1 ring-neutral-950/5' 
+                  : 'md:col-span-1 border-neutral-200/40 hover:border-neutral-900/10 hover:bg-white'
+              }`}
+            >
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <span className="inline-flex items-center gap-1.5 bg-neutral-100/80 text-neutral-800 border border-neutral-200/40 px-3 py-1 font-sans text-[10px] font-bold tracking-wider uppercase rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#ff89ab] shrink-0" />
+                    UX Strategy • Brand Origin
+                  </span>
+                  <span className="material-symbols-outlined text-[#ff89ab]">rocket_launch</span>
                 </div>
-              )}
-              <button
-                onClick={() => setExpandedProject(expandedProject === 'illow_start' ? 'none' : 'illow_start')}
-                className="w-full py-2.5 px-4 bg-black text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
-              >
-                {expandedProject === 'illow_start' ? 'Close case details' : 'Explore Case Study'}
-                <span className="material-symbols-outlined text-xs">
-                  {expandedProject === 'illow_start' ? 'expand_less' : 'east'}
-                </span>
-              </button>
-            </div>
-          </motion.article>
+                <div className="space-y-2">
+                  <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
+                    Illow from the Beginning
+                  </h3>
+                  <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
+                    <strong>Challenge:</strong> Designing the initial brand identity, visual systems, high-converting checkout funnels, and initial UX wireframes for an early-stage privacy tech startup from zero to one.
+                  </p>
+                </div>
+
+                {/* Inline Expanded Deep-dive Content */}
+                {expandedProject === 'illow_start' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="pt-6 mt-6 border-t border-neutral-100 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed text-neutral-800"
+                  >
+                    <div className="space-y-4">
+                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">The Startup Spark</p>
+                      <p>
+                        I worked on designing the startup's brand DNA, choosing color tokens, typography systems, and web architecture to resonate with developers and compliance officers alike. By controlling the complete zero-to-one design pipeline, I framed privacy compliance as a beautiful interactive asset.
+                      </p>
+                      <p>
+                        This aesthetic control laid a profound groundwork, allowing me to establish the company's internal UX department comfortably before scaling processes.
+                      </p>
+                    </div>
+                    <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-100">
+                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Methodology & Launch Actions</p>
+                      <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600">
+                        <li>Designed high-converting interactive landing pages for developer signups.</li>
+                        <li>Built user experience blueprints for the original modal cookie sliders to maximize consent collection.</li>
+                        <li>Attracted capital and early-stage trials by presenting interactive clickable high-contrast prototypes representing a mature product.</li>
+                      </ul>
+                      <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
+                        Zero-To-One Blueprint • Cohesive Privacy Identity
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+              
+              <div className="mt-8 space-y-4 font-sans">
+                {expandedProject !== 'illow_start' && (
+                  <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic text-xs text-neutral-600">
+                    <strong>Impact:</strong> Secured early market traction under a cohesive product aesthetic, with the visual identity and user interface driving robust early-stage signups.
+                  </div>
+                )}
+                <button
+                  onClick={() => setExpandedProject(expandedProject === 'illow_start' ? 'none' : 'illow_start')}
+                  className="w-full py-2.5 px-4 bg-black text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  {expandedProject === 'illow_start' ? 'Close case details' : 'Explore Case Study'}
+                  <span className="material-symbols-outlined text-xs">
+                    {expandedProject === 'illow_start' ? 'expand_less' : 'east'}
+                  </span>
+                </button>
+              </div>
+            </motion.article>
+          )}
           
           {/* Case 2: Illow to BIGID Evolution */}
-          <motion.article 
-            layout="position"
-            className={`custom-glass border rounded-[2rem] p-6 sm:p-10 flex flex-col justify-between transition-all duration-500 hover:shadow-xl ${
-              expandedProject === 'illow_evolution' 
-                ? 'md:col-span-2 border-neutral-900 shadow-2xl bg-white ring-1 ring-neutral-950/5' 
-                : 'md:col-span-1 border-neutral-200/40 hover:border-neutral-900/10 hover:bg-white'
-            }`}
-          >
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <span className="bg-[#ff89ab]/10 text-[#ff89ab] px-3 py-1 font-sans text-[10px] font-black tracking-wider uppercase rounded-full">
-                  Design Systems • M&A Integration
-                </span>
-                <span className="material-symbols-outlined text-[#ff89ab]">trending_up</span>
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
-                  Illow to BIGID Evolution
-                </h3>
-                <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
-                  <strong>Challenge:</strong> Leading the branding, visual system, and user experience strategy from early-stage startup through its eventual, high-profile acquisition by enterprise titan BigID.
-                </p>
-              </div>
-
-              {/* Inline Expanded Deep-dive Content */}
-              {expandedProject === 'illow_evolution' && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="pt-6 mt-6 border-t border-neutral-100 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed text-neutral-800"
-                >
-                  <div className="space-y-4">
-                    <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Acquisition & Enterprise Scale</p>
-                    <p>
-                      Ensuring brand consistency through corporate transitions is a severe friction risk. Lia led the transition from Illow's lightweight visual language to BigID's global compliance system, structuring UX patterns to support massive algorithmic volume without losing sensory clarity.
-                    </p>
-                    <p>
-                      This absolute control over aesthetics laid a profound groundwork, allowing her to comfortably establish the company's internal UX department from the ground up prior to acquisition.
-                    </p>
-                  </div>
-                  <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-100">
-                    <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Methodology & Adaptations</p>
-                    <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600">
-                      <li>Developed a streamlined Design System (UI Kit) translating marketing brand elements into reusable component code.</li>
-                      <li>Significantly reduced engineering visual debt, aligning product development with marketing brand consistency.</li>
-                      <li>Redesigned complex data-consent tables and user dashboards for BigID's global compliance standards post-acquisition.</li>
-                    </ul>
-                    <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
-                      Acquisition Catalyst • Enterprise Scale Orchestration Ready
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-            
-            <div className="mt-8 space-y-4 font-sans">
-              {expandedProject !== 'illow_evolution' && (
-                <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic text-xs text-neutral-600">
-                  <strong>Impact:</strong> Unified the marketing and product workflows under a robust design system, allowing seamless enterprise transition to process complex high-volume compliance data.
+          {(useCaseFilter === 'All' || useCaseFilter === 'Design Systems') && (
+            <motion.article 
+              layout="position"
+              className={`custom-glass border rounded-[2rem] p-6 sm:p-10 flex flex-col justify-between transition-all duration-500 hover:shadow-xl ${
+                expandedProject === 'illow_evolution' 
+                  ? 'md:col-span-2 border-neutral-900 shadow-2xl bg-white ring-1 ring-neutral-950/5' 
+                  : 'md:col-span-1 border-neutral-200/40 hover:border-neutral-900/10 hover:bg-white'
+              }`}
+            >
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <span className="inline-flex items-center gap-1.5 bg-neutral-100/80 text-neutral-800 border border-neutral-200/40 px-3 py-1 font-sans text-[10px] font-bold tracking-wider uppercase rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#ff89ab] shrink-0" />
+                    Design Systems • M&A Integration
+                  </span>
+                  <span className="material-symbols-outlined text-[#ff89ab]">trending_up</span>
                 </div>
-              )}
-              <button
-                onClick={() => setExpandedProject(expandedProject === 'illow_evolution' ? 'none' : 'illow_evolution')}
-                className="w-full py-2.5 px-4 bg-black text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
-              >
-                {expandedProject === 'illow_evolution' ? 'Close case details' : 'Explore Case Study'}
-                <span className="material-symbols-outlined text-xs">
-                  {expandedProject === 'illow_evolution' ? 'expand_less' : 'east'}
-                </span>
-              </button>
-            </div>
-          </motion.article>
+                <div className="space-y-2">
+                  <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
+                    Illow to BIGID Evolution
+                  </h3>
+                  <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
+                    <strong>Challenge:</strong> Leading the branding, visual system, and user experience strategy from early-stage startup through its eventual, high-profile acquisition by enterprise titan BigID.
+                  </p>
+                </div>
+
+                {/* Inline Expanded Deep-dive Content */}
+                {expandedProject === 'illow_evolution' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="pt-6 mt-6 border-t border-neutral-100 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed text-neutral-800"
+                  >
+                    <div className="space-y-4">
+                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Acquisition & Enterprise Scale</p>
+                      <p>
+                        Ensuring brand consistency through corporate transitions is a severe friction risk. I led the transition from Illow's lightweight visual language to BigID's global compliance system, structuring UX patterns to support massive algorithmic volume without losing sensory clarity.
+                      </p>
+                      <p>
+                        This absolute control over aesthetics laid a profound groundwork, allowing me to comfortably establish the company's internal UX department from the ground up prior to acquisition.
+                      </p>
+                    </div>
+                    <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-100">
+                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Methodology & Adaptations</p>
+                      <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600">
+                        <li>Developed a streamlined Design System (UI Kit) translating marketing brand elements into reusable component code.</li>
+                        <li>Significantly reduced engineering visual debt, aligning product development with marketing brand consistency.</li>
+                        <li>Redesigned complex data-consent tables and user dashboards for BigID's global compliance standards post-acquisition.</li>
+                      </ul>
+                      <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
+                        Acquisition Catalyst • Enterprise Scale Orchestration Ready
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+              
+              <div className="mt-8 space-y-4 font-sans">
+                {expandedProject !== 'illow_evolution' && (
+                  <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic text-xs text-neutral-600">
+                    <strong>Impact:</strong> Unified the marketing and product workflows under a robust design system, allowing seamless enterprise transition to process complex high-volume compliance data.
+                  </div>
+                )}
+                <button
+                  onClick={() => setExpandedProject(expandedProject === 'illow_evolution' ? 'none' : 'illow_evolution')}
+                  className="w-full py-2.5 px-4 bg-black text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  {expandedProject === 'illow_evolution' ? 'Close case details' : 'Explore Case Study'}
+                  <span className="material-symbols-outlined text-xs">
+                    {expandedProject === 'illow_evolution' ? 'expand_less' : 'east'}
+                  </span>
+                </button>
+              </div>
+            </motion.article>
+          )}
           
           {/* Case 3: BigID Cookie Classification */}
-          <motion.article 
-            layout="position"
-            className={`custom-glass border rounded-[2rem] p-6 sm:p-10 flex flex-col justify-between transition-all duration-500 hover:shadow-xl ${
-              expandedProject === 'bigid_cookie' 
-                ? 'md:col-span-2 border-neutral-900 shadow-2xl bg-white ring-1 ring-neutral-950/5' 
-                : 'md:col-span-1 border-neutral-200/40 hover:border-neutral-900/10 hover:bg-white'
-            }`}
-          >
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <span className="bg-[#ff89ab]/10 text-[#ff89ab] px-3 py-1 font-sans text-[10px] font-black tracking-wider uppercase rounded-full">
-                  Information Architecture • Data Scale
-                </span>
-                <span className="material-symbols-outlined text-[#ff89ab]">grid_view</span>
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
-                  BigID Cookie Classification
-                </h3>
-                <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
-                  <strong>Challenge:</strong> Streamlining nested compliance tabs, massive cookies datasets, and classification settings schemas containing heavily dense enterprise governance logic arrays into frictionless interactive interfaces.
-                </p>
-              </div>
-
-              {/* Inline Expanded Deep-dive Content */}
-              {expandedProject === 'bigid_cookie' && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="pt-6 mt-6 border-t border-neutral-100 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed text-neutral-800"
-                >
-                  <div className="space-y-4">
-                    <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Overcoming Density Fatigue</p>
-                    <p>
-                      Enterprise compliance auditors face huge cognitive overload when cataloging raw tracking cookies. By grouping massive cookie lists into logical categories and clean grids, the raw configurations became digestible and highly actionable.
-                    </p>
-                    <p>
-                      This re-architecture stripped away secondary visual noise, resulting in a clean grid system designed after strict interactive Fitts's and Hick's Laws.
-                    </p>
-                  </div>
-                  <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-100">
-                    <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Auditing & Control Milestones</p>
-                    <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600">
-                      <li>Designed clear classification and tagging status indicators for corporate tracking data blocks.</li>
-                      <li>Built easy pagination, smart quick-filtering, and drag-and-drop bucket systems.</li>
-                      <li>Successfully decreased auditor page travel durations and human identification errors.</li>
-                    </ul>
-                    <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
-                      Friction-Free Task Navigation Optimization
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-            
-            <div className="mt-8 space-y-4 font-sans">
-              {expandedProject !== 'bigid_cookie' && (
-                <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic text-xs text-neutral-600">
-                  <strong>Impact:</strong> Decreased overall system task navigation durations significantly through strict layout alignment and non-fatiguing data hierarchies.
+          {(useCaseFilter === 'All' || useCaseFilter === 'Information Architecture') && (
+            <motion.article 
+              layout="position"
+              className={`custom-glass border rounded-[2rem] p-6 sm:p-10 flex flex-col justify-between transition-all duration-500 hover:shadow-xl ${
+                expandedProject === 'bigid_cookie' 
+                  ? 'md:col-span-2 border-neutral-900 shadow-2xl bg-white ring-1 ring-neutral-950/5' 
+                  : 'md:col-span-1 border-neutral-200/40 hover:border-neutral-900/10 hover:bg-white'
+              }`}
+            >
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <span className="inline-flex items-center gap-1.5 bg-neutral-100/80 text-neutral-800 border border-neutral-200/40 px-3 py-1 font-sans text-[10px] font-bold tracking-wider uppercase rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#ff89ab] shrink-0" />
+                    Information Architecture • Data Scale
+                  </span>
+                  <span className="material-symbols-outlined text-[#ff89ab]">grid_view</span>
                 </div>
-              )}
-              <button
-                onClick={() => setExpandedProject(expandedProject === 'bigid_cookie' ? 'none' : 'bigid_cookie')}
-                className="w-full py-2.5 px-4 bg-black text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
-              >
-                {expandedProject === 'bigid_cookie' ? 'Close case details' : 'Explore Case Study'}
-                <span className="material-symbols-outlined text-xs">
-                  {expandedProject === 'bigid_cookie' ? 'expand_less' : 'east'}
-                </span>
-              </button>
-            </div>
-          </motion.article>
+                <div className="space-y-2">
+                  <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
+                    BigID Cookie Classification
+                  </h3>
+                  <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
+                    <strong>Challenge:</strong> Streamlining nested compliance tabs, massive cookies datasets, and classification settings schemas containing heavily dense enterprise governance logic arrays into frictionless interactive interfaces.
+                  </p>
+                </div>
+
+                {/* Inline Expanded Deep-dive Content */}
+                {expandedProject === 'bigid_cookie' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="pt-6 mt-6 border-t border-neutral-100 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed text-neutral-800"
+                  >
+                    <div className="space-y-4">
+                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Overcoming Density Fatigue</p>
+                      <p>
+                        Enterprise compliance auditors face huge cognitive overload when cataloging raw tracking cookies. By grouping massive cookie lists into logical categories and clean grids, the raw configurations became digestible and highly actionable.
+                      </p>
+                      <p>
+                        This re-architecture stripped away secondary visual noise, resulting in a clean grid system designed after strict interactive Fitts's and Hick's Laws.
+                      </p>
+                    </div>
+                    <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-100">
+                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Auditing & Control Milestones</p>
+                      <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600">
+                        <li>Designed clear classification and tagging status indicators for corporate tracking data blocks.</li>
+                        <li>Built easy pagination, smart quick-filtering, and drag-and-drop bucket systems.</li>
+                        <li>Successfully decreased auditor page travel durations and human identification errors.</li>
+                      </ul>
+                      <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
+                        Friction-Free Task Navigation Optimization
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+              
+              <div className="mt-8 space-y-4 font-sans">
+                {expandedProject !== 'bigid_cookie' && (
+                  <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic text-xs text-neutral-600">
+                    <strong>Impact:</strong> Decreased overall system task navigation durations significantly through strict layout alignment and non-fatiguing data hierarchies.
+                  </div>
+                )}
+                <button
+                  onClick={() => setExpandedProject(expandedProject === 'bigid_cookie' ? 'none' : 'bigid_cookie')}
+                  className="w-full py-2.5 px-4 bg-black text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  {expandedProject === 'bigid_cookie' ? 'Close case details' : 'Explore Case Study'}
+                  <span className="material-symbols-outlined text-xs">
+                    {expandedProject === 'bigid_cookie' ? 'expand_less' : 'east'}
+                  </span>
+                </button>
+              </div>
+            </motion.article>
+          )}
           
           {/* Case 4: Bojana Estudio Redesign */}
-          <motion.article 
-            layout="position"
-            className={`custom-glass border rounded-[2rem] p-6 sm:p-10 flex flex-col justify-between transition-all duration-500 hover:shadow-xl ${
-              expandedProject === 'bojana' 
-                ? 'md:col-span-2 border-neutral-900 shadow-2xl bg-white ring-1 ring-neutral-950/5' 
-                : 'md:col-span-1 border-neutral-200/40 hover:border-neutral-900/10 hover:bg-white'
-            }`}
-          >
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <span className="bg-[#ff89ab]/10 text-[#ff89ab] px-3 py-1 font-sans text-[10px] font-black tracking-wider uppercase rounded-full">
-                  Luxury Branding • Portfolio Architecture
-                </span>
-                <span className="material-symbols-outlined text-[#ff89ab]">palette</span>
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
-                  Bojana Estudio Redesign
-                </h3>
-                <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
-                  <strong>Challenge:</strong> Directing the physical-to-digital high-end storefront, structural visual grid architecture, and luxury branding framework for a premium architectural studio.
-                </p>
-              </div>
-
-              {/* Inline Expanded Deep-dive Content */}
-              {expandedProject === 'bojana' && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="pt-6 mt-6 border-t border-neutral-100 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed text-neutral-800"
-                >
-                  <div className="space-y-4">
-                    <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Digitalizing Physical Craft</p>
-                    <p>
-                      Architecture is about the dialogue of empty spaces, materials, and light. Lia designed the studio's digital storefront as an extension of their buildings—crafted around extensive empty margins, stunning high-contrast typography, and seamless transitions.
-                    </p>
-                    <p>
-                      The minimal interface preserves and amplifies the high-value physical catalog, transforming digital viewers into design consult clients.
-                    </p>
-                  </div>
-                  <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-100">
-                    <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Spatial Interactive Elements</p>
-                    <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600">
-                      <li>Designed an editorial masonry grid aligning blueprints and photographs symmetrically.</li>
-                      <li>Paired high-impact display fonts with Fira Code for technical metric captions.</li>
-                      <li>Optimized high-resolution graphic rendering for immediate loading without visual stutter.</li>
-                    </ul>
-                    <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
-                      Luxury Preservation • Qualified High-Ticket Conversion
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-            
-            <div className="mt-8 space-y-4 font-sans">
-              {expandedProject !== 'bojana' && (
-                <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic text-xs text-neutral-600">
-                  <strong>Impact:</strong> Generated substantial increase in qualified inquiries by framing structural portfolios inside an eye-catching luxury museum aesthetic.
+          {(useCaseFilter === 'All' || useCaseFilter === 'Luxury Branding') && (
+            <motion.article 
+              layout="position"
+              className={`custom-glass border rounded-[2rem] p-6 sm:p-10 flex flex-col justify-between transition-all duration-500 hover:shadow-xl ${
+                expandedProject === 'bojana' 
+                  ? 'md:col-span-2 border-neutral-900 shadow-2xl bg-white ring-1 ring-neutral-950/5' 
+                  : 'md:col-span-1 border-neutral-200/40 hover:border-neutral-900/10 hover:bg-white'
+              }`}
+            >
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <span className="inline-flex items-center gap-1.5 bg-neutral-100/80 text-neutral-800 border border-neutral-200/40 px-3 py-1 font-sans text-[10px] font-bold tracking-wider uppercase rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#ff89ab] shrink-0" />
+                    Luxury Branding • Portfolio Architecture
+                  </span>
+                  <span className="material-symbols-outlined text-[#ff89ab]">palette</span>
                 </div>
-              )}
-              <button
-                onClick={() => setExpandedProject(expandedProject === 'bojana' ? 'none' : 'bojana')}
-                className="w-full py-2.5 px-4 bg-black text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
-              >
-                {expandedProject === 'bojana' ? 'Close case details' : 'Explore Case Study'}
-                <span className="material-symbols-outlined text-xs">
-                  {expandedProject === 'bojana' ? 'expand_less' : 'east'}
-                </span>
-              </button>
-            </div>
-          </motion.article>
+                <div className="space-y-2">
+                  <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
+                    Bojana Estudio Redesign
+                  </h3>
+                  <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
+                    <strong>Challenge:</strong> Directing the physical-to-digital high-end storefront, structural visual grid architecture, and luxury branding framework for a premium architectural studio.
+                  </p>
+                </div>
+
+                {/* Inline Expanded Deep-dive Content */}
+                {expandedProject === 'bojana' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="pt-6 mt-6 border-t border-neutral-100 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed text-neutral-800"
+                  >
+                    <div className="space-y-4">
+                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Digitalizing Physical Craft</p>
+                      <p>
+                        Architecture is about the dialogue of empty spaces, materials, and light. I designed the studio's digital storefront as an extension of their buildings—crafted around extensive empty margins, stunning high-contrast typography, and seamless transitions.
+                      </p>
+                      <p>
+                        The minimal interface preserves and amplifies the high-value physical catalog, transforming digital viewers into design consult clients.
+                      </p>
+                    </div>
+                    <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-100">
+                      <p className="font-bold text-[#ff89ab] text-xs tracking-wider uppercase font-sans">Spatial Interactive Elements</p>
+                      <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600">
+                        <li>Designed an editorial masonry grid aligning blueprints and photographs symmetrically.</li>
+                        <li>Paired high-impact display fonts with Fira Code for technical metric captions.</li>
+                        <li>Optimized high-resolution graphic rendering for immediate loading without visual stutter.</li>
+                      </ul>
+                      <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
+                        Luxury Preservation • Qualified High-Ticket Conversion
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+              
+              <div className="mt-8 space-y-4 font-sans">
+                {expandedProject !== 'bojana' && (
+                  <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic text-xs text-neutral-600">
+                    <strong>Impact:</strong> Generated substantial increase in qualified inquiries by framing structural portfolios inside an eye-catching luxury museum aesthetic.
+                  </div>
+                )}
+                <button
+                  onClick={() => setExpandedProject(expandedProject === 'bojana' ? 'none' : 'bojana')}
+                  className="w-full py-2.5 px-4 bg-black text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  {expandedProject === 'bojana' ? 'Close case details' : 'Explore Case Study'}
+                  <span className="material-symbols-outlined text-xs">
+                    {expandedProject === 'bojana' ? 'expand_less' : 'east'}
+                  </span>
+                </button>
+              </div>
+            </motion.article>
+          )}
 
         </motion.div>
 
@@ -2300,7 +2347,11 @@ export default function App() {
               <div className="space-y-4 pt-6 border-t border-neutral-100 text-sm font-sans">
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-[#45474b]">mail</span>
-                  <span className="text-neutral-700 select-all font-medium">liangelyparra@gmail.com</span>
+                  <a href="mailto:liangelyp@gmail.com" className="text-neutral-700 select-all font-medium hover:text-[#ff89ab] transition-all">liangelyp@gmail.com</a>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[#45474b]">chat</span>
+                  <a href="https://wa.me/5491156424162?text=Hello%20Lia!%20I%20saw%20your%20portfolio%20and%20would%20love%20to%20connect%20with%20you." target="_blank" rel="noreferrer" className="text-neutral-700 font-medium hover:text-[#ff89ab] transition-all">+54 9 11 5642-4162 (WhatsApp)</a>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-[#45474b]">location_on</span>
@@ -2463,18 +2514,24 @@ export default function App() {
               : 'border-neutral-950/15 bg-white/50 hover:bg-white hover:border-neutral-950/35 text-neutral-950'
           }`}
         >
-          <h1 className={`font-cursive text-4xl font-extrabold tracking-wide leading-none lowercase ${
-            activeTab === 'GAMES' ? 'text-[#ff89ab]' : 'text-neutral-950'
-          }`}>
-            lia
-          </h1>
-          <span className="font-sans text-xl font-black text-[#ff89ab] tracking-wider">
-            ♡
-          </span>
-          {activeTab === 'GAMES' && (
-            <span className="font-sans text-[9px] font-black tracking-widest text-[#ff89ab] bg-[#ff89ab]/10 px-1.5 py-0.5 rounded ml-1 uppercase">
-              Game
-            </span>
+          {activeTab === 'GAMES' ? (
+            <div className="flex items-center gap-1.5">
+              <h1 className="font-cursive text-3xl font-extrabold tracking-wide leading-none text-[#ff89ab] lowercase">
+                lia
+              </h1>
+              <span className="font-sans text-[9px] font-black tracking-widest text-[#ff89ab] bg-[#ff89ab]/10 px-1.5 py-0.5 rounded uppercase font-bold">
+                papelito game
+              </span>
+            </div>
+          ) : (
+            <>
+              <h1 className="font-cursive text-4xl font-extrabold tracking-wide leading-none text-neutral-950 lowercase">
+                lia
+              </h1>
+              <span className="font-sans text-xl font-black text-[#ff89ab] tracking-wider">
+                ♡
+              </span>
+            </>
           )}
         </div>
 
@@ -2551,26 +2608,26 @@ export default function App() {
                       </p>
                     </div>
                     <a
-                      href="mailto:liangelyparra@gmail.com"
+                      href="mailto:liangelyp@gmail.com"
                       onClick={() => setAvailableMenuOpen(false)}
                       className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-bold transition-colors ${
                         activeTab === 'GAMES'
                           ? 'hover:bg-neutral-800 text-neutral-200'
-                          : 'hover:bg-neutral-50 text-neutral-800'
+                          : 'hover:bg-neutral-50 text-neutral-800 font-sans'
                       }`}
                     >
                       <span className="material-symbols-outlined text-sm">mail</span>
                       Contact by Mail
                     </a>
                     <a
-                      href="https://wa.me/?text=Hello%20Lia!%20I%20saw%20your%20portfolio%20and%20would%20love%20to%20connect%20with%20you."
+                      href="https://wa.me/5491156424162?text=Hello%20Lia!%20I%20saw%20your%20portfolio%20and%20would%20love%20to%20connect%20with%20you."
                       target="_blank"
                       rel="noreferrer"
                       onClick={() => setAvailableMenuOpen(false)}
                       className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-bold transition-colors ${
                         activeTab === 'GAMES'
                           ? 'hover:bg-neutral-800 text-neutral-200'
-                          : 'hover:bg-neutral-50 text-neutral-800'
+                          : 'hover:bg-neutral-50 text-neutral-800 font-sans'
                       }`}
                     >
                       <span className="material-symbols-outlined text-sm">chat</span>
@@ -2596,7 +2653,7 @@ export default function App() {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className={`${activeTab === 'GAMES' ? 'block' : 'md:hidden'} p-2 rounded-lg hover:bg-surface-container-high/50 transition-colors z-[100]`}
           >
-            <span className="material-symbols-outlined text-primary text-2xl">
+            <span className={`material-symbols-outlined text-2xl ${activeTab === 'GAMES' ? 'text-[#ff89ab] font-bold' : 'text-primary'}`}>
               {mobileMenuOpen ? 'close' : 'menu'}
             </span>
           </button>
@@ -2729,6 +2786,99 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Papelito Game Instructions Dialog */}
+      <AnimatePresence>
+        {activeTab === 'GAMES' && showGameInstructions && (
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            {/* Click outside to close */}
+            <div className="absolute inset-0" onClick={() => setShowGameInstructions(false)} />
+            
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-xl bg-[#141414] border border-neutral-800 rounded-[2.5rem] p-6 sm:p-8 text-white shadow-2xl z-10 overflow-hidden text-left"
+              style={{ boxShadow: '0 0 50px rgba(255, 137, 171, 0.15)' }}
+            >
+              {/* Subtle background glow */}
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#ff89ab]/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+              {/* Close "X" Button */}
+              <button 
+                onClick={() => setShowGameInstructions(false)}
+                className="absolute top-6 right-6 w-8 h-8 rounded-full border border-neutral-800 bg-neutral-900/60 hover:bg-neutral-800 flex items-center justify-center text-neutral-400 hover:text-white transition-all cursor-pointer"
+                aria-label="Cerrar instrucciones"
+              >
+                <span className="text-sm font-bold">✕</span>
+              </button>
+
+              <div className="space-y-6">
+                {/* Header */}
+                <div className="space-y-1.5 pr-8">
+                  <span className="font-sans text-[10px] font-black tracking-widest text-[#ff89ab] bg-[#ff89ab]/10 px-2.5 py-1 rounded-md uppercase">
+                    ¡Cómo Jugar Papelito! 📝🎮
+                  </span>
+                  <h3 className="font-headline text-2xl sm:text-3xl font-black text-white tracking-tight leading-none mt-2">
+                    Secret Phrases & Laughter
+                  </h3>
+                  <p className="font-sans text-xs sm:text-sm text-neutral-400">
+                    A party match played in 3 hilarious rounds! Every player writes down secret concepts (papelitos) into a shared online pool before facing off.
+                  </p>
+                </div>
+
+                {/* Steps/Rounds */}
+                <div className="space-y-4">
+                  <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
+                    <span className="font-headline font-black text-xs text-[#ff89ab] bg-[#ff89ab]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                      1
+                    </span>
+                    <div className="space-y-0.5">
+                      <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Ronda 1 • Libre Descripción</p>
+                      <p className="font-sans text-xs text-neutral-400">
+                        Describe the concept using as many words/hints as you want (except translation, spelling, or parts of the secret word).
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
+                    <span className="font-headline font-black text-xs text-[#ff89ab] bg-[#ff89ab]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                      2
+                    </span>
+                    <div className="space-y-0.5">
+                      <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Ronda 2 • Una Sola Palabra</p>
+                      <p className="font-sans text-xs text-neutral-400">
+                        Now that your team knows all words in the pool, you are restricted to guiding them with **only one single word**! Choose wisely.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
+                    <span className="font-headline font-black text-xs text-[#ff89ab] bg-[#ff89ab]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                      3
+                    </span>
+                    <div className="space-y-0.5">
+                      <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Ronda 3 • Mímica Completa</p>
+                      <p className="font-sans text-xs text-neutral-400">
+                        Zero sounds or lip syncing allowed. You must act out the concept using gestures/mime body language under clock pressure!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Primary Button */}
+                <button
+                  onClick={() => setShowGameInstructions(false)}
+                  className="w-full py-4 bg-gradient-to-r from-[#ff89ab] to-[#ff5d8f] hover:brightness-110 active:scale-[0.98] transition-all text-black font-headline font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(255,137,171,0.3)] block text-center cursor-pointer"
+                >
+                  Entendido • ¡A Jugar! 🚀
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
