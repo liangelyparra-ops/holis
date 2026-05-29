@@ -162,7 +162,7 @@ export default function App() {
   const [contactSubmitting, setContactSubmitting] = useState(false);
   const [contactSubmitted, setContactSubmitted] = useState(false);
   const [availableMenuOpen, setAvailableMenuOpen] = useState(false);
-  const [useCaseFilter, setUseCaseFilter] = useState<'All' | 'UX Strategy' | 'Design Systems' | 'Information Architecture' | 'Luxury Branding'>('All');
+  const [useCaseFilter, setUseCaseFilter] = useState<'All' | 'UX Strategy' | 'Design Systems' | 'Information Architecture' | 'Branding'>('All');
   const [showGameInstructions, setShowGameInstructions] = useState(true);
 
   const handleContactSubmit = async (e: React.FormEvent) => {
@@ -272,13 +272,13 @@ export default function App() {
   useEffect(() => {
     if (gameState.isShowingWinner && gameState.lastWinnerName) {
       if (gameState.lastWinnerId === 'none') {
-        toast.error("Nadie adivinó... ❌", {
-          description: "¡A la próxima!",
+        toast.error("Nobody guessed... ❌", {
+          description: "Next time!",
           duration: 1500,
         });
       } else {
-        toast.success(`¡Punto para ${gameState.lastWinnerName}! 🏆`, {
-          description: "+10 puntos",
+        toast.success(`Point for ${gameState.lastWinnerName}! 🏆`, {
+          description: "+10 points",
           duration: 1500,
         });
         playSound(SOUNDS.WIN);
@@ -552,7 +552,7 @@ export default function App() {
     
     reader.onerror = (err) => {
       console.error("FileReader error:", err);
-      toast.error("Error al leer el archivo.");
+      toast.error("Error reading file.");
       setIsUploading(false);
     };
 
@@ -561,7 +561,7 @@ export default function App() {
       console.log("File read successfully, length:", text.length);
       
       if (!text || text.trim().length < 10) {
-        toast.error("El archivo parece estar vacío o es demasiado corto.");
+        toast.error("The file seems empty or too short.");
         setIsUploading(false);
         return;
       }
@@ -577,7 +577,7 @@ export default function App() {
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
           console.error("GEMINI_API_KEY is missing from process.env");
-          throw new Error("La llave de API (GEMINI_API_KEY) no está configurada. Por favor, revisa los secretos en el menú de configuración.");
+          throw new Error("API Key (GEMINI_API_KEY) is not configured. Please check your secrets under the settings menu.");
         }
 
         const ai = new GoogleGenAI({ apiKey });
@@ -634,7 +634,7 @@ export default function App() {
         console.log("Generated cards count:", generatedData.length);
 
         if (!Array.isArray(generatedData) || generatedData.length === 0) {
-          throw new Error("La IA no pudo generar cartas válidas a partir de este chat.");
+          throw new Error("The AI could not generate valid cards from this chat.");
         }
 
         const newCards = shuffleArray(generatedData.map((c: any, i: number) => ({ 
@@ -643,12 +643,12 @@ export default function App() {
         })));
         
         await updateDoc(doc(db, 'games', GAME_ID), { cards: newCards });
-        toast.success("¡Mazo personalizado generado con éxito! 🔥");
+        toast.success("Custom deck generated successfully! 🔥");
       } catch (error: any) {
         console.error("Error generating cards:", error);
-        const errorMessage = error.message || "Error desconocido";
-        toast.error(`Error al generar cartas: ${errorMessage}`, {
-          description: "Asegúrate de que el archivo sea un .txt de WhatsApp y que la API Key esté configurada.",
+        const errorMessage = error.message || "Unknown error";
+        toast.error(`Error generating cards: ${errorMessage}`, {
+          description: "Make sure the file is a WhatsApp chat exports .txt file and the GEMINI_API_KEY is configured.",
           duration: 5000
         });
         // Fallback to default cards if generation fails
@@ -1684,9 +1684,6 @@ export default function App() {
       <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-20 py-12 text-left">
         {/* Section Header */}
         <div className="max-w-3xl space-y-4">
-          <span className="font-sans text-[10px] font-black uppercase tracking-widest text-[#ff89ab] bg-[#ff89ab]/10 px-3 py-1 rounded-full w-fit block mb-1">
-            03 • Selected Accomplishments
-          </span>
           <h2 className="font-headline text-4xl sm:text-6xl font-black text-neutral-900 tracking-tight leading-tighter">
             User Experience <br />As a Growth Engine
           </h2>
@@ -1703,7 +1700,7 @@ export default function App() {
             { id: 'UX Strategy', label: 'UX Strategy' },
             { id: 'Design Systems', label: 'Design Systems' },
             { id: 'Information Architecture', label: 'Information Architecture' },
-            { id: 'Luxury Branding', label: 'Luxury Branding' }
+            { id: 'Branding', label: 'Branding' }
           ].map((item) => {
             const isSelected = useCaseFilter === item.id;
             return (
@@ -1719,9 +1716,6 @@ export default function App() {
                     : 'bg-white text-neutral-600 border-neutral-200/60 hover:border-neutral-400 hover:text-neutral-800'
                 }`}
               >
-                {item.id !== 'All' && (
-                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSelected ? 'bg-white' : 'bg-[#ff89ab]'}`} />
-                )}
                 {item.label}
               </button>
             );
@@ -1731,7 +1725,7 @@ export default function App() {
         {/* Featured Case Studies Grid (Apple-style Bento Minimalist Grid) */}
         <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-8">
           
-          {/* Case 1: Illow from the Beginning */}
+          {/* Case 1: illow from the Beginning */}
           {(useCaseFilter === 'All' || useCaseFilter === 'UX Strategy') && (
             <motion.article 
               layout="position"
@@ -1742,16 +1736,28 @@ export default function App() {
               }`}
             >
               <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <span className="inline-flex items-center gap-1.5 bg-neutral-100/80 text-neutral-800 border border-neutral-200/40 px-3 py-1 font-sans text-[10px] font-bold tracking-wider uppercase rounded-full">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#ff89ab] shrink-0" />
-                    UX Strategy • Brand Origin
-                  </span>
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border ${
+                      useCaseFilter === 'UX Strategy'
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-neutral-600 border-neutral-200/60'
+                    }`}>
+                      UX Strategy
+                    </span>
+                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border ${
+                      useCaseFilter === 'Branding'
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-neutral-600 border-neutral-200/60'
+                    }`}>
+                      Branding
+                    </span>
+                  </div>
                   <span className="material-symbols-outlined text-[#ff89ab]">rocket_launch</span>
                 </div>
                 <div className="space-y-2">
                   <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
-                    Illow from the Beginning
+                    illow from the Beginning
                   </h3>
                   <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
                     <strong>Challenge:</strong> Designing the initial brand identity, visual systems, high-converting checkout funnels, and initial UX wireframes for an early-stage privacy tech startup from zero to one.
@@ -1781,7 +1787,7 @@ export default function App() {
                         <li>Built user experience blueprints for the original modal cookie sliders to maximize consent collection.</li>
                         <li>Attracted capital and early-stage trials by presenting interactive clickable high-contrast prototypes representing a mature product.</li>
                       </ul>
-                      <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
+                      <div className="bg-neutral-200/60 text-neutral-800 border border-neutral-300/40 p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
                         Zero-To-One Blueprint • Cohesive Privacy Identity
                       </div>
                     </div>
@@ -1797,18 +1803,18 @@ export default function App() {
                 )}
                 <button
                   onClick={() => setExpandedProject(expandedProject === 'illow_start' ? 'none' : 'illow_start')}
-                  className="w-full py-2.5 px-4 bg-black text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200/80 text-neutral-800 border border-neutral-200/40 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                 >
-                  {expandedProject === 'illow_start' ? 'Close case details' : 'Explore Case Study'}
-                  <span className="material-symbols-outlined text-xs">
-                    {expandedProject === 'illow_start' ? 'expand_less' : 'east'}
+                  {expandedProject === 'illow_start' ? 'Close case details' : 'Explore Case'}
+                  <span className="material-symbols-outlined text-xs font-bold">
+                    {expandedProject === 'illow_start' ? 'expand_less' : 'expand_more'}
                   </span>
                 </button>
               </div>
             </motion.article>
           )}
           
-          {/* Case 2: Illow to BIGID Evolution */}
+          {/* Case 2: illow to BigID Evolution */}
           {(useCaseFilter === 'All' || useCaseFilter === 'Design Systems') && (
             <motion.article 
               layout="position"
@@ -1819,16 +1825,28 @@ export default function App() {
               }`}
             >
               <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <span className="inline-flex items-center gap-1.5 bg-neutral-100/80 text-neutral-800 border border-neutral-200/40 px-3 py-1 font-sans text-[10px] font-bold tracking-wider uppercase rounded-full">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#ff89ab] shrink-0" />
-                    Design Systems • M&A Integration
-                  </span>
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border ${
+                      useCaseFilter === 'Design Systems'
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-neutral-600 border-neutral-200/60'
+                    }`}>
+                      Design Systems
+                    </span>
+                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border ${
+                      useCaseFilter === 'Branding'
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-neutral-600 border-neutral-200/60'
+                    }`}>
+                      Branding
+                    </span>
+                  </div>
                   <span className="material-symbols-outlined text-[#ff89ab]">trending_up</span>
                 </div>
                 <div className="space-y-2">
                   <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
-                    Illow to BIGID Evolution
+                    illow to BigID Evolution
                   </h3>
                   <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
                     <strong>Challenge:</strong> Leading the branding, visual system, and user experience strategy from early-stage startup through its eventual, high-profile acquisition by enterprise titan BigID.
@@ -1845,7 +1863,7 @@ export default function App() {
                     <div className="space-y-4">
                       <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Acquisition & Enterprise Scale</p>
                       <p>
-                        Ensuring brand consistency through corporate transitions is a severe friction risk. I led the transition from Illow's lightweight visual language to BigID's global compliance system, structuring UX patterns to support massive algorithmic volume without losing sensory clarity.
+                        Ensuring brand consistency through corporate transitions is a severe friction risk. I led the transition from illow's lightweight visual language to BigID's global compliance system, structuring UX patterns to support massive algorithmic volume without losing sensory clarity.
                       </p>
                       <p>
                         This absolute control over aesthetics laid a profound groundwork, allowing me to comfortably establish the company's internal UX department from the ground up prior to acquisition.
@@ -1858,7 +1876,7 @@ export default function App() {
                         <li>Significantly reduced engineering visual debt, aligning product development with marketing brand consistency.</li>
                         <li>Redesigned complex data-consent tables and user dashboards for BigID's global compliance standards post-acquisition.</li>
                       </ul>
-                      <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
+                      <div className="bg-neutral-200/60 text-neutral-800 border border-neutral-300/40 p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
                         Acquisition Catalyst • Enterprise Scale Orchestration Ready
                       </div>
                     </div>
@@ -1874,11 +1892,11 @@ export default function App() {
                 )}
                 <button
                   onClick={() => setExpandedProject(expandedProject === 'illow_evolution' ? 'none' : 'illow_evolution')}
-                  className="w-full py-2.5 px-4 bg-black text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200/80 text-neutral-800 border border-neutral-200/40 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                 >
-                  {expandedProject === 'illow_evolution' ? 'Close case details' : 'Explore Case Study'}
-                  <span className="material-symbols-outlined text-xs">
-                    {expandedProject === 'illow_evolution' ? 'expand_less' : 'east'}
+                  {expandedProject === 'illow_evolution' ? 'Close case details' : 'Explore Case'}
+                  <span className="material-symbols-outlined text-xs font-bold">
+                    {expandedProject === 'illow_evolution' ? 'expand_less' : 'expand_more'}
                   </span>
                 </button>
               </div>
@@ -1896,11 +1914,23 @@ export default function App() {
               }`}
             >
               <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <span className="inline-flex items-center gap-1.5 bg-neutral-100/80 text-neutral-800 border border-neutral-200/40 px-3 py-1 font-sans text-[10px] font-bold tracking-wider uppercase rounded-full">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#ff89ab] shrink-0" />
-                    Information Architecture • Data Scale
-                  </span>
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border ${
+                      useCaseFilter === 'Information Architecture'
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-neutral-600 border-neutral-200/60'
+                    }`}>
+                      Information Architecture
+                    </span>
+                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border ${
+                      useCaseFilter === 'UX Strategy'
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-neutral-600 border-neutral-200/60'
+                    }`}>
+                      UX Strategy
+                    </span>
+                  </div>
                   <span className="material-symbols-outlined text-[#ff89ab]">grid_view</span>
                 </div>
                 <div className="space-y-2">
@@ -1935,7 +1965,7 @@ export default function App() {
                         <li>Built easy pagination, smart quick-filtering, and drag-and-drop bucket systems.</li>
                         <li>Successfully decreased auditor page travel durations and human identification errors.</li>
                       </ul>
-                      <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
+                      <div className="bg-neutral-200/60 text-neutral-800 border border-neutral-300/40 p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
                         Friction-Free Task Navigation Optimization
                       </div>
                     </div>
@@ -1951,11 +1981,11 @@ export default function App() {
                 )}
                 <button
                   onClick={() => setExpandedProject(expandedProject === 'bigid_cookie' ? 'none' : 'bigid_cookie')}
-                  className="w-full py-2.5 px-4 bg-black text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200/80 text-neutral-800 border border-neutral-200/40 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                 >
-                  {expandedProject === 'bigid_cookie' ? 'Close case details' : 'Explore Case Study'}
-                  <span className="material-symbols-outlined text-xs">
-                    {expandedProject === 'bigid_cookie' ? 'expand_less' : 'east'}
+                  {expandedProject === 'bigid_cookie' ? 'Close case details' : 'Explore Case'}
+                  <span className="material-symbols-outlined text-xs font-bold">
+                    {expandedProject === 'bigid_cookie' ? 'expand_less' : 'expand_more'}
                   </span>
                 </button>
               </div>
@@ -1963,7 +1993,7 @@ export default function App() {
           )}
           
           {/* Case 4: Bojana Estudio Redesign */}
-          {(useCaseFilter === 'All' || useCaseFilter === 'Luxury Branding') && (
+          {(useCaseFilter === 'All' || useCaseFilter === 'Branding') && (
             <motion.article 
               layout="position"
               className={`custom-glass border rounded-[2rem] p-6 sm:p-10 flex flex-col justify-between transition-all duration-500 hover:shadow-xl ${
@@ -1973,11 +2003,23 @@ export default function App() {
               }`}
             >
               <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <span className="inline-flex items-center gap-1.5 bg-neutral-100/80 text-neutral-800 border border-neutral-200/40 px-3 py-1 font-sans text-[10px] font-bold tracking-wider uppercase rounded-full">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#ff89ab] shrink-0" />
-                    Luxury Branding • Portfolio Architecture
-                  </span>
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border ${
+                      useCaseFilter === 'Branding'
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-neutral-600 border-neutral-200/60'
+                    }`}>
+                      Branding
+                    </span>
+                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border ${
+                      useCaseFilter === 'Design Systems'
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-neutral-600 border-neutral-200/60'
+                    }`}>
+                      Design Systems
+                    </span>
+                  </div>
                   <span className="material-symbols-outlined text-[#ff89ab]">palette</span>
                 </div>
                 <div className="space-y-2">
@@ -2012,7 +2054,7 @@ export default function App() {
                         <li>Paired high-impact display fonts with Fira Code for technical metric captions.</li>
                         <li>Optimized high-resolution graphic rendering for immediate loading without visual stutter.</li>
                       </ul>
-                      <div className="bg-black text-white p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
+                      <div className="bg-neutral-200/60 text-neutral-800 border border-neutral-300/40 p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
                         Luxury Preservation • Qualified High-Ticket Conversion
                       </div>
                     </div>
@@ -2028,11 +2070,11 @@ export default function App() {
                 )}
                 <button
                   onClick={() => setExpandedProject(expandedProject === 'bojana' ? 'none' : 'bojana')}
-                  className="w-full py-2.5 px-4 bg-black text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200/80 text-neutral-800 border border-neutral-200/40 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                 >
-                  {expandedProject === 'bojana' ? 'Close case details' : 'Explore Case Study'}
-                  <span className="material-symbols-outlined text-xs">
-                    {expandedProject === 'bojana' ? 'expand_less' : 'east'}
+                  {expandedProject === 'bojana' ? 'Close case details' : 'Explore Case'}
+                  <span className="material-symbols-outlined text-xs font-bold">
+                    {expandedProject === 'bojana' ? 'expand_less' : 'expand_more'}
                   </span>
                 </button>
               </div>
@@ -2362,21 +2404,12 @@ export default function App() {
 
             <div className="flex gap-6 pt-6 border-t border-neutral-100">
               <a 
-                href="https://linkedin.com"
+                href="https://linkedin.com/in/liangely-diseno-grafico"
                 target="_blank"
                 rel="noreferrer"
-                className="font-sans text-xs font-bold uppercase tracking-widest text-neutral-900 hover:opacity-75 transition-opacity"
+                className="font-sans text-xs font-bold uppercase tracking-widest text-[#ff89ab] hover:opacity-75 transition-opacity"
               >
-                LinkedIn
-              </a>
-              <span className="text-neutral-300">•</span>
-              <a 
-                href="https://dribbble.com"
-                target="_blank"
-                rel="noreferrer"
-                className="font-sans text-xs font-bold uppercase tracking-widest text-neutral-900 hover:opacity-75 transition-opacity"
-              >
-                Dribbble
+                LinkedIn ↗
               </a>
             </div>
           </div>
@@ -2508,10 +2541,10 @@ export default function App() {
               window.scrollTo({ top: 0, behavior: 'smooth' }); 
             }
           }}
-          className={`flex items-center gap-1.5 px-4 py-2 border rounded-xl cursor-pointer select-none transition-all ${
+          className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer select-none transition-all ${
             activeTab === 'GAMES' 
-              ? 'border-[#ff89ab]/30 bg-black/40 hover:bg-black/60 shadow-[0_0_15px_rgba(255,137,171,0.15)] text-white' 
-              : 'border-neutral-950/15 bg-white/50 hover:bg-white hover:border-neutral-950/35 text-neutral-950'
+              ? 'bg-black/40 hover:bg-black/60 shadow-[0_0_15px_rgba(255,137,171,0.15)] text-white' 
+              : 'bg-white/50 hover:bg-white text-neutral-950'
           }`}
         >
           {activeTab === 'GAMES' ? (
@@ -2576,10 +2609,10 @@ export default function App() {
                   : 'bg-[#89ffab]/10 border-[#89ffab]/30 hover:bg-[#89ffab]/20 text-emerald-800 font-sans font-bold shadow-xs'
               }`}
             >
+              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.7)]" />
               <span className="text-[9px] font-black uppercase tracking-widest leading-none">
                 available
               </span>
-              <span className="w-1.5 h-1.5 bg-green-550 rounded-full animate-pulse shrink-0"></span>
               <span className="material-symbols-outlined text-[12px] opacity-70">expand_more</span>
             </button>
 
@@ -2719,12 +2752,12 @@ export default function App() {
                 </motion.div>
                 <div className="space-y-2">
                   <h2 className="font-headline text-6xl sm:text-8xl font-black uppercase tracking-tighter text-secondary italic">
-                    RONDA {showRoundAnimation}
+                    ROUND {showRoundAnimation}
                   </h2>
                   <p className="font-headline text-2xl sm:text-4xl font-black uppercase tracking-widest text-white">
-                    {showRoundAnimation === 1 ? 'Descripción' : 
-                     showRoundAnimation === 2 ? 'Una Palabra' : 
-                     'Mímica'}
+                    {showRoundAnimation === 1 ? 'Free Description' : 
+                     showRoundAnimation === 2 ? 'Single Word' : 
+                     'Pantomime'}
                   </p>
                 </div>
               </div>
@@ -2783,6 +2816,16 @@ export default function App() {
             <p className="text-[10px] uppercase tracking-widest font-black text-[#ff89ab]">
               B2B SAAS, AI & ENTERPRISE SYSTEMS
             </p>
+            <a 
+              href="https://linkedin.com/in/liangely-diseno-grafico" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className={`text-[10px] font-sans font-bold transition-colors inline-block mt-1 uppercase tracking-widest ${
+                activeTab === 'GAMES' ? 'text-neutral-400 hover:text-[#ff89ab]' : 'text-neutral-500 hover:text-[#ff89ab]'
+              }`}
+            >
+              LinkedIn ↗
+            </a>
           </div>
         </div>
       </footer>
@@ -2809,7 +2852,7 @@ export default function App() {
               <button 
                 onClick={() => setShowGameInstructions(false)}
                 className="absolute top-6 right-6 w-8 h-8 rounded-full border border-neutral-800 bg-neutral-900/60 hover:bg-neutral-800 flex items-center justify-center text-neutral-400 hover:text-white transition-all cursor-pointer"
-                aria-label="Cerrar instrucciones"
+                aria-label="Close instructions"
               >
                 <span className="text-sm font-bold">✕</span>
               </button>
@@ -2818,7 +2861,7 @@ export default function App() {
                 {/* Header */}
                 <div className="space-y-1.5 pr-8">
                   <span className="font-sans text-[10px] font-black tracking-widest text-[#ff89ab] bg-[#ff89ab]/10 px-2.5 py-1 rounded-md uppercase">
-                    ¡Cómo Jugar Papelito! 📝🎮
+                    How to Play Papelito! 📝🎮
                   </span>
                   <h3 className="font-headline text-2xl sm:text-3xl font-black text-white tracking-tight leading-none mt-2">
                     Secret Phrases & Laughter
@@ -2835,7 +2878,7 @@ export default function App() {
                       1
                     </span>
                     <div className="space-y-0.5">
-                      <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Ronda 1 • Libre Descripción</p>
+                      <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Round 1 • Free Description</p>
                       <p className="font-sans text-xs text-neutral-400">
                         Describe the concept using as many words/hints as you want (except translation, spelling, or parts of the secret word).
                       </p>
@@ -2847,7 +2890,7 @@ export default function App() {
                       2
                     </span>
                     <div className="space-y-0.5">
-                      <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Ronda 2 • Una Sola Palabra</p>
+                      <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Round 2 • Single Word</p>
                       <p className="font-sans text-xs text-neutral-400">
                         Now that your team knows all words in the pool, you are restricted to guiding them with **only one single word**! Choose wisely.
                       </p>
@@ -2855,11 +2898,11 @@ export default function App() {
                   </div>
 
                   <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
-                    <span className="font-headline font-black text-xs text-[#ff89ab] bg-[#ff89ab]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                    <span className="font-headline font-black text-[#ff89ab] bg-[#ff89ab]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
                       3
                     </span>
                     <div className="space-y-0.5">
-                      <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Ronda 3 • Mímica Completa</p>
+                      <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Round 3 • Full Pantomime</p>
                       <p className="font-sans text-xs text-neutral-400">
                         Zero sounds or lip syncing allowed. You must act out the concept using gestures/mime body language under clock pressure!
                       </p>
@@ -2872,7 +2915,7 @@ export default function App() {
                   onClick={() => setShowGameInstructions(false)}
                   className="w-full py-4 bg-gradient-to-r from-[#ff89ab] to-[#ff5d8f] hover:brightness-110 active:scale-[0.98] transition-all text-black font-headline font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(255,137,171,0.3)] block text-center cursor-pointer"
                 >
-                  Entendido • ¡A Jugar! 🚀
+                  Got it • Let's Play! 🚀
                 </button>
               </div>
             </motion.div>
