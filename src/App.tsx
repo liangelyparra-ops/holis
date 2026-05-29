@@ -148,6 +148,47 @@ export default function App() {
   const [selectedAvatarSeed, setSelectedAvatarSeed] = useState<string | null>(localStorage.getItem(AVATAR_KEY) || 'avatar-1');
   const [showRoundAnimation, setShowRoundAnimation] = useState<number | null>(null);
   const lastPlayedSoundRef = useRef<string | null>(null);
+
+  // Portfolio Navigation & Contact Form State
+  const [activeTab, setActiveTab] = useState<'IMPACT' | 'PROCESS' | 'VISION' | 'GAMES' | 'CONTACT'>('IMPACT');
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactSubject, setContactSubject] = useState('Consultoría UX');
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactSubmitting, setContactSubmitting] = useState(false);
+  const [contactSubmitted, setContactSubmitted] = useState(false);
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!contactName.trim() || !contactEmail.trim() || !contactMessage.trim()) {
+      toast.error("Por favor completa todos los campos requeridos.", { duration: 3000 });
+      return;
+    }
+    setContactSubmitting(true);
+    try {
+      const submissionId = `submission-${Date.now()}`;
+      await setDoc(doc(db, 'contacts', submissionId), {
+        name: contactName,
+        email: contactEmail,
+        subject: contactSubject,
+        message: contactMessage,
+        createdAt: new Date().toISOString()
+      });
+      setContactSubmitted(true);
+      toast.success("¡Mensaje enviado con éxito! ✉️", {
+        description: "Lia responderá a tu solicitud de inmediato.",
+        duration: 4000
+      });
+      setContactName('');
+      setContactEmail('');
+      setContactMessage('');
+    } catch (err) {
+      console.error(err);
+      toast.error("No se pudo enviar el mensaje. Por favor intenta de nuevo.");
+    } finally {
+      setContactSubmitting(false);
+    }
+  };
   
   const playSound = (url: string) => {
     console.log(`[Sound] Attempting to play: ${url}`);
@@ -1621,75 +1662,697 @@ export default function App() {
     );
   };
 
-  const isWaiting = gameState.status === 'GAME' && myPlayer && !myPlayer.isReady;
+  const [selectedProcessStep, setSelectedProcessStep] = useState(0);
+  const [expandedProject, setExpandedProject] = useState<'none' | 'luma'>('none');
+
+  const renderImpact = () => {
+    return (
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-8 space-y-16 py-8 text-left">
+        {/* Section Header */}
+        <div className="max-w-4xl">
+          <span className="font-headline font-semibold text-xs text-outline mb-4 block uppercase tracking-[0.2em]">
+            Portfolio Selection
+          </span>
+          <h2 className="font-headline text-4xl sm:text-7xl font-extrabold text-primary mb-6 leading-none tracking-tight">
+            High-Stakes <br />Storytelling
+          </h2>
+          <p className="font-body text-base sm:text-lg text-on-surface-variant max-w-2xl leading-relaxed">
+            A curation of strategic initiatives focused on user retention and brand equity. Every pixel is a response to a real business objective.
+          </p>
+        </div>
+
+        {/* Featured Projects Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Project 1: Holis Party Game */}
+          <article className="group relative flex flex-col bg-surface-container-low border border-outline-variant p-6 sm:p-8 hover:border-primary transition-all duration-500 rounded-2xl shadow-sm">
+            <div className="flex flex-col gap-6 h-full">
+              <div className="flex justify-between items-start">
+                <div className="flex flex-wrap gap-2">
+                  <span className="bg-surface-container-highest px-3 py-1 font-headline text-[10px] font-black uppercase tracking-wider text-primary rounded-full">
+                    UX/UI Design
+                  </span>
+                  <span className="bg-surface-container-highest px-3 py-1 font-headline text-[10px] font-black uppercase tracking-wider text-primary rounded-full">
+                    Real-Time State
+                  </span>
+                  <span className="bg-surface-container-highest px-3 py-1 font-headline text-[10px] font-black uppercase tracking-wider text-primary rounded-full">
+                    Sound UX
+                  </span>
+                </div>
+                <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors">
+                  sports_esports
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="font-headline text-2xl sm:text-3xl font-extrabold text-primary tracking-tight">
+                  Holis Multiplayer Game Suite
+                </h3>
+                <p className="font-body text-sm sm:text-base text-on-surface-variant leading-relaxed">
+                  Desafío: Crear un ambiente interactivo de juego social multijugador con latencia ultrabaja, sincronización instantánea usando Firebase, y dinámicas de sonido inmersivas (incluyendo el famoso audio "Están listos chicos").
+                </p>
+                <p className="font-body text-sm font-semibold italic text-primary">
+                  Impacto: Diseñado desde cero, logrando flujos limpios que unen dispositivos de amigos en tiempo de espera récord de <span className="underline">0.5s</span>.
+                </p>
+              </div>
+
+              {/* High-Fidelity Mockup (Visual Game Theme Showcase in Portfolio) */}
+              <div className="mt-auto relative w-full aspect-[16/10] bg-surface-container overflow-hidden border border-outline-variant rounded-xl group/img">
+                <div className="absolute inset-0 bg-[#0e0e0e] flex flex-col justify-center items-center p-6 text-center select-none">
+                  {/* Miniature Game UI mockup preview with live visual nodes */}
+                  <div className="space-y-4 max-w-xs scale-90 sm:scale-100 transition-transform duration-500 group-hover/img:scale-105">
+                    <div className="flex items-center justify-center gap-2 text-[#ff89ab] mb-2">
+                      <Gamepad2 className="animate-spin" style={{ animationDuration: '6s' }} />
+                      <span className="font-headline font-black text-sm uppercase tracking-widest">HOLIS GAME LOBBY</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="bg-surface-container-high border border-primary/20 p-2 rounded-xl text-center">
+                        <div className="w-8 h-8 rounded-full bg-[#ff89ab]/20 mx-auto border border-[#ff89ab] flex items-center justify-center text-xs">🐙</div>
+                        <div className="text-[8px] font-black uppercase mt-1 text-[#ff89ab]">Lia</div>
+                      </div>
+                      <div className="bg-surface-container-high border border-primary/20 p-2 rounded-xl text-center">
+                        <div className="w-8 h-8 rounded-full bg-[#00f4fe]/20 mx-auto border border-[#00f4fe] flex items-center justify-center text-xs">🐱</div>
+                        <div className="text-[8px] font-black uppercase mt-1 text-[#00f4fe]">Pedro</div>
+                      </div>
+                      <div className="bg-surface-container-high border border-[#69fd5d]/20 p-2 rounded-xl text-center">
+                        <div className="w-8 h-8 rounded-full bg-[#69fd5d]/20 mx-auto border border-[#69fd5d] flex items-center justify-center text-xs">🦊</div>
+                        <div className="text-[8px] font-black uppercase mt-1 text-[#69fd5d]">Lucas</div>
+                      </div>
+                    </div>
+                    <div className="bg-[#ff89ab]/10 border border-[#ff89ab]/30 p-2 rounded-lg text-[9px] font-headline font-bold text-[#ff89ab] tracking-wider uppercase">
+                      Están Listos Chicos • 0.8s Auto Start
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-outline-variant">
+                <button
+                  onClick={() => {
+                    setActiveTab('GAMES');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  id="tab-btn-gostart"
+                  className="w-full py-3 px-6 bg-primary text-on-primary font-headline text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 group-hover:gap-5 transition-all text-center rounded-xl"
+                >
+                  Probar juego interactivo ahora
+                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          {/* Project 2: LUMA Enterprise Security Arc */}
+          <article className="group relative flex flex-col bg-surface-container-low border border-outline-variant p-6 sm:p-8 hover:border-primary transition-all duration-500 rounded-2xl shadow-sm">
+            <div className="flex flex-col gap-6 h-full">
+              <div className="flex justify-between items-start">
+                <div className="flex flex-wrap gap-2">
+                  <span className="bg-surface-container-highest px-3 py-1 font-headline text-[10px] font-black uppercase tracking-wider text-primary rounded-full">
+                    SaaS Architecture
+                  </span>
+                  <span className="bg-surface-container-highest px-3 py-1 font-headline text-[10px] font-black uppercase tracking-wider text-primary rounded-full">
+                    UX Research
+                  </span>
+                  <span className="bg-surface-container-highest px-3 py-1 font-headline text-[10px] font-black uppercase tracking-wider text-primary rounded-full">
+                    Complex Systems
+                  </span>
+                </div>
+                <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors">
+                  blur_on
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="font-headline text-2xl sm:text-3xl font-extrabold text-primary tracking-tight">
+                  LUMA ARC Enterprise Security
+                </h3>
+                <p className="font-body text-sm sm:text-base text-on-surface-variant leading-relaxed">
+                  Desafío: Reestructuración y rediseño de flujos complejos de respuesta rápida para analistas de centros de seguridad (SOC). Reducción de la carga cognitiva durante picos de incidentes críticos.
+                </p>
+                <p className="font-body text-sm font-semibold italic text-primary">
+                  Impacto: Racionalización de flujos que disminuyó el tiempo de resolución en un <span className="underline">24%</span> sostenido.
+                </p>
+              </div>
+
+              {/* High-Fidelity Mockup Placeholder */}
+              <div className="mt-auto relative w-full aspect-[16/10] bg-surface-container overflow-hidden border border-outline-variant rounded-xl">
+                <img
+                  alt="LUMA Security Dashboard"
+                  className="w-full h-full object-cover grayscale-[0.4] group-hover:grayscale-0 transition-all duration-700"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCG-9kQuN_dEgMoTBXTOF7Wn4iU5mdPUKcSqzV-tviph-fNIOBXtsY141UZuiLeoeU54WQlyz8zfssUh5TmsxWfkfcNNeHOrfvJCxIClBV0ok95lh83wQqrkhxIfLMCqSHEUTpuUgFt83CIC6dyV_ycmQJ2VUD-awqYIDkV-agZPy5xr2btDjaDHhXfkCuM8ce6KpAbVKcjbAU5aOgKc8S93BPoL6bt--uJ6llKJLS4HaHKI44SS3OefDFD6ogS7D2ZddVeUf_C7fo1"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-outline-variant">
+                <button
+                  onClick={() => setExpandedProject(expandedProject === 'luma' ? 'none' : 'luma')}
+                  id="tab-btn-detailprj"
+                  className="w-full py-3 px-6 border-2 border-primary text-primary font-headline text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary hover:text-on-primary transition-all rounded-xl"
+                >
+                  {expandedProject === 'luma' ? 'Cerrar caso de estudio' : 'Examinar Caso de Estudio'}
+                  <span className="material-symbols-outlined text-sm">
+                    {expandedProject === 'luma' ? 'keyboard_arrow_up' : 'open_in_new'}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        {/* Expanded Case Study Area */}
+        <AnimatePresence>
+          {expandedProject === 'luma' && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-surface-container-low border-2 border-primary/20 p-6 sm:p-10 rounded-2xl overflow-hidden space-y-6"
+            >
+              <h4 className="font-headline text-xl sm:text-2xl font-black uppercase tracking-tight text-primary">
+                Caso de Estudio: LUMA ARC Console Modernization
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm font-body text-on-surface-variant">
+                <div className="space-y-4">
+                  <p className="font-semibold text-primary uppercase text-xs tracking-wider font-headline">El Contexto de Alta Tensión</p>
+                  <p>
+                    Los profesionales de ciberseguridad operan bajo estados de constante estrés. Un panel con mala densidad de información y alertas confusas puede retrasar la toma de decisiones por segundos, permitiendo filtraciones severas.
+                  </p>
+                  <p className="font-semibold text-primary uppercase text-xs tracking-wider font-headline">La Solución Propuesta</p>
+                  <p>
+                    Introdujimos un sistema de jerarquía asimétrica con paneles de expansión colapsables, una gama visual neutra de alto contraste y esquemas dinámicos para priorizar alarmas rojas únicamente cuando es crucial.
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <p className="font-semibold text-primary uppercase text-xs tracking-wider font-headline">Métodos Utilizados</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Auditoría de navegación heurística de 10 puntos en directo.</li>
+                    <li>Wireframing repetitivo y pruebas contextuales de volumen cognitivo.</li>
+                    <li>Sistemas de UI consistentes basados en tokens para desarrollo inmediato.</li>
+                  </ul>
+                  <p className="font-semibold text-primary uppercase text-xs tracking-wider font-headline">Logro Métrico</p>
+                  <div className="bg-[#0b1c30] text-white p-4 rounded-xl border border-primary/20 font-headline font-black italic uppercase">
+                    Reducción del Triage de Alertas a 1.2s • 38% más rápido que la competencia.
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Metric Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 py-10 border-y border-outline-variant">
+          <div className="text-center space-y-1">
+            <div className="font-headline text-5xl sm:text-6xl font-black text-primary">24%</div>
+            <div className="font-headline text-[10px] font-black uppercase tracking-widest text-[#45474b]">
+              Retention Growth
+            </div>
+          </div>
+          <div className="text-center border-y md:border-y-0 md:border-x border-outline-variant py-6 md:py-0 space-y-1">
+            <div className="font-headline text-5xl sm:text-6xl font-black text-primary">12+</div>
+            <div className="font-headline text-[10px] font-black uppercase tracking-widest text-[#45474b]">
+              End-to-end Flows
+            </div>
+          </div>
+          <div className="text-center space-y-1">
+            <div className="font-headline text-5xl sm:text-6xl font-black text-primary">0.5s</div>
+            <div className="font-headline text-[10px] font-black uppercase tracking-widest text-[#45474b]">
+              Interaction Speed
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderProcess = () => {
+    const steps = [
+      {
+        title: "Descubrir",
+        icon: "search",
+        sub: "User Research & Audits",
+        desc: "Comprensión del contexto empresarial, análisis profundo de datos cualitativos y telemetry, mapas de empatía y entrevistas contextuales para aislar problemas reales."
+      },
+      {
+        title: "Definir",
+        icon: "fact_check",
+        sub: "Architecture & Taxonomy",
+        desc: "Organización de la información, flujos, wireframes de baja fidelidad conceptuales para estructurar los cuellos de botella clave del usuario y proponer soluciones robustas."
+      },
+      {
+        title: "Diseñar",
+        icon: "palette",
+        sub: "High-Fidelity & Sounds",
+        desc: "Creación de interfaces fluidas enriquecidas con micro-interacciones, animaciones de transición y capas sonoras útiles, asegurando que la estética refuerce la utilidad del sistema."
+      },
+      {
+        title: "Desarrollar",
+        icon: "terminal",
+        sub: "Precision Handoff",
+        desc: "Coordinación íntima de código con el equipo de ingeniería directa, garantizando coherencia en los tokens de diseño, optimización de renderizado y pruebas funcionales eficientes."
+      }
+    ];
+
+    return (
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-8 space-y-12 py-8 text-left">
+        <div>
+          <span className="font-headline font-semibold text-xs text-outline mb-4 block uppercase tracking-[0.2em]">
+            Metodología de Trabajo
+          </span>
+          <h2 className="font-headline text-4xl sm:text-6xl font-extrabold text-primary mb-4 leading-none tracking-tight">
+            The Double-Diamond Cycle
+          </h2>
+          <p className="font-body text-base sm:text-lg text-on-surface-variant max-w-2xl">
+            Cada proyecto se somete a un filtro riguroso de iteración empírica. El diseño solo tiene éxito si responde a indicadores cualitativos medibles.
+          </p>
+        </div>
+
+        {/* Interactive Step Timeline Navigation */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {steps.map((st, idx) => {
+            const isSelected = selectedProcessStep === idx;
+            return (
+              <button
+                key={idx}
+                onClick={() => setSelectedProcessStep(idx)}
+                id={`proc-step-${idx}`}
+                className={`p-6 rounded-2xl border text-left transition-all ${
+                  isSelected
+                    ? 'bg-primary text-on-primary border-primary shadow-lg scale-[1.02]'
+                    : 'bg-surface-container-low border-outline-variant hover:border-primary text-on-surface'
+                }`}
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <span className="material-symbols-outlined text-lg">{st.icon}</span>
+                  <span className={`font-headline text-[10px] font-black ${isSelected ? 'text-on-primary/60' : 'text-outline'}`}>0{idx + 1}</span>
+                </div>
+                <h3 className="font-headline text-lg font-black uppercase tracking-tight mb-1">{st.title}</h3>
+                <p className={`font-body text-[11px] uppercase tracking-wider ${isSelected ? 'text-on-primary-fixed/80' : 'text-on-surface-variant'}`}>{st.sub}</p>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Showcase of currently selected step details */}
+        <div className="bg-surface-container-low border border-outline-variant p-6 sm:p-10 rounded-3xl grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+          <div className="md:col-span-2 space-y-4">
+            <span className="text-primary uppercase font-headline text-xs font-black tracking-widest block">
+              Fase 0{selectedProcessStep + 1} de Investigación activa
+            </span>
+            <h4 className="font-headline text-2xl sm:text-3xl font-black text-primary uppercase">
+              {steps[selectedProcessStep].sub}
+            </h4>
+            <p className="font-body text-base text-on-surface-variant leading-relaxed">
+              {steps[selectedProcessStep].desc}
+            </p>
+          </div>
+          <div className="bg-surface border border-outline-variant p-6 rounded-2xl space-y-4 flex flex-col justify-between aspect-square">
+            <div>
+              <span className="material-symbols-outlined text-primary text-4xl mb-4">
+                {steps[selectedProcessStep].icon}
+              </span>
+              <p className="font-headline text-xs font-black uppercase tracking-widest text-outline">Entregable Típico</p>
+              <p className="font-body text-sm font-bold text-primary mt-1">
+                {selectedProcessStep === 0 && "• Mapas de flujo con cuellos de botella identificados"}
+                {selectedProcessStep === 1 && "• Arquitectura de información estructurada y testeada"}
+                {selectedProcessStep === 2 && "• Prototipos interactivos de alta fidelidad con feedback táctil"}
+                {selectedProcessStep === 3 && "• Tokens JSON de diseño integrados y directos para Git"}
+              </p>
+            </div>
+            <div className="bg-surface-container-high px-3 py-2 rounded-lg text-[10px] font-headline font-semibold text-primary uppercase tracking-tight text-center">
+              Listo para Implementación
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderVision = () => {
+    return (
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-8 space-y-12 py-8 text-left">
+        <div>
+          <span className="font-headline font-semibold text-xs text-outline mb-4 block uppercase tracking-[0.2em]">
+            Filosofía de Diseño
+          </span>
+          <h2 className="font-headline text-4xl sm:text-6xl font-extrabold text-primary mb-4 leading-none tracking-tight">
+            Empathy Over Vanity
+          </h2>
+          <p className="font-body text-base sm:text-lg text-on-surface-variant max-w-2xl leading-relaxed">
+            Un diseño de interfaz hermoso sin utilidad real es costoso y confuso. La verdadera exquisitez del diseño radica en reducir la resistencia invisible de los flujos digitales cotidianos.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+          {/* Quote Panel */}
+          <div className="bg-[#0b1c30] text-white p-8 sm:p-12 rounded-[2rem] flex flex-col justify-between border border-primary/20">
+            <span className="material-symbols-outlined text-4xl text-surface-container-high select-none">
+              format_quote
+            </span>
+            <p className="font-headline text-xl sm:text-2xl font-bold tracking-tight italic leading-relaxed my-6">
+              "El diseño de interacción no es estética pura; es música. Tiene silencios, acentos y picos de energía pensados para guiar los ojos del usuario sin que se dé cuenta."
+            </p>
+            <div className="pt-6 border-t border-white/10 space-y-1">
+              <p className="font-headline font-black uppercase text-xs tracking-widest text-[#ff89ab]">
+                Lia Parra
+              </p>
+              <p className="font-body text-[10px] uppercase text-white/50">
+                Senior Interaction Designer
+              </p>
+            </div>
+          </div>
+
+          {/* Pillars List */}
+          <div className="space-y-6 flex flex-col justify-center">
+            <div className="flex gap-4 items-start">
+              <span className="material-symbols-outlined p-2 bg-surface-container rounded-xl text-primary">
+                architecture
+              </span>
+              <div className="space-y-1">
+                <h3 className="font-headline text-lg font-black uppercase text-primary">Brutalismo Funcional</h3>
+                <p className="font-body text-sm text-on-surface-variant leading-relaxed">
+                  Eliminamos los distractores gráficos redundantes e innecesarios para poner el foco de atención 100% sobre las acciones prioritarias de tu producto.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 items-start">
+              <span className="material-symbols-outlined p-2 bg-surface-container rounded-xl text-primary">
+                volume_up
+              </span>
+              <div className="space-y-1">
+                <h3 className="font-headline text-lg font-black uppercase text-primary">Sistemas Multimodales</h3>
+                <p className="font-body text-sm text-on-surface-variant leading-relaxed">
+                  Creemos en el feedback sonoro sutil. Como pudiste ver y experimentar en el "Holis Game Suite", la integración auditiva oportuna mejora el engagement hasta un 30%.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 items-start">
+              <span className="material-symbols-outlined p-2 bg-surface-container rounded-xl text-primary">
+                speed
+              </span>
+              <div className="space-y-1">
+                <h3 className="font-headline text-lg font-black uppercase text-primary">Velocidad como Característica</h3>
+                <p className="font-body text-sm text-on-surface-variant leading-relaxed">
+                  Un buen flujo que tarda en cargar es un mal flujo. Optimizamos interfaces y micro-animaciones para que corran a 60 FPS garantizados.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderContact = () => {
+    return (
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-8 space-y-12 py-8 text-left">
+        <div>
+          <span className="font-headline font-semibold text-xs text-outline mb-4 block uppercase tracking-[0.2em]">
+            Hablemos hoy en privado
+          </span>
+          <h2 className="font-headline text-4xl sm:text-6xl font-extrabold text-primary mb-4 leading-none tracking-tight">
+            Consultancy & Action
+          </h2>
+          <p className="font-body text-base sm:text-lg text-on-surface-variant max-w-2xl leading-relaxed">
+            ¿Tienes un desafío de conversión, retención de usuarios, o quieres acelerar tu diseño de producto? Envíame un mensaje y te responderé en menos de 24 horas.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Information block */}
+          <div className="bg-surface-container-low border border-outline-variant p-8 rounded-3xl space-y-6">
+            <h3 className="font-headline text-xl font-black uppercase text-primary tracking-tight">Lia Parra</h3>
+            <p className="font-body text-sm text-on-surface-variant leading-relaxed">
+              Consultora sénior de experiencia de usuario enfocada en diseñar y potenciar flujos interactivos de alto impacto empresarial.
+            </p>
+            <div className="space-y-3 pt-4 border-t border-outline-variant text-sm font-body">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-outline">mail</span>
+                <span className="text-on-surface-variant select-all">liangelyparra@gmail.com</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-outline">location_on</span>
+                <span className="text-on-surface-variant">Active • Remoto / Global</span>
+              </div>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <a 
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noreferrer"
+                className="font-headline text-xs font-black uppercase text-primary hover:underline"
+              >
+                LinkedIn
+              </a>
+              <span className="text-outline">•</span>
+              <a 
+                href="https://dribbble.com"
+                target="_blank"
+                rel="noreferrer"
+                className="font-headline text-xs font-black uppercase text-primary hover:underline"
+              >
+                Dribbble
+              </a>
+            </div>
+          </div>
+
+          {/* Contact form block */}
+          <div className="lg:col-span-2 bg-surface-container-lowest border-2 border-primary/20 p-8 sm:p-10 rounded-3xl shadow-sm">
+            <form onSubmit={handleContactSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label htmlFor="contact-name" className="block text-xs font-headline font-black uppercase tracking-wider text-primary">
+                    Nombre Completo *
+                  </label>
+                  <input
+                    id="contact-name"
+                    type="text"
+                    required
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
+                    placeholder="Ej: Alejandro Smith"
+                    className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-3 text-sm font-body focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-on-surface"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="contact-email" className="block text-xs font-headline font-black uppercase tracking-wider text-primary">
+                    Enviar Correo Electrónico *
+                  </label>
+                  <input
+                    id="contact-email"
+                    type="email"
+                    required
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    placeholder="Ej: alejandro@luma.com"
+                    className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-3 text-sm font-body focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-on-surface"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-xs font-headline font-black uppercase tracking-wider text-primary">
+                  Área de Interés
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['Consultoría UX', 'Diseño de Producto', 'Game UX'].map((sub) => {
+                    const isSelected = contactSubject === sub;
+                    return (
+                      <button
+                        key={sub}
+                        type="button"
+                        id={`subject-${sub.replace(/\s+/g, '-').toLowerCase()}`}
+                        onClick={() => setContactSubject(sub)}
+                        className={`py-2 px-3 rounded-lg text-xs font-headline font-bold uppercase border tracking-wider transition-all ${
+                          isSelected
+                            ? 'bg-primary text-on-primary border-primary font-black'
+                            : 'bg-surface border-outline-variant text-on-surface-variant hover:border-primary'
+                        }`}
+                      >
+                        {sub}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="contact-message" className="block text-xs font-headline font-black uppercase tracking-wider text-primary">
+                  Cuéntame sobre tu proyecto *
+                </label>
+                <textarea
+                  id="contact-message"
+                  required
+                  rows={4}
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  placeholder="Detalla tu desafío de negocio o los plazos requeridos..."
+                  className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-3 text-sm font-body focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-on-surface"
+                />
+              </div>
+
+              <button
+                type="submit"
+                id="contact-form-submit-btn"
+                disabled={contactSubmitting}
+                className="w-full py-4 bg-primary text-on-primary font-headline text-xs font-black uppercase tracking-widest hover:opacity-90 disabled:opacity-50 transition-all rounded-xl shadow-md active:scale-95 flex items-center justify-center gap-2"
+              >
+                {contactSubmitting ? 'Procediendo a enviar...' : 'Enviar Solicitud'}
+                <span className="material-symbols-outlined text-sm">send</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0e0e0e] text-on-surface font-body selection:bg-primary/30 overflow-x-hidden">
+    <div className={`min-h-screen font-body transition-colors duration-500 overflow-x-hidden ${
+      activeTab === 'GAMES' ? 'bg-[#0e0e0e] text-on-surface' : 'bg-[#f8f9ff] text-on-surface'
+    }`}>
       <Toaster position="top-right" richColors closeButton />
-      {/* Background Decoration */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-1/4 -left-1/4 w-full h-full neon-glow-pink animate-pulse"></div>
-        <div className="absolute -bottom-1/4 -right-1/4 w-full h-full neon-glow-cyan animate-pulse" style={{ animationDelay: '1s' }}></div>
-      </div>
 
-      {/* Top Navigation Bar */}
-      <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 sm:px-8 h-16 bg-[#0e0e0e]/80 backdrop-blur-xl shadow-[0_0_20px_rgba(255,137,171,0.15)]">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={goHome}>
-          <Gamepad2 className="text-[#ff89ab]" size={20} sm:size={24} />
-          <h1 className="text-lg sm:text-xl font-black italic text-[#ff89ab] drop-shadow-[0_0_10px_rgba(255,137,171,0.5)] font-headline tracking-tighter uppercase">
-            Holis Game
+      {/* Dynamic Backgrounds */}
+      {activeTab === 'GAMES' ? (
+        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+          <div className="absolute -top-1/4 -left-1/4 w-full h-full neon-glow-pink animate-pulse"></div>
+          <div className="absolute -bottom-1/4 -right-1/4 w-full h-full neon-glow-cyan animate-pulse" style={{ animationDelay: '1s' }}></div>
+        </div>
+      ) : (
+        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#f8f9ff]">
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#dce9ff]/30 rounded-full blur-[120px]"></div>
+          <div className="absolute bottom-1/4 left-1/4 w-[500px] h-[500px] bg-[#eff4ff]/40 rounded-full blur-[150px]"></div>
+        </div>
+      )}
+
+      {/* Top Custom Navigation Bar */}
+      <header className={`fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 sm:px-12 h-20 transition-all border-b ${
+        activeTab === 'GAMES' 
+          ? 'bg-[#0e0e0e]/90 text-white border-outline-variant/10 backdrop-blur-md' 
+          : 'bg-[#f8f9ff]/90 text-on-surface border-outline-variant/30 backdrop-blur-md'
+      }`}>
+        <div 
+          onClick={() => { setActiveTab('IMPACT'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          className="flex items-center gap-3 cursor-pointer select-none"
+        >
+          {activeTab === 'GAMES' ? (
+            <Gamepad2 className="text-[#ff89ab]" size={22} />
+          ) : (
+            <span className="material-symbols-outlined text-primary text-2xl">blur_on</span>
+          )}
+          <h1 className={`font-headline text-lg sm:text-xl font-extrabold tracking-tighter uppercase ${
+            activeTab === 'GAMES' ? 'text-[#ff89ab] italic' : 'text-primary'
+          }`}>
+            UX Impact Deck
           </h1>
         </div>
-        
-        {myPlayer && (
-          <div className="relative">
-            <button 
-              onClick={() => setShowPlayersList(!showPlayersList)}
-              className="flex items-center bg-surface-container-highest px-4 py-2 rounded-full gap-3 border border-primary/20 hover:bg-surface-bright transition-all"
-            >
-              <div className="relative">
-                <img src={myPlayer.avatar} alt={myPlayer.name} className="w-6 h-6 rounded-full" />
-                <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-tertiary rounded-full border-2 border-[#0e0e0e]"></div>
-              </div>
-              <span className="text-on-surface font-label text-sm font-bold truncate max-w-[100px]">{myPlayer.name}</span>
-              <Users size={14} className="text-on-surface-variant" />
-            </button>
 
-            <AnimatePresence>
-              {showPlayersList && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute top-full right-0 mt-2 w-64 bg-surface-container-high border border-outline-variant/30 rounded-2xl shadow-2xl overflow-hidden z-[60]"
-                >
-                  <div className="p-4 border-b border-outline-variant/20 bg-surface-container-highest">
-                    <h4 className="font-headline text-xs font-black uppercase tracking-widest text-primary">La Banda Conectada</h4>
-                  </div>
-                  <div className="max-h-64 overflow-y-auto p-2 space-y-1">
-                    {gameState.players.map((player: any) => (
-                      <div key={player.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-surface-variant/50 transition-colors">
-                        <img src={player.avatar} alt={player.name} className="w-8 h-8 rounded-full border border-outline-variant" />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-body font-bold text-sm text-on-surface truncate">
-                            {player.name} {player.id === userId && <span className="text-[10px] text-primary">(Tú)</span>}
-                          </p>
-                          <p className="text-[10px] text-on-surface-variant uppercase font-black">En la sala</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+        {/* Desktop Navigation Link Tabs */}
+        <nav className="hidden md:flex items-center gap-8 font-headline text-xs font-bold uppercase tracking-widest">
+          {[
+            { id: 'IMPACT', label: 'Impact' },
+            { id: 'PROCESS', label: 'Process' },
+            { id: 'VISION', label: 'Vision' },
+            { id: 'GAMES', label: 'Games 🎮' },
+            { id: 'CONTACT', label: 'Contact' }
+          ].map((tab) => {
+            const isTabActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id as any);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`py-2 border-b-2 transition-all cursor-pointer ${
+                  isTabActive 
+                    ? 'border-primary text-primary font-black' 
+                    : 'border-transparent text-on-surface-variant hover:text-primary hover:border-primary/30'
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Top Right Actions */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 bg-[#eff4ff] border border-[#c6c6cb] px-3 py-1.5 rounded-full shadow-sm text-primary">
+            <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></span>
+            <span className="font-headline text-[11px] font-extrabold uppercase tracking-wider">
+              Lia Parra
+            </span>
           </div>
-        )}
+
+          {activeTab === 'GAMES' && myPlayer && (
+            <div className="hidden sm:flex items-center gap-2 bg-[#201f1f] border border-[#ff89ab]/30 px-3 py-1 bg-opacity-65 rounded-full">
+              <img src={myPlayer.avatar} alt={myPlayer.name} className="w-4 h-4 rounded-full" />
+              <span className="font-sans text-[11px] font-bold text-white truncate max-w-[80px]">
+                {myPlayer.name}
+              </span>
+            </div>
+          )}
+
+          {/* Mobile hamburger menu toggle */}
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-lg hover:bg-surface-container-high transition-colors"
+          >
+            <span className="material-symbols-outlined text-primary text-2xl">
+              {mobileMenuOpen ? 'close' : 'menu'}
+            </span>
+          </button>
+        </div>
       </header>
 
-      {/* Main Content */}
-      <main className="relative z-10 w-full min-h-screen flex items-center justify-center pt-20">
+      {/* Mobile Drawer Overlay */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={`fixed top-20 left-0 w-full z-40 border-b border-outline-variant p-6 flex flex-col gap-4 md:hidden shadow-lg backdrop-blur-xl ${
+              activeTab === 'GAMES' ? 'bg-[#0e0e0e]/95 text-white' : 'bg-[#f8f9ff]/95 text-on-surface'
+            }`}
+          >
+            {[
+              { id: 'IMPACT', label: 'Impact' },
+              { id: 'PROCESS', label: 'Process' },
+              { id: 'VISION', label: 'Vision' },
+              { id: 'GAMES', label: 'Games 🎮' },
+              { id: 'CONTACT', label: 'Contact' }
+            ].map((tab) => {
+              const isTabActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id as any);
+                    setMobileMenuOpen(false);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className={`py-3 text-left font-headline text-sm font-bold uppercase tracking-widest border-b border-outline-variant/10 ${
+                    isTabActive ? 'text-primary font-black' : 'text-on-surface-variant'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main Content Content Container */}
+      <main className="relative z-10 w-full min-h-screen flex flex-col pt-24 pb-12">
         <AnimatePresence mode="wait">
-          {showRoundAnimation && (
+          {showRoundAnimation && activeTab === 'GAMES' && (
             <motion.div
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -1707,7 +2370,7 @@ export default function App() {
                   <h2 className="font-headline text-6xl sm:text-8xl font-black uppercase tracking-tighter text-secondary italic">
                     RONDA {showRoundAnimation}
                   </h2>
-                  <p className="font-headline text-2xl sm:text-4xl font-black uppercase tracking-widest text-on-surface">
+                  <p className="font-headline text-2xl sm:text-4xl font-black uppercase tracking-widest text-white">
                     {showRoundAnimation === 1 ? 'Descripción' : 
                      showRoundAnimation === 2 ? 'Una Palabra' : 
                      'Mímica'}
@@ -1717,17 +2380,53 @@ export default function App() {
             </motion.div>
           )}
 
-          {!selectedNickname || gameState.status === 'HOME' ? (
-            renderHome()
-          ) : (
-            <>
-              {gameState.status === 'LOBBY' && renderLobby()}
-              {gameState.status === 'GAME' && renderGame()}
-              {gameState.status === 'RESULTS' && renderResults()}
-            </>
-          )}
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.3 }}
+            className="w-full flex-1 flex flex-col items-center justify-center"
+          >
+            {activeTab === 'IMPACT' && renderImpact()}
+            {activeTab === 'PROCESS' && renderProcess()}
+            {activeTab === 'VISION' && renderVision()}
+            {activeTab === 'CONTACT' && renderContact()}
+            
+            {activeTab === 'GAMES' && (
+              <div className="game-theme text-on-surface bg-background select-none min-h-screen relative w-full flex items-center justify-center p-0">
+                <div className="w-full max-w-4xl py-6 px-4">
+                  {!selectedNickname || gameState.status === 'HOME' ? (
+                    renderHome()
+                  ) : (
+                    <>
+                      {gameState.status === 'LOBBY' && renderLobby()}
+                      {gameState.status === 'GAME' && renderGame()}
+                      {gameState.status === 'RESULTS' && renderResults()}
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* Global Interactive Portfolio Footer */}
+      {activeTab !== 'GAMES' && (
+        <footer className="relative z-10 w-full border-t border-outline-variant/30 py-8 text-center bg-[#f8f9ff] text-on-surface-variant font-sans text-xs">
+          <div className="max-w-6xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+              <p className="font-headline text-[10px] font-black uppercase tracking-widest text-primary">Lia Parra © 2026</p>
+              <p className="text-[10px] text-outline mt-0.5">Sénior Interaction Designer & Product Strategist</p>
+            </div>
+            <div className="flex gap-4">
+              <span className="material-symbols-outlined text-outline">verified_user</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider text-primary">Empirical Evidence & Quality UX</span>
+            </div>
+          </div>
+        </footer>
+      )}
     </div>
   );
 }

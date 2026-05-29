@@ -1,6 +1,75 @@
 @import "tailwindcss";
 
 @theme {
+  /* Default Portfolio Theme Variables (Light, Elegant, Slate UI) */
+  --color-background: #f8f9ff;
+  --color-surface: #f8f9ff;
+  --color-surface-bright: #f8f9ff;
+  --color-surface-dim: #cbdbf5;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #eff4ff;
+  --color-surface-container: #e5eeff;
+  --color-surface-container-high: #dce9ff;
+  --color-surface-container-highest: #d3e4fe;
+  --color-surface-variant: #d3e4fe;
+  
+  --color-on-surface: #0b1c30;
+  --color-on-surface-variant: #45474b;
+  
+  --color-primary: #000000;
+  --color-primary-dim: #1a1c20;
+  --color-on-primary: #ffffff;
+  --color-on-primary-fixed: #1a1c20;
+  
+  --color-secondary: #5c5f60;
+  --color-secondary-dim: #c5c7c8;
+  --color-on-secondary: #ffffff;
+  
+  --color-tertiary: #000000;
+  --color-tertiary-dim: #d1c4bb;
+  --color-on-tertiary: #ffffff;
+  
+  --color-error: #ba1a1a;
+  --color-outline: #76777b;
+  --color-outline-variant: #c6c6cb;
+
+  --font-headline: "Montserrat", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Inter", sans-serif;
+
+  @keyframes pulse-border {
+    0%, 100% { border-color: var(--color-primary); box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); }
+    50% { border-color: #76777b; box-shadow: 0 0 30px rgba(0, 0, 0, 0.2); }
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-on-surface font-body selection:bg-surface-container-highest selection:text-primary;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom styles for portfolio presentation */
+.custom-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-on-scroll.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Isolated Game Dark Neon Theme Scope */
+.game-theme {
   --color-background: #0e0e0e;
   --color-surface: #0e0e0e;
   --color-surface-bright: #2c2c2c;
@@ -35,42 +104,38 @@
   --font-headline: "Epilogue", sans-serif;
   --font-body: "Be Vietnam Pro", sans-serif;
   --font-label: "Space Grotesk", sans-serif;
-
-  @keyframes pulse-border {
-    0%, 100% { border-color: var(--color-primary); box-shadow: 0 0 20px rgba(255, 137, 171, 0.2); }
-    50% { border-color: white; box-shadow: 0 0 40px rgba(255, 137, 171, 0.5); }
-  }
+  
+  color: #ffffff;
+  background-color: #0e0e0e;
 }
 
-@layer base {
-  body {
-    @apply bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary;
-    overflow-x: hidden;
-  }
-}
-
-.neon-glow-pink {
+.game-theme .neon-glow-pink {
   background: radial-gradient(circle at center, rgba(255, 137, 171, 0.15) 0%, transparent 70%);
 }
 
-.neon-glow-cyan {
+.game-theme .neon-glow-cyan {
   background: radial-gradient(circle at center, rgba(0, 244, 254, 0.1) 0%, transparent 70%);
 }
 
-.glass-panel {
+.game-theme .glass-panel {
   background: rgba(38, 38, 38, 0.6);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
 
-.neon-tube-primary {
-  @apply bg-gradient-to-br from-primary to-primary-dim shadow-[0_0_20px_rgba(255,137,171,0.3)];
+.game-theme .neon-tube-primary {
+  background: linear-gradient(to bottom right, var(--color-primary), var(--color-primary-dim));
+  box-shadow: 0 0 20px rgba(255, 137, 171, 0.3);
 }
 
-.neon-tube-secondary {
-  @apply border-2 border-secondary text-secondary shadow-[0_0_20px_rgba(0,244,254,0.2)];
+.game-theme .neon-tube-secondary {
+  border-width: 2px;
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+  box-shadow: 0 0 20px rgba(0, 244, 254, 0.2);
 }
 
-.neon-tube-tertiary {
-  @apply bg-gradient-to-br from-tertiary to-tertiary-dim shadow-[0_0_20px_rgba(105,253,93,0.3)];
+.game-theme .neon-tube-tertiary {
+  background: linear-gradient(to bottom right, var(--color-tertiary), var(--color-tertiary-dim));
+  box-shadow: 0 0 20px rgba(105, 253, 93, 0.3);
 }
