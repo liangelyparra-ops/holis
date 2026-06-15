@@ -1966,7 +1966,7 @@ export default function App() {
     ];
 
     return (
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-24 py-12 text-left">
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-12 py-6 text-left">
         {/* Main Section Header */}
         <div className="max-w-3xl space-y-4">
           <span className="font-sans font-semibold text-xs text-outline tracking-[0.25em] uppercase block">
@@ -1981,7 +1981,7 @@ export default function App() {
         </div>
 
         {/* 1. Core Methodology Section */}
-        <div className="space-y-10 border-t border-neutral-100 pt-12">
+        <div className="space-y-6 border-t border-neutral-100 pt-6">
           <div className="space-y-2">
             <span className="font-sans text-[10px] font-black uppercase tracking-widest text-[#be123c] bg-[#be123c]/10 px-3 py-1 rounded-full w-fit block">
               01 • Core Methodology
@@ -2103,7 +2103,7 @@ export default function App() {
         </div>
 
         {/* 2. Design Philosophy Section */}
-        <div className="space-y-10 border-t border-neutral-100 pt-12">
+        <div className="space-y-6 border-t border-neutral-100 pt-6">
           <div className="space-y-2">
             <span className="font-sans text-[10px] font-black uppercase tracking-widest text-[#be123c] bg-[#be123c]/10 px-3 py-1 rounded-full w-fit block">
               02 • Design Philosophy
@@ -2179,7 +2179,7 @@ export default function App() {
 
   const renderContact = () => {
     return (
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-10 py-12 text-left">
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-6 py-6 text-left">
         <div className="space-y-4">
           <span className="font-sans font-semibold text-xs text-outline tracking-[0.25em] uppercase block">
             Partner with Lia
@@ -2599,10 +2599,10 @@ export default function App() {
                     setActiveTab(tab.id as any);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className={`py-2 border-b-2 transition-all cursor-pointer ${
+                  className={`py-1.5 px-3 rounded-full transition-all duration-300 cursor-pointer ${
                     isTabActive 
-                      ? 'border-[#be123c] text-[#be123c] font-bold' 
-                      : 'border-transparent text-on-surface-variant hover:text-primary hover:border-primary/30'
+                      ? 'bg-[#be123c]/10 text-[#be123c] font-black' 
+                      : 'text-neutral-600 hover:text-[#be123c] hover:bg-neutral-100/50'
                   }`}
                 >
                   {tab.label}
@@ -2752,7 +2752,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Main Content Content Container */}
-      <main className="relative z-10 w-full min-h-screen flex flex-col pt-24 pb-12">
+      <main className="relative z-10 w-full min-h-[calc(100vh-140px)] flex flex-col pt-20 pb-6">
         <AnimatePresence mode="wait">
           {showRoundAnimation && activeTab === 'GAMES' && (
             <motion.div
@@ -2795,7 +2795,7 @@ export default function App() {
             {activeTab === 'CONTACT' && renderContact()}
             
             {activeTab === 'GAMES' && (
-              <div className="game-theme text-on-surface bg-background select-none min-h-screen relative w-full flex items-center justify-center p-0">
+              <div className="game-theme text-on-surface bg-background select-none min-h-[55vh] relative w-full flex items-center justify-center p-0">
                 <div className="w-full max-w-4xl py-6 px-4">
                   {!selectedNickname || gameState.status === 'HOME' ? (
                     renderHome()
@@ -2860,10 +2860,10 @@ export default function App() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="relative w-full max-w-xl bg-[#141414] border border-neutral-800 rounded-[2.5rem] p-6 sm:p-8 text-white shadow-2xl z-10 overflow-hidden text-left"
-              style={{ boxShadow: '0 0 50px rgba(190, 18, 60, 0.15)' }}
+              style={{ boxShadow: '0 0 50px rgba(255, 137, 171, 0.15)' }}
             >
               {/* Subtle background glow */}
-              <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#be123c]/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#ff89ab]/10 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
               {/* Close "X" Button */}
@@ -2878,7 +2878,7 @@ export default function App() {
               <div className="space-y-6">
                 {/* Header */}
                 <div className="space-y-1.5 pr-8">
-                  <span className="font-sans text-[10px] font-black tracking-widest text-[#be123c] bg-[#be123c]/10 px-2.5 py-1 rounded-md uppercase">
+                  <span className="font-sans text-[10px] font-black tracking-widest text-[#ff89ab] bg-[#ff89ab]/10 px-2.5 py-1 rounded-md uppercase">
                     How to Play Papelito! 📝🎮
                   </span>
                   <h3 className="font-headline text-2xl sm:text-3xl font-black text-white tracking-tight leading-none mt-2">
@@ -2892,7 +2892,7 @@ export default function App() {
                 {/* Steps/Rounds */}
                 <div className="space-y-4">
                   <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
-                    <span className="font-headline font-black text-xs text-[#be123c] bg-[#be123c]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                    <span className="font-headline font-black text-xs text-[#ff89ab] bg-[#ff89ab]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
                       1
                     </span>
                     <div className="space-y-0.5">
@@ -2904,7 +2904,7 @@ export default function App() {
                   </div>
 
                   <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
-                    <span className="font-headline font-black text-xs text-[#be123c] bg-[#be123c]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                    <span className="font-headline font-black text-xs text-[#ff89ab] bg-[#ff89ab]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
                       2
                     </span>
                     <div className="space-y-0.5">
@@ -2916,7 +2916,7 @@ export default function App() {
                   </div>
 
                   <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
-                    <span className="font-headline font-black text-[#be123c] bg-[#be123c]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                    <span className="font-headline font-black text-[#ff89ab] bg-[#ff89ab]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
                       3
                     </span>
                     <div className="space-y-0.5">
@@ -2931,7 +2931,7 @@ export default function App() {
                 {/* Primary Button */}
                 <button
                   onClick={() => setShowGameInstructions(false)}
-                  className="w-full py-4 bg-gradient-to-r from-[#be123c] to-[#9f1239] hover:brightness-110 active:scale-[0.98] transition-all text-white font-headline font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(190,18,60,0.3)] block text-center cursor-pointer"
+                  className="w-full py-4 bg-gradient-to-r from-[#ff89ab] to-[#e30071] hover:brightness-110 active:scale-[0.98] transition-all text-white font-headline font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(255,137,171,0.3)] block text-center cursor-pointer"
                 >
                   Got it • Let's Play! 🚀
                 </button>
