@@ -85,9 +85,9 @@
   --color-on-surface: #ffffff;
   --color-on-surface-variant: #adaaaa;
   
-  --color-primary: #be123c;
-  --color-primary-dim: #9f1239;
-  --color-on-primary: #ffffff;
+  --color-primary: #ff89ab;
+  --color-primary-dim: #e30071;
+  --color-on-primary: #62002d;
   --color-on-primary-fixed: #000000;
   
   --color-secondary: #00f4fe;
@@ -111,7 +111,7 @@
 }
 
 .game-theme .neon-glow-pink {
-  background: radial-gradient(circle at center, rgba(190, 18, 60, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle at center, rgba(255, 137, 171, 0.15) 0%, transparent 70%);
 }
 
 .game-theme .neon-glow-cyan {
@@ -126,7 +126,7 @@
 
 .game-theme .neon-tube-primary {
   background: linear-gradient(to bottom right, var(--color-primary), var(--color-primary-dim));
-  box-shadow: 0 0 20px rgba(190, 18, 60, 0.3);
+  box-shadow: 0 0 20px rgba(255, 137, 171, 0.3);
 }
 
 .game-theme .neon-tube-secondary {

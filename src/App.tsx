@@ -29,6 +29,7 @@ import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS, PRIMOS_
 import { db } from './firebase';
 import { useCases } from './data/useCases';
 import { AnalyticsMockup, WireframeMockup, DesignTokensMockup } from './components/ProjectMockups';
+import { DifferentialMockup } from './components/DifferentialMockup';
 
 const USER_ID_KEY = 'party-game-user-id-v2';
 const NICKNAME_KEY = 'party-game-nickname';
@@ -1745,15 +1746,25 @@ export default function App() {
     );
 
     return (
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-10 py-6 text-left">
-        {/* Section Header */}
-        <div className="max-w-3xl space-y-3">
-          <h2 className="font-headline text-3xl sm:text-4xl font-bold text-neutral-900 tracking-tight leading-snug">
-            Experience & Value <br />As a Growth Engine
-          </h2>
-          <p className="font-sans text-sm sm:text-base text-neutral-500 max-w-2xl leading-relaxed">
-            A curated portfolio matching strategic visual narratives to empirical outcomes. Every design decision serves to translate complex technical workflows into frictionless business assets.
-          </p>
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-12 py-6 text-left">
+        {/* Section Header with End-to-End Differential Showcase Mockup */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          <div className="lg:col-span-7 space-y-4">
+            <div className="space-y-1.5 animate-fade-in">
+              <span className="font-sans text-[10px] font-black uppercase tracking-widest text-[#be123c] bg-[#be123c]/10 px-2.5 py-1 rounded-md">
+                Sr. Product Designer UX / UI Lead
+              </span>
+              <h2 className="font-headline text-3xl sm:text-5xl font-black text-neutral-900 tracking-tight leading-tighter">
+                Strategy & Design <br />as a Growth Engine
+              </h2>
+            </div>
+            <p className="font-sans text-sm sm:text-base text-neutral-500 max-w-2xl leading-relaxed">
+              A curated portfolio connecting premium visual narratives with empirical business outcomes. Every design decision serves to translate complex engineering workflows into frictionless user experiences and lasting brand value.
+            </p>
+          </div>
+          <div className="lg:col-span-5 w-full">
+            <DifferentialMockup />
+          </div>
         </div>
 
         {/* Category Filters (Mini Badges for Filtering) */}
@@ -2120,7 +2131,7 @@ export default function App() {
                   Lia Parra
                 </p>
                 <p className="font-sans text-[10px] uppercase text-neutral-400">
-                  Senior UX & Interaction Designer
+                  Sr. Product Designer UX / UI Lead
                 </p>
               </div>
             </div>
@@ -2190,7 +2201,7 @@ export default function App() {
             <div className="space-y-6">
               <h3 className="font-headline text-2xl font-bold text-neutral-900 tracking-tight">Lia Parra</h3>
               <p className="font-sans text-sm text-neutral-500 leading-relaxed">
-                Senior product designer and experience strategist driving conversion, interactive interfaces, and cross-platform UX structures.
+                Sr. Product Designer UX / UI Lead and experience strategist driving conversion, interactive interfaces, and cross-platform UX structures.
               </p>
               <div className="space-y-4 pt-6 border-t border-neutral-100 text-sm font-sans">
                 <div className="flex items-center gap-3">
@@ -2417,10 +2428,10 @@ export default function App() {
         >
           {activeTab === 'GAMES' ? (
             <div className="flex items-center gap-1.5">
-              <h1 className="font-cursive text-3xl font-bold tracking-wide leading-none text-[#be123c] lowercase">
+              <h1 className="font-cursive text-3xl font-bold tracking-wide leading-none text-[#ff89ab] lowercase">
                 lia
               </h1>
-              <span className="font-sans text-[9px] font-bold tracking-widest text-[#be123c] bg-[#be123c]/10 px-1.5 py-0.5 rounded uppercase">
+              <span className="font-sans text-[9px] font-bold tracking-widest text-[#ff89ab] bg-[#ff89ab]/10 px-1.5 py-0.5 rounded uppercase">
                 papelito game
               </span>
             </div>
@@ -2436,35 +2447,35 @@ export default function App() {
           )}
         </div>
 
-        {/* Desktop Navigation Link Tabs (Always Visible) */}
-        <nav className="hidden md:flex items-center gap-8 font-headline text-xs font-bold uppercase tracking-widest">
-          {[
-            { id: 'IMPACT', label: 'Experience' },
-            { id: 'VISION', label: 'My Vision' },
-            { id: 'GAMES', label: 'Game' },
-            { id: 'CONTACT', label: 'About' }
-          ].map((tab) => {
-            const isTabActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id as any);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className={`py-2 border-b-2 transition-all cursor-pointer ${
-                  isTabActive 
-                    ? 'border-[#be123c] text-[#be123c] font-bold' 
-                    : activeTab === 'GAMES'
-                      ? 'border-transparent text-neutral-400 hover:text-[#be123c] hover:border-[#be123c]/30'
+        {/* Desktop Navigation Link Tabs (Always Visible for portfolio, hidden for GAMES which uses Burger) */}
+        {activeTab !== 'GAMES' && (
+          <nav className="hidden md:flex items-center gap-8 font-headline text-xs font-bold uppercase tracking-widest">
+            {[
+              { id: 'IMPACT', label: 'Experience' },
+              { id: 'VISION', label: 'My Vision' },
+              { id: 'GAMES', label: 'Game' },
+              { id: 'CONTACT', label: 'About' }
+            ].map((tab) => {
+              const isTabActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id as any);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className={`py-2 border-b-2 transition-all cursor-pointer ${
+                    isTabActive 
+                      ? 'border-[#be123c] text-[#be123c] font-bold' 
                       : 'border-transparent text-on-surface-variant hover:text-primary hover:border-primary/30'
-                }`}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </nav>
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
+        )}
 
         {/* Top Right Actions */}
         <div className="flex items-center gap-3 sm:gap-4">
@@ -2541,7 +2552,7 @@ export default function App() {
           </div>
 
           {activeTab === 'GAMES' && myPlayer && (
-            <div className="hidden sm:flex items-center gap-2 bg-[#201f1f] border border-[#be123c]/30 px-3 py-1 bg-opacity-65 rounded-full">
+            <div className="hidden sm:flex items-center gap-2 bg-[#201f1f] border border-[#ff89ab]/30 px-3 py-1 bg-opacity-65 rounded-full">
               <img src={myPlayer.avatar} alt={myPlayer.name} className="w-4 h-4 rounded-full" />
               <span className="font-sans text-[11px] font-bold text-white truncate max-w-[80px]">
                 {myPlayer.name}
@@ -2549,27 +2560,31 @@ export default function App() {
             </div>
           )}
 
-          {/* Mobile landscape & Burger menu toggle buttons */}
+          {/* Mobile landscape & Burger menu toggle buttons (Always shown in game tab) */}
           <button 
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden block p-2 rounded-lg hover:bg-surface-container-high/50 transition-colors z-[100]"
+            className={`block p-2 rounded-lg hover:bg-surface-container-high/50 transition-colors z-[100] ${
+              activeTab === 'GAMES' ? '' : 'md:hidden'
+            }`}
           >
-            <span className={`material-symbols-outlined text-2xl ${activeTab === 'GAMES' ? 'text-[#be123c]' : 'text-primary'}`}>
+            <span className={`material-symbols-outlined text-2xl ${activeTab === 'GAMES' ? 'text-[#ff89ab]' : 'text-primary'}`}>
               {mobileMenuOpen ? 'close' : 'menu'}
             </span>
           </button>
         </div>
       </header>
 
-      {/* Mobile/Burger Drawer Overlay */}
+      {/* Mobile/Burger Drawer Overlay (Burger overlay covers desktop too when inside activeTab === 'GAMES') */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`fixed inset-0 z-40 p-6 pt-24 flex flex-col justify-center items-center gap-6 shadow-lg backdrop-blur-2xl md:hidden ${
-              activeTab === 'GAMES' ? 'bg-[#0e0e0e]/98 text-white' : 'bg-[#f8f9ff]/95 text-on-surface'
+            className={`fixed inset-0 z-40 p-6 pt-24 flex flex-col justify-center items-center gap-6 shadow-lg backdrop-blur-2xl ${
+              activeTab === 'GAMES' 
+                ? 'bg-[#0e0e0e]/98 text-white' 
+                : 'bg-[#f8f9ff]/95 text-on-surface md:hidden'
             }`}
           >
             {[
@@ -2589,7 +2604,7 @@ export default function App() {
                   }}
                   className={`py-3 text-xl font-headline font-bold uppercase tracking-widest text-center transition-all duration-300 ${
                     activeTab === 'GAMES' 
-                      ? isTabActive ? 'text-[#be123c] scale-105' : 'text-neutral-400 hover:text-white'
+                      ? isTabActive ? 'text-[#ff89ab] scale-105' : 'text-neutral-400 hover:text-white'
                       : isTabActive ? 'text-[#be123c] scale-105' : 'text-on-surface-variant'
                   }`}
                 >
@@ -2677,7 +2692,7 @@ export default function App() {
               Lia Parra. © 2026
             </p>
             <p className="text-[10px] uppercase tracking-wider font-bold">
-              Senior Staff Product & UX Designer
+              Sr. Product Designer UX / UI Lead
             </p>
           </div>
           <div className="sm:text-right space-y-0.5">
