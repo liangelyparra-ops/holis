@@ -19,13 +19,16 @@ import {
   X,
   Settings,
   Shuffle,
-  Type as TypeIcon
+  Type as TypeIcon,
+  Linkedin
 } from 'lucide-react';
 import { doc, onSnapshot, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Toaster, toast } from 'sonner';
 import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS, PRIMOS_CARDS, PAPELITO_RANDOM_THEMES, HOLIS_CARDS } from './types';
 import { db } from './firebase';
+import { useCases } from './data/useCases';
+import { AnalyticsMockup, WireframeMockup, DesignTokensMockup } from './components/ProjectMockups';
 
 const USER_ID_KEY = 'party-game-user-id-v2';
 const NICKNAME_KEY = 'party-game-nickname';
@@ -165,15 +168,56 @@ export default function App() {
   const [useCaseFilter, setUseCaseFilter] = useState<'All' | 'UX Strategy' | 'Design Systems' | 'Information Architecture' | 'Branding'>('All');
   const [showGameInstructions, setShowGameInstructions] = useState(true);
 
+  // Sync tab with URL hash for deep linking & back/forward navigation support
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (hash === '#game' || hash === '#games') {
+        setActiveTab('GAMES');
+      } else if (hash === '#vision') {
+        setActiveTab('VISION');
+      } else if (hash === '#about' || hash === '#contact') {
+        setActiveTab('CONTACT');
+      } else if (hash === '#experience' || hash === '#experiences' || hash === '#use-cases') {
+        setActiveTab('IMPACT');
+      } else {
+        // Default on blank or unexpected hashes
+        setActiveTab('IMPACT');
+      }
+    };
+
+    // Run once on mount to handle direct landing link
+    handleHashChange();
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
+  // Update URL hash whenever tab changes, maintaining clean state
+  useEffect(() => {
+    let targetHash = '#experience';
+    if (activeTab === 'GAMES') targetHash = '#game';
+    else if (activeTab === 'VISION') targetHash = '#vision';
+    else if (activeTab === 'CONTACT') targetHash = '#about';
+
+    if (window.location.hash.toLowerCase() !== targetHash) {
+      window.history.pushState(null, '', targetHash);
+    }
+  }, [activeTab]);
+
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!contactName.trim() || !contactEmail.trim() || !contactMessage.trim()) {
-      toast.error("Por favor completa todos los campos requeridos.", { duration: 3000 });
+      toast.error("Please fill in all required fields.", { duration: 3000 });
       return;
     }
     setContactSubmitting(true);
     try {
       const submissionId = `submission-${Date.now()}`;
+      
+      // Save to Firestore for reliable persistence backup
       await setDoc(doc(db, 'contacts', submissionId), {
         name: contactName,
         email: contactEmail,
@@ -181,9 +225,24 @@ export default function App() {
         message: contactMessage,
         createdAt: new Date().toISOString()
       });
+
+      // Submit to server endpoint to trigger email alert / log
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: contactName,
+          email: contactEmail,
+          subject: contactSubject,
+          message: contactMessage
+        })
+      });
+
       setContactSubmitted(true);
-      toast.success("¡Mensaje enviado con éxito! ✉️", {
-        description: "Responderé a tu solicitud de inmediato.",
+      toast.success("Message sent successfully! ✉️", {
+        description: "Lia will respond to your inquiry shortly.",
         duration: 4000
       });
       setContactName('');
@@ -191,7 +250,7 @@ export default function App() {
       setContactMessage('');
     } catch (err) {
       console.error(err);
-      toast.error("No se pudo enviar el mensaje. Por favor intenta de nuevo.");
+      toast.error("Could not send message. Please try again.");
     } finally {
       setContactSubmitting(false);
     }
@@ -1680,23 +1739,28 @@ export default function App() {
   const [expandedProject, setExpandedProject] = useState<'none' | 'illow_start' | 'illow_evolution' | 'bigid_cookie' | 'bojana'>('none');
 
   const renderImpact = () => {
+    // Filter the use cases dynamically
+    const filteredCases = useCases.filter(
+      (item) => useCaseFilter === 'All' || item.tags.includes(useCaseFilter as any)
+    );
+
     return (
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-20 py-12 text-left">
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-10 py-6 text-left">
         {/* Section Header */}
-        <div className="max-w-3xl space-y-4">
-          <h2 className="font-headline text-4xl sm:text-6xl font-black text-neutral-900 tracking-tight leading-tighter">
-            User Experience <br />As a Growth Engine
+        <div className="max-w-3xl space-y-3">
+          <h2 className="font-headline text-3xl sm:text-4xl font-bold text-neutral-900 tracking-tight leading-snug">
+            Experience & Value <br />As a Growth Engine
           </h2>
-          <p className="font-sans text-base sm:text-lg text-neutral-500 max-w-2xl leading-relaxed">
+          <p className="font-sans text-sm sm:text-base text-neutral-500 max-w-2xl leading-relaxed">
             A curated portfolio matching strategic visual narratives to empirical outcomes. Every design decision serves to translate complex technical workflows into frictionless business assets.
           </p>
         </div>
 
         {/* Category Filters (Mini Badges for Filtering) */}
-        <div className="flex flex-wrap items-center gap-2 pb-6 border-b border-neutral-200/40">
-          <span className="font-sans text-[10px] font-black uppercase tracking-widest text-neutral-400 mr-2">Filter achievements:</span>
+        <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-neutral-200/30">
+          <span className="font-sans text-[10px] font-bold uppercase tracking-widest text-neutral-400 mr-2">Filter experiences:</span>
           {[
-            { id: 'All', label: 'All Use Cases' },
+            { id: 'All', label: 'All' },
             { id: 'UX Strategy', label: 'UX Strategy' },
             { id: 'Design Systems', label: 'Design Systems' },
             { id: 'Information Architecture', label: 'Information Architecture' },
@@ -1710,7 +1774,7 @@ export default function App() {
                   setUseCaseFilter(item.id as any);
                   setExpandedProject('none'); // Collapse opened project when changing filters
                 }}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border cursor-pointer ${
                   isSelected
                     ? 'bg-black text-white border-black'
                     : 'bg-white text-neutral-600 border-neutral-200/60 hover:border-neutral-400 hover:text-neutral-800'
@@ -1722,386 +1786,128 @@ export default function App() {
           })}
         </div>
 
-        {/* Featured Case Studies Grid (Apple-style Bento Minimalist Grid) */}
-        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          
-          {/* Case 1: illow from the Beginning */}
-          {(useCaseFilter === 'All' || useCaseFilter === 'UX Strategy') && (
-            <motion.article 
-              layout="position"
-              className={`custom-glass border rounded-[2rem] p-6 sm:p-10 flex flex-col justify-between transition-all duration-500 hover:shadow-xl ${
-                expandedProject === 'illow_start' 
-                  ? 'md:col-span-2 border-neutral-900 shadow-2xl bg-white ring-1 ring-neutral-950/5' 
-                  : 'md:col-span-1 border-neutral-200/40 hover:border-neutral-900/10 hover:bg-white'
-              }`}
-            >
-              <div className="space-y-6">
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border ${
-                      useCaseFilter === 'UX Strategy'
-                        ? 'bg-black text-white border-black'
-                        : 'bg-white text-neutral-600 border-neutral-200/60'
-                    }`}>
-                      UX Strategy
-                    </span>
-                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border ${
-                      useCaseFilter === 'Branding'
-                        ? 'bg-black text-white border-black'
-                        : 'bg-white text-neutral-600 border-neutral-200/60'
-                    }`}>
-                      Branding
-                    </span>
-                  </div>
-                  <span className="material-symbols-outlined text-[#ff89ab]">rocket_launch</span>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
-                    illow from the Beginning
-                  </h3>
-                  <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
-                    <strong>Challenge:</strong> Designing the initial brand identity, visual systems, high-converting checkout funnels, and initial UX wireframes for an early-stage privacy tech startup from zero to one.
-                  </p>
-                </div>
-
-                {/* Inline Expanded Deep-dive Content */}
-                {expandedProject === 'illow_start' && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="pt-6 mt-6 border-t border-neutral-100 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed text-neutral-800"
-                  >
-                    <div className="space-y-4">
-                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">The Startup Spark</p>
-                      <p>
-                        I worked on designing the startup's brand DNA, choosing color tokens, typography systems, and web architecture to resonate with developers and compliance officers alike. By controlling the complete zero-to-one design pipeline, I framed privacy compliance as a beautiful interactive asset.
-                      </p>
-                      <p>
-                        This aesthetic control laid a profound groundwork, allowing me to establish the company's internal UX department comfortably before scaling processes.
-                      </p>
+        {/* Featured Case Studies Grid */}
+        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {filteredCases.map((project) => {
+            const isExpanded = expandedProject === project.id;
+            return (
+              <motion.article 
+                key={project.id}
+                layout="position"
+                className={`custom-glass border rounded-[1.5rem] p-5 sm:p-7 flex flex-col justify-between transition-all duration-500 hover:shadow-lg ${
+                  isExpanded
+                    ? 'md:col-span-2 border-neutral-900 shadow-xl bg-white ring-1 ring-neutral-950/5' 
+                    : 'md:col-span-1 border-neutral-200/40 hover:border-neutral-900/15 hover:bg-white'
+                }`}
+              >
+                <div className="space-y-4">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="flex flex-wrap gap-1.5">
+                      {project.tags.map((tag) => {
+                        const isTagSelected = useCaseFilter === tag;
+                        return (
+                          <span
+                            key={tag}
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-[9px] font-bold tracking-wider uppercase transition-all duration-200 border ${
+                              isTagSelected
+                                ? 'bg-black text-white border-black'
+                                : 'bg-white text-neutral-600 border-neutral-200/60'
+                            }`}
+                          >
+                            {tag}
+                          </span>
+                        );
+                      })}
                     </div>
-                    <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-100">
-                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Methodology & Launch Actions</p>
-                      <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600">
-                        <li>Designed high-converting interactive landing pages for developer signups.</li>
-                        <li>Built user experience blueprints for the original modal cookie sliders to maximize consent collection.</li>
-                        <li>Attracted capital and early-stage trials by presenting interactive clickable high-contrast prototypes representing a mature product.</li>
-                      </ul>
-                      <div className="bg-neutral-200/60 text-neutral-800 border border-neutral-300/40 p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
-                        Zero-To-One Blueprint • Cohesive Privacy Identity
+                    <span className="material-symbols-outlined text-[#be123c] text-xl shrink-0">{project.icon}</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <h3 className="font-headline text-lg sm:text-xl font-bold text-neutral-900 tracking-tight">
+                      {project.title}
+                    </h3>
+                    <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
+                      <strong>Challenge:</strong> {project.challenge}
+                    </p>
+                  </div>
+
+                  {/* Inline Expanded Deep-dive Content */}
+                  {isExpanded && project.deepDive && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="pt-4 mt-4 border-t border-neutral-150 grid grid-cols-1 md:grid-cols-2 gap-6 text-xs sm:text-sm leading-relaxed text-neutral-800"
+                    >
+                      <div className="space-y-3">
+                        <p className="font-bold text-neutral-900 text-[10px] tracking-wider uppercase font-sans">{project.deepDive.leftTitle}</p>
+                        {project.deepDive.leftParagraphs.map((para, pIdx) => (
+                          <p key={pIdx} className="text-neutral-600 text-xs sm:text-sm leading-relaxed">{para}</p>
+                        ))}
                       </div>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-              
-              <div className="mt-8 space-y-4 font-sans">
-                {expandedProject !== 'illow_start' && (
-                  <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic text-xs text-neutral-600">
-                    <strong>Impact:</strong> Secured early market traction under a cohesive product aesthetic, with the visual identity and user interface driving robust early-stage signups.
-                  </div>
-                )}
-                <button
-                  onClick={() => setExpandedProject(expandedProject === 'illow_start' ? 'none' : 'illow_start')}
-                  className="w-full py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200/80 text-neutral-800 border border-neutral-200/40 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
-                >
-                  {expandedProject === 'illow_start' ? 'Close case details' : 'Explore Case'}
-                  <span className="material-symbols-outlined text-xs font-bold">
-                    {expandedProject === 'illow_start' ? 'expand_less' : 'expand_more'}
-                  </span>
-                </button>
-              </div>
-            </motion.article>
-          )}
-          
-          {/* Case 2: illow to BigID Evolution */}
-          {(useCaseFilter === 'All' || useCaseFilter === 'Design Systems') && (
-            <motion.article 
-              layout="position"
-              className={`custom-glass border rounded-[2rem] p-6 sm:p-10 flex flex-col justify-between transition-all duration-500 hover:shadow-xl ${
-                expandedProject === 'illow_evolution' 
-                  ? 'md:col-span-2 border-neutral-900 shadow-2xl bg-white ring-1 ring-neutral-950/5' 
-                  : 'md:col-span-1 border-neutral-200/40 hover:border-neutral-900/10 hover:bg-white'
-              }`}
-            >
-              <div className="space-y-6">
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border ${
-                      useCaseFilter === 'Design Systems'
-                        ? 'bg-black text-white border-black'
-                        : 'bg-white text-neutral-600 border-neutral-200/60'
-                    }`}>
-                      Design Systems
-                    </span>
-                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border ${
-                      useCaseFilter === 'Branding'
-                        ? 'bg-black text-white border-black'
-                        : 'bg-white text-neutral-600 border-neutral-200/60'
-                    }`}>
-                      Branding
-                    </span>
-                  </div>
-                  <span className="material-symbols-outlined text-[#ff89ab]">trending_up</span>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
-                    illow to BigID Evolution
-                  </h3>
-                  <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
-                    <strong>Challenge:</strong> Leading the branding, visual system, and user experience strategy from early-stage startup through its eventual, high-profile acquisition by enterprise titan BigID.
-                  </p>
-                </div>
-
-                {/* Inline Expanded Deep-dive Content */}
-                {expandedProject === 'illow_evolution' && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="pt-6 mt-6 border-t border-neutral-100 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed text-neutral-800"
-                  >
-                    <div className="space-y-4">
-                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Acquisition & Enterprise Scale</p>
-                      <p>
-                        Ensuring brand consistency through corporate transitions is a severe friction risk. I led the transition from illow's lightweight visual language to BigID's global compliance system, structuring UX patterns to support massive algorithmic volume without losing sensory clarity.
-                      </p>
-                      <p>
-                        This absolute control over aesthetics laid a profound groundwork, allowing me to comfortably establish the company's internal UX department from the ground up prior to acquisition.
-                      </p>
-                    </div>
-                    <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-100">
-                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Methodology & Adaptations</p>
-                      <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600">
-                        <li>Developed a streamlined Design System (UI Kit) translating marketing brand elements into reusable component code.</li>
-                        <li>Significantly reduced engineering visual debt, aligning product development with marketing brand consistency.</li>
-                        <li>Redesigned complex data-consent tables and user dashboards for BigID's global compliance standards post-acquisition.</li>
-                      </ul>
-                      <div className="bg-neutral-200/60 text-neutral-800 border border-neutral-300/40 p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
-                        Acquisition Catalyst • Enterprise Scale Orchestration Ready
+                      <div className="space-y-3 bg-neutral-50/50 p-4 rounded-xl border border-neutral-100">
+                        <p className="font-bold text-neutral-900 text-[10px] tracking-wider uppercase font-sans">{project.deepDive.rightTitle}</p>
+                        <ul className="space-y-1.5 list-disc pl-4 text-xs text-neutral-600">
+                          {project.deepDive.rightBulletPoints.map((bullet, bIdx) => (
+                            <li key={bIdx}>{bullet}</li>
+                          ))}
+                        </ul>
+                        <div className="bg-neutral-200/60 text-neutral-800 border border-neutral-300/40 p-3 rounded-lg font-headline font-semibold text-[10px] text-center uppercase tracking-wider mt-3">
+                          {project.deepDive.footerBadge}
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-              
-              <div className="mt-8 space-y-4 font-sans">
-                {expandedProject !== 'illow_evolution' && (
-                  <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic text-xs text-neutral-600">
-                    <strong>Impact:</strong> Unified the marketing and product workflows under a robust design system, allowing seamless enterprise transition to process complex high-volume compliance data.
-                  </div>
-                )}
-                <button
-                  onClick={() => setExpandedProject(expandedProject === 'illow_evolution' ? 'none' : 'illow_evolution')}
-                  className="w-full py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200/80 text-neutral-800 border border-neutral-200/40 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
-                >
-                  {expandedProject === 'illow_evolution' ? 'Close case details' : 'Explore Case'}
-                  <span className="material-symbols-outlined text-xs font-bold">
-                    {expandedProject === 'illow_evolution' ? 'expand_less' : 'expand_more'}
-                  </span>
-                </button>
-              </div>
-            </motion.article>
-          )}
-          
-          {/* Case 3: BigID Cookie Classification */}
-          {(useCaseFilter === 'All' || useCaseFilter === 'Information Architecture') && (
-            <motion.article 
-              layout="position"
-              className={`custom-glass border rounded-[2rem] p-6 sm:p-10 flex flex-col justify-between transition-all duration-500 hover:shadow-xl ${
-                expandedProject === 'bigid_cookie' 
-                  ? 'md:col-span-2 border-neutral-900 shadow-2xl bg-white ring-1 ring-neutral-950/5' 
-                  : 'md:col-span-1 border-neutral-200/40 hover:border-neutral-900/10 hover:bg-white'
-              }`}
-            >
-              <div className="space-y-6">
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border ${
-                      useCaseFilter === 'Information Architecture'
-                        ? 'bg-black text-white border-black'
-                        : 'bg-white text-neutral-600 border-neutral-200/60'
-                    }`}>
-                      Information Architecture
-                    </span>
-                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border ${
-                      useCaseFilter === 'UX Strategy'
-                        ? 'bg-black text-white border-black'
-                        : 'bg-white text-neutral-600 border-neutral-200/60'
-                    }`}>
-                      UX Strategy
-                    </span>
-                  </div>
-                  <span className="material-symbols-outlined text-[#ff89ab]">grid_view</span>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
-                    BigID Cookie Classification
-                  </h3>
-                  <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
-                    <strong>Challenge:</strong> Streamlining nested compliance tabs, massive cookies datasets, and classification settings schemas containing heavily dense enterprise governance logic arrays into frictionless interactive interfaces.
-                  </p>
-                </div>
 
-                {/* Inline Expanded Deep-dive Content */}
-                {expandedProject === 'bigid_cookie' && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="pt-6 mt-6 border-t border-neutral-100 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed text-neutral-800"
+                      {/* Dynamic Mockup Template Section (Copy-paste friendly) */}
+                      {project.mockupType && (
+                        <div className="md:col-span-2 pt-5 mt-2 border-t border-dashed border-neutral-200/80">
+                          <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-neutral-400 block mb-2.5">
+                            Visual Interactive Mockup — Clickable Draft Preview
+                          </span>
+                          {project.mockupType === 'analytics' && <AnalyticsMockup />}
+                          {project.mockupType === 'wireframe' && <WireframeMockup />}
+                          {project.mockupType === 'tokens' && <DesignTokensMockup />}
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </div>
+                
+                <div className="mt-6 space-y-3 font-sans">
+                  {!isExpanded && (
+                    <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-100 italic text-xs text-neutral-600">
+                      <strong>Impact:</strong> {project.impact}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => setExpandedProject(isExpanded ? 'none' : project.id as any)}
+                    className="w-full py-2 px-4 bg-neutral-100 hover:bg-neutral-200/80 text-neutral-800 border border-neutral-200/40 text-xs font-semibold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                   >
-                    <div className="space-y-4">
-                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Overcoming Density Fatigue</p>
-                      <p>
-                        Enterprise compliance auditors face huge cognitive overload when cataloging raw tracking cookies. By grouping massive cookie lists into logical categories and clean grids, the raw configurations became digestible and highly actionable.
-                      </p>
-                      <p>
-                        This re-architecture stripped away secondary visual noise, resulting in a clean grid system designed after strict interactive Fitts's and Hick's Laws.
-                      </p>
-                    </div>
-                    <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-100">
-                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Auditing & Control Milestones</p>
-                      <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600">
-                        <li>Designed clear classification and tagging status indicators for corporate tracking data blocks.</li>
-                        <li>Built easy pagination, smart quick-filtering, and drag-and-drop bucket systems.</li>
-                        <li>Successfully decreased auditor page travel durations and human identification errors.</li>
-                      </ul>
-                      <div className="bg-neutral-200/60 text-neutral-800 border border-neutral-300/40 p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
-                        Friction-Free Task Navigation Optimization
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-              
-              <div className="mt-8 space-y-4 font-sans">
-                {expandedProject !== 'bigid_cookie' && (
-                  <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic text-xs text-neutral-600">
-                    <strong>Impact:</strong> Decreased overall system task navigation durations significantly through strict layout alignment and non-fatiguing data hierarchies.
-                  </div>
-                )}
-                <button
-                  onClick={() => setExpandedProject(expandedProject === 'bigid_cookie' ? 'none' : 'bigid_cookie')}
-                  className="w-full py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200/80 text-neutral-800 border border-neutral-200/40 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
-                >
-                  {expandedProject === 'bigid_cookie' ? 'Close case details' : 'Explore Case'}
-                  <span className="material-symbols-outlined text-xs font-bold">
-                    {expandedProject === 'bigid_cookie' ? 'expand_less' : 'expand_more'}
-                  </span>
-                </button>
-              </div>
-            </motion.article>
-          )}
-          
-          {/* Case 4: Bojana Estudio Redesign */}
-          {(useCaseFilter === 'All' || useCaseFilter === 'Branding') && (
-            <motion.article 
-              layout="position"
-              className={`custom-glass border rounded-[2rem] p-6 sm:p-10 flex flex-col justify-between transition-all duration-500 hover:shadow-xl ${
-                expandedProject === 'bojana' 
-                  ? 'md:col-span-2 border-neutral-900 shadow-2xl bg-white ring-1 ring-neutral-950/5' 
-                  : 'md:col-span-1 border-neutral-200/40 hover:border-neutral-900/10 hover:bg-white'
-              }`}
-            >
-              <div className="space-y-6">
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border ${
-                      useCaseFilter === 'Branding'
-                        ? 'bg-black text-white border-black'
-                        : 'bg-white text-neutral-600 border-neutral-200/60'
-                    }`}>
-                      Branding
+                    {isExpanded ? 'Close Case details' : 'Explore Case'}
+                    <span className="material-symbols-outlined text-xs font-bold">
+                      {isExpanded ? 'expand_less' : 'expand_more'}
                     </span>
-                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border ${
-                      useCaseFilter === 'Design Systems'
-                        ? 'bg-black text-white border-black'
-                        : 'bg-white text-neutral-600 border-neutral-200/60'
-                    }`}>
-                      Design Systems
-                    </span>
-                  </div>
-                  <span className="material-symbols-outlined text-[#ff89ab]">palette</span>
+                  </button>
                 </div>
-                <div className="space-y-2">
-                  <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
-                    Bojana Estudio Redesign
-                  </h3>
-                  <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
-                    <strong>Challenge:</strong> Directing the physical-to-digital high-end storefront, structural visual grid architecture, and luxury branding framework for a premium architectural studio.
-                  </p>
-                </div>
-
-                {/* Inline Expanded Deep-dive Content */}
-                {expandedProject === 'bojana' && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="pt-6 mt-6 border-t border-neutral-100 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed text-neutral-800"
-                  >
-                    <div className="space-y-4">
-                      <p className="font-bold text-neutral-900 text-xs tracking-wider uppercase font-sans">Digitalizing Physical Craft</p>
-                      <p>
-                        Architecture is about the dialogue of empty spaces, materials, and light. I designed the studio's digital storefront as an extension of their buildings—crafted around extensive empty margins, stunning high-contrast typography, and seamless transitions.
-                      </p>
-                      <p>
-                        The minimal interface preserves and amplifies the high-value physical catalog, transforming digital viewers into design consult clients.
-                      </p>
-                    </div>
-                    <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-100">
-                      <p className="font-bold text-[#ff89ab] text-xs tracking-wider uppercase font-sans">Spatial Interactive Elements</p>
-                      <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600">
-                        <li>Designed an editorial masonry grid aligning blueprints and photographs symmetrically.</li>
-                        <li>Paired high-impact display fonts with Fira Code for technical metric captions.</li>
-                        <li>Optimized high-resolution graphic rendering for immediate loading without visual stutter.</li>
-                      </ul>
-                      <div className="bg-neutral-200/60 text-neutral-800 border border-neutral-300/40 p-4 rounded-xl font-headline font-black text-xs text-center uppercase tracking-widest mt-4">
-                        Luxury Preservation • Qualified High-Ticket Conversion
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-              
-              <div className="mt-8 space-y-4 font-sans">
-                {expandedProject !== 'bojana' && (
-                  <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 italic text-xs text-neutral-600">
-                    <strong>Impact:</strong> Generated substantial increase in qualified inquiries by framing structural portfolios inside an eye-catching luxury museum aesthetic.
-                  </div>
-                )}
-                <button
-                  onClick={() => setExpandedProject(expandedProject === 'bojana' ? 'none' : 'bojana')}
-                  className="w-full py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200/80 text-neutral-800 border border-neutral-200/40 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
-                >
-                  {expandedProject === 'bojana' ? 'Close case details' : 'Explore Case'}
-                  <span className="material-symbols-outlined text-xs font-bold">
-                    {expandedProject === 'bojana' ? 'expand_less' : 'expand_more'}
-                  </span>
-                </button>
-              </div>
-            </motion.article>
-          )}
-
+              </motion.article>
+            );
+          })}
         </motion.div>
 
-
-
         {/* Flagship Technical Showcase Element: Holis Game Suite */}
-        <div className="custom-glass border border-neutral-200/40 rounded-[2.5rem] p-6 sm:p-12 space-y-8 shadow-sm">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-8 space-y-4">
-              <span className="bg-primary/5 border border-primary/25 text-primary px-3 py-1 font-sans text-[10px] font-extrabold uppercase tracking-widest rounded-full w-fit block">
+        <div className="custom-glass border border-neutral-200/40 rounded-[1.5rem] p-5 sm:p-8 space-y-6 shadow-xs">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div className="lg:col-span-8 space-y-3">
+              <span className="bg-primary/5 border border-primary/25 text-primary px-2.5 py-0.5 font-sans text-[9px] font-bold uppercase tracking-widest rounded-full w-fit block">
                 Technical Mastery Showcase
               </span>
-              <h3 className="font-headline text-2xl sm:text-4xl font-bold text-neutral-900 tracking-tight">
+              <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
                 Flagship Project: Holis Social Party Game Suite
               </h3>
-              <p className="font-sans text-sm sm:text-base text-neutral-500 leading-relaxed max-w-xl">
+              <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed max-w-xl">
                 An immersive, real-time multiplayer application designed as a rigorous demonstration of interactive system design. Showcases low-latency state synchronizations and multimodal audio feedback loops.
               </p>
-              <div className="flex flex-wrap gap-2 text-[10px] uppercase font-bold tracking-wider text-neutral-600">
-                <span className="bg-neutral-100 px-3 py-1 rounded-full">Firebase Firestore</span>
-                <span className="bg-neutral-100 px-3 py-1 rounded-full">Web Audio API</span>
-                <span className="bg-neutral-100 px-3 py-1 rounded-full">State Machine Orchestration</span>
+              <div className="flex flex-wrap gap-1.5 text-[9px] uppercase font-bold tracking-wider text-neutral-600">
+                <span className="bg-neutral-100 px-2.5 py-0.5 rounded-full">Firebase Firestore</span>
+                <span className="bg-neutral-100 px-2.5 py-0.5 rounded-full">Web Audio API</span>
+                <span className="bg-neutral-100 px-2.5 py-0.5 rounded-full">State Machine Orchestration</span>
               </div>
             </div>
             
@@ -2111,7 +1917,7 @@ export default function App() {
                   setActiveTab('GAMES');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="py-5 px-8 bg-black hover:bg-neutral-800 text-white font-sans text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-md flex items-center justify-center gap-3"
+                className="py-3 px-6 bg-black hover:bg-neutral-800 text-white font-sans text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
               >
                 Launch Live Game Experience Test
                 <span className="material-symbols-outlined text-sm">sports_esports</span>
@@ -2169,7 +1975,7 @@ export default function App() {
         {/* 1. Core Methodology Section */}
         <div className="space-y-10 border-t border-neutral-100 pt-12">
           <div className="space-y-2">
-            <span className="font-sans text-[10px] font-black uppercase tracking-widest text-[#ff89ab] bg-[#ff89ab]/10 px-3 py-1 rounded-full w-fit block">
+            <span className="font-sans text-[10px] font-black uppercase tracking-widest text-[#be123c] bg-[#be123c]/10 px-3 py-1 rounded-full w-fit block">
               01 • Core Methodology
             </span>
             <h3 className="font-headline text-2xl sm:text-4xl font-black text-neutral-900 tracking-tight">
@@ -2291,7 +2097,7 @@ export default function App() {
         {/* 2. Design Philosophy Section */}
         <div className="space-y-10 border-t border-neutral-100 pt-12">
           <div className="space-y-2">
-            <span className="font-sans text-[10px] font-black uppercase tracking-widest text-[#ff89ab] bg-[#ff89ab]/10 px-3 py-1 rounded-full w-fit block">
+            <span className="font-sans text-[10px] font-black uppercase tracking-widest text-[#be123c] bg-[#be123c]/10 px-3 py-1 rounded-full w-fit block">
               02 • Design Philosophy
             </span>
             <h3 className="font-headline text-2xl sm:text-4xl font-black text-neutral-900 tracking-tight">
@@ -2310,7 +2116,7 @@ export default function App() {
                 "Interaction design is not static artwork; it is akin to melody. It requires pauses, purposeful accents, and visual hierarchy coordinates to effortlessly guide attention."
               </p>
               <div className="pt-6 border-t border-neutral-800 space-y-1">
-                <p className="font-sans font-black uppercase text-xs tracking-widest text-[#ff89ab]">
+                <p className="font-sans font-black uppercase text-xs tracking-widest text-[#be123c]">
                   Lia Parra
                 </p>
                 <p className="font-sans text-[10px] uppercase text-neutral-400">
@@ -2334,7 +2140,7 @@ export default function App() {
               </div>
 
               <div className="flex gap-4 items-start">
-                <span className="material-symbols-outlined p-2.5 bg-[#ff89ab]/10 text-[#ff89ab] rounded-2xl">
+                <span className="material-symbols-outlined p-2.5 bg-[#be123c]/10 text-[#be123c] rounded-2xl">
                   volume_up
                 </span>
                 <div className="space-y-1">
@@ -2365,12 +2171,12 @@ export default function App() {
 
   const renderContact = () => {
     return (
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-16 py-12 text-left">
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-10 py-12 text-left">
         <div className="space-y-4">
           <span className="font-sans font-semibold text-xs text-outline tracking-[0.25em] uppercase block">
             Partner with Lia
           </span>
-          <h2 className="font-headline text-4xl sm:text-6xl font-black text-neutral-900 tracking-tight leading-tighter">
+          <h2 className="font-headline text-3xl sm:text-4xl font-bold text-neutral-900 tracking-tight leading-snug">
             Consultancy & Action
           </h2>
           <p className="font-sans text-base sm:text-lg text-neutral-500 max-w-2xl leading-relaxed">
@@ -2389,11 +2195,11 @@ export default function App() {
               <div className="space-y-4 pt-6 border-t border-neutral-100 text-sm font-sans">
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-[#45474b]">mail</span>
-                  <a href="mailto:liangelyp@gmail.com" className="text-neutral-700 select-all font-medium hover:text-[#ff89ab] transition-all">liangelyp@gmail.com</a>
+                  <a href="mailto:liangelyp@gmail.com" className="text-neutral-700 select-all font-medium hover:text-[#be123c] transition-all">liangelyp@gmail.com</a>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-[#45474b]">chat</span>
-                  <a href="https://wa.me/5491156424162?text=Hello%20Lia!%20I%20saw%20your%20portfolio%20and%20would%20love%20to%20connect%20with%20you." target="_blank" rel="noreferrer" className="text-neutral-700 font-medium hover:text-[#ff89ab] transition-all">+54 9 11 5642-4162 (WhatsApp)</a>
+                  <a href="https://wa.me/5491156424162?text=Hello%20Lia!%20I%20saw%20your%20portfolio%20and%20would%20love%20to%20connect%20with%20you." target="_blank" rel="noreferrer" className="text-neutral-700 font-medium hover:text-[#be123c] transition-all">+54 9 11 5642-4162 (WhatsApp)</a>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-[#45474b]">location_on</span>
@@ -2407,8 +2213,10 @@ export default function App() {
                 href="https://linkedin.com/in/liangely-diseno-grafico"
                 target="_blank"
                 rel="noreferrer"
-                className="font-sans text-xs font-bold uppercase tracking-widest text-[#ff89ab] hover:opacity-75 transition-opacity"
+                className="inline-flex items-center gap-1.5 font-sans text-xs font-bold uppercase tracking-widest text-neutral-500 hover:text-neutral-850 transition-colors"
+                id="contact-linkedin-link"
               >
+                <Linkedin className="w-3.5 h-3.5 shrink-0" />
                 LinkedIn ↗
               </a>
             </div>
@@ -2520,9 +2328,69 @@ export default function App() {
           <div className="absolute -bottom-1/4 -right-1/4 w-full h-full neon-glow-cyan animate-pulse" style={{ animationDelay: '1s' }}></div>
         </div>
       ) : (
-        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#f8f9ff]">
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#dce9ff]/30 rounded-full blur-[120px]"></div>
-          <div className="absolute bottom-1/4 left-1/4 w-[500px] h-[500px] bg-[#eff4ff]/40 rounded-full blur-[150px]"></div>
+        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#fafaf9]">
+          {/* Glassmorphic floating blobs */}
+          <motion.div 
+            animate={{
+              x: [0, 80, -40, 0],
+              y: [0, -60, 50, 0],
+              scale: [1, 1.15, 0.9, 1]
+            }}
+            transition={{
+              duration: 25,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute top-0 right-1/4 w-[450px] h-[450px] bg-[#fecdd3]/35 rounded-full blur-[100px] mix-blend-multiply"
+          />
+          <motion.div 
+            animate={{
+              x: [0, -90, 50, 0],
+              y: [0, 70, -60, 0],
+              scale: [1, 0.9, 1.2, 1]
+            }}
+            transition={{
+              duration: 32,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute bottom-1/4 left-1/4 w-[500px] h-[500px] bg-[#ffedd5]/40 rounded-full blur-[120px] mix-blend-multiply"
+          />
+          <motion.div 
+            animate={{
+              x: [0, 50, -60, 0],
+              y: [0, 80, -40, 0],
+              scale: [1, 1.1, 0.85, 1]
+            }}
+            transition={{
+              duration: 28,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute top-1/3 left-1/3 w-[350px] h-[350px] bg-[#fef9c3]/40 rounded-full blur-[90px] mix-blend-multiply"
+          />
+          <motion.div 
+            animate={{
+              x: [0, 30, -30, 0],
+              y: [0, -50, 40, 0],
+              scale: [1, 1.05, 0.95, 1]
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute bottom-10 right-1/3 w-[450px] h-[450px] bg-rose-100/30 rounded-full blur-[110px] mix-blend-multiply"
+          />
+          
+          {/* Grainy Noise texture overlay via SVG */}
+          <svg className="absolute inset-0 w-full h-full opacity-[0.05] pointer-events-none mix-blend-overlay">
+            <filter id="grainy-noise-filter">
+              <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+              <feColorMatrix type="contrast" values="110%" />
+            </filter>
+            <rect width="100%" height="100%" filter="url(#grainy-noise-filter)" />
+          </svg>
         </div>
       )}
 
@@ -2541,62 +2409,62 @@ export default function App() {
               window.scrollTo({ top: 0, behavior: 'smooth' }); 
             }
           }}
-          className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer select-none transition-all ${
+          className={`flex items-center gap-1.5 cursor-pointer select-none transition-all ${
             activeTab === 'GAMES' 
-              ? 'bg-black/40 hover:bg-black/60 shadow-[0_0_15px_rgba(255,137,171,0.15)] text-white' 
-              : 'bg-white/50 hover:bg-white text-neutral-950'
+              ? 'text-white hover:opacity-80' 
+              : 'text-neutral-950 hover:opacity-80'
           }`}
         >
           {activeTab === 'GAMES' ? (
             <div className="flex items-center gap-1.5">
-              <h1 className="font-cursive text-3xl font-extrabold tracking-wide leading-none text-[#ff89ab] lowercase">
+              <h1 className="font-cursive text-3xl font-bold tracking-wide leading-none text-[#be123c] lowercase">
                 lia
               </h1>
-              <span className="font-sans text-[9px] font-black tracking-widest text-[#ff89ab] bg-[#ff89ab]/10 px-1.5 py-0.5 rounded uppercase font-bold">
+              <span className="font-sans text-[9px] font-bold tracking-widest text-[#be123c] bg-[#be123c]/10 px-1.5 py-0.5 rounded uppercase">
                 papelito game
               </span>
             </div>
           ) : (
             <>
-              <h1 className="font-cursive text-4xl font-extrabold tracking-wide leading-none text-neutral-950 lowercase">
+              <h1 className="font-cursive text-4xl font-bold tracking-wide leading-none text-neutral-950 lowercase">
                 lia
               </h1>
-              <span className="font-sans text-xl font-black text-[#ff89ab] tracking-wider">
+              <span className="font-sans text-xl font-bold text-[#be123c] tracking-wider">
                 ♡
               </span>
             </>
           )}
         </div>
 
-        {/* Desktop Navigation Link Tabs (Hidden when in Game View) */}
-        {activeTab !== 'GAMES' && (
-          <nav className="hidden md:flex items-center gap-8 font-headline text-xs font-bold uppercase tracking-widest">
-            {[
-              { id: 'IMPACT', label: 'Use Cases' },
-              { id: 'VISION', label: 'My Vision' },
-              { id: 'GAMES', label: 'Game' },
-              { id: 'CONTACT', label: 'About' }
-            ].map((tab) => {
-              const isTabActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id as any);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className={`py-2 border-b-2 transition-all cursor-pointer ${
-                    isTabActive 
-                      ? 'border-primary text-primary font-black' 
+        {/* Desktop Navigation Link Tabs (Always Visible) */}
+        <nav className="hidden md:flex items-center gap-8 font-headline text-xs font-bold uppercase tracking-widest">
+          {[
+            { id: 'IMPACT', label: 'Experience' },
+            { id: 'VISION', label: 'My Vision' },
+            { id: 'GAMES', label: 'Game' },
+            { id: 'CONTACT', label: 'About' }
+          ].map((tab) => {
+            const isTabActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id as any);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`py-2 border-b-2 transition-all cursor-pointer ${
+                  isTabActive 
+                    ? 'border-[#be123c] text-[#be123c] font-bold' 
+                    : activeTab === 'GAMES'
+                      ? 'border-transparent text-neutral-400 hover:text-[#be123c] hover:border-[#be123c]/30'
                       : 'border-transparent text-on-surface-variant hover:text-primary hover:border-primary/30'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </nav>
-        )}
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
 
         {/* Top Right Actions */}
         <div className="flex items-center gap-3 sm:gap-4">
@@ -2610,8 +2478,8 @@ export default function App() {
               }`}
             >
               <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.7)]" />
-              <span className="text-[9px] font-black uppercase tracking-widest leading-none">
-                available
+              <span className="text-[9px] font-bold uppercase tracking-widest leading-none">
+                i'm available
               </span>
               <span className="material-symbols-outlined text-[12px] opacity-70">expand_more</span>
             </button>
@@ -2636,7 +2504,7 @@ export default function App() {
                     }`}
                   >
                     <div className="px-3 py-1.5 border-b border-neutral-200/10 mb-1">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-[#ff89ab]">
+                      <p className="text-[9px] font-black uppercase tracking-widest text-[#be123c]">
                         Let's Collaborate
                       </p>
                     </div>
@@ -2673,7 +2541,7 @@ export default function App() {
           </div>
 
           {activeTab === 'GAMES' && myPlayer && (
-            <div className="hidden sm:flex items-center gap-2 bg-[#201f1f] border border-[#ff89ab]/30 px-3 py-1 bg-opacity-65 rounded-full">
+            <div className="hidden sm:flex items-center gap-2 bg-[#201f1f] border border-[#be123c]/30 px-3 py-1 bg-opacity-65 rounded-full">
               <img src={myPlayer.avatar} alt={myPlayer.name} className="w-4 h-4 rounded-full" />
               <span className="font-sans text-[11px] font-bold text-white truncate max-w-[80px]">
                 {myPlayer.name}
@@ -2684,9 +2552,9 @@ export default function App() {
           {/* Mobile landscape & Burger menu toggle buttons */}
           <button 
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`${activeTab === 'GAMES' ? 'block' : 'md:hidden'} p-2 rounded-lg hover:bg-surface-container-high/50 transition-colors z-[100]`}
+            className="md:hidden block p-2 rounded-lg hover:bg-surface-container-high/50 transition-colors z-[100]"
           >
-            <span className={`material-symbols-outlined text-2xl ${activeTab === 'GAMES' ? 'text-[#ff89ab] font-bold' : 'text-primary'}`}>
+            <span className={`material-symbols-outlined text-2xl ${activeTab === 'GAMES' ? 'text-[#be123c]' : 'text-primary'}`}>
               {mobileMenuOpen ? 'close' : 'menu'}
             </span>
           </button>
@@ -2700,12 +2568,12 @@ export default function App() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`fixed inset-0 z-40 p-6 pt-24 flex flex-col justify-center items-center gap-6 shadow-lg backdrop-blur-2xl ${
-              activeTab === 'GAMES' ? 'block bg-[#0e0e0e]/98 text-white' : 'md:hidden bg-[#f8f9ff]/95 text-on-surface'
+            className={`fixed inset-0 z-40 p-6 pt-24 flex flex-col justify-center items-center gap-6 shadow-lg backdrop-blur-2xl md:hidden ${
+              activeTab === 'GAMES' ? 'bg-[#0e0e0e]/98 text-white' : 'bg-[#f8f9ff]/95 text-on-surface'
             }`}
           >
             {[
-              { id: 'IMPACT', label: 'Use Cases' },
+              { id: 'IMPACT', label: 'Experience' },
               { id: 'VISION', label: 'My Vision' },
               { id: 'GAMES', label: 'Game' },
               { id: 'CONTACT', label: 'About' }
@@ -2719,10 +2587,10 @@ export default function App() {
                     setMobileMenuOpen(false);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className={`py-3 text-2xl font-headline font-black uppercase tracking-widest text-center ${
+                  className={`py-3 text-xl font-headline font-bold uppercase tracking-widest text-center transition-all duration-300 ${
                     activeTab === 'GAMES' 
-                      ? isTabActive ? 'text-[#ff89ab] font-black scale-105' : 'text-neutral-400 hover:text-white'
-                      : isTabActive ? 'text-primary font-black scale-105' : 'text-on-surface-variant'
+                      ? isTabActive ? 'text-[#be123c] scale-105' : 'text-neutral-400 hover:text-white'
+                      : isTabActive ? 'text-[#be123c] scale-105' : 'text-on-surface-variant'
                   }`}
                 >
                   {tab.label}
@@ -2813,17 +2681,17 @@ export default function App() {
             </p>
           </div>
           <div className="sm:text-right space-y-0.5">
-            <p className="text-[10px] uppercase tracking-widest font-black text-[#ff89ab]">
+            <p className="text-[10px] uppercase tracking-widest font-black text-[#be123c]">
               B2B SAAS, AI & ENTERPRISE SYSTEMS
             </p>
             <a 
               href="https://linkedin.com/in/liangely-diseno-grafico" 
               target="_blank" 
               rel="noopener noreferrer"
-              className={`text-[10px] font-sans font-bold transition-colors inline-block mt-1 uppercase tracking-widest ${
-                activeTab === 'GAMES' ? 'text-neutral-400 hover:text-[#ff89ab]' : 'text-neutral-500 hover:text-[#ff89ab]'
-              }`}
+              className="inline-flex items-center gap-1.5 text-[10px] font-sans font-bold transition-colors mt-0.5 uppercase tracking-widest text-neutral-500 hover:text-neutral-800"
+              id="footer-linkedin-link"
             >
+              <Linkedin className="w-3 h-3 shrink-0" />
               LinkedIn ↗
             </a>
           </div>
@@ -2842,10 +2710,10 @@ export default function App() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="relative w-full max-w-xl bg-[#141414] border border-neutral-800 rounded-[2.5rem] p-6 sm:p-8 text-white shadow-2xl z-10 overflow-hidden text-left"
-              style={{ boxShadow: '0 0 50px rgba(255, 137, 171, 0.15)' }}
+              style={{ boxShadow: '0 0 50px rgba(190, 18, 60, 0.15)' }}
             >
               {/* Subtle background glow */}
-              <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#ff89ab]/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#be123c]/10 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
               {/* Close "X" Button */}
@@ -2860,7 +2728,7 @@ export default function App() {
               <div className="space-y-6">
                 {/* Header */}
                 <div className="space-y-1.5 pr-8">
-                  <span className="font-sans text-[10px] font-black tracking-widest text-[#ff89ab] bg-[#ff89ab]/10 px-2.5 py-1 rounded-md uppercase">
+                  <span className="font-sans text-[10px] font-black tracking-widest text-[#be123c] bg-[#be123c]/10 px-2.5 py-1 rounded-md uppercase">
                     How to Play Papelito! 📝🎮
                   </span>
                   <h3 className="font-headline text-2xl sm:text-3xl font-black text-white tracking-tight leading-none mt-2">
@@ -2874,7 +2742,7 @@ export default function App() {
                 {/* Steps/Rounds */}
                 <div className="space-y-4">
                   <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
-                    <span className="font-headline font-black text-xs text-[#ff89ab] bg-[#ff89ab]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                    <span className="font-headline font-black text-xs text-[#be123c] bg-[#be123c]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
                       1
                     </span>
                     <div className="space-y-0.5">
@@ -2886,7 +2754,7 @@ export default function App() {
                   </div>
 
                   <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
-                    <span className="font-headline font-black text-xs text-[#ff89ab] bg-[#ff89ab]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                    <span className="font-headline font-black text-xs text-[#be123c] bg-[#be123c]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
                       2
                     </span>
                     <div className="space-y-0.5">
@@ -2898,7 +2766,7 @@ export default function App() {
                   </div>
 
                   <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
-                    <span className="font-headline font-black text-[#ff89ab] bg-[#ff89ab]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                    <span className="font-headline font-black text-[#be123c] bg-[#be123c]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
                       3
                     </span>
                     <div className="space-y-0.5">
@@ -2913,7 +2781,7 @@ export default function App() {
                 {/* Primary Button */}
                 <button
                   onClick={() => setShowGameInstructions(false)}
-                  className="w-full py-4 bg-gradient-to-r from-[#ff89ab] to-[#ff5d8f] hover:brightness-110 active:scale-[0.98] transition-all text-black font-headline font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(255,137,171,0.3)] block text-center cursor-pointer"
+                  className="w-full py-4 bg-gradient-to-r from-[#be123c] to-[#9f1239] hover:brightness-110 active:scale-[0.98] transition-all text-white font-headline font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(190,18,60,0.3)] block text-center cursor-pointer"
                 >
                   Got it • Let's Play! 🚀
                 </button>

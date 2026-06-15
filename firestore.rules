@@ -12,6 +12,11 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    match /contacts/{contactId} {
+      allow create, write: if true;
+      allow read: if false; // Protect user submission privacy
+    }
+
     match /users/{userId} {
       // Keep user profiles restricted to the owner if they happen to sign in
       allow read, write: if request.auth != null && request.auth.uid == userId;
