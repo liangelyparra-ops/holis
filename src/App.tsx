@@ -2599,10 +2599,10 @@ export default function App() {
                     setActiveTab(tab.id as any);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className={`py-1.5 px-3 rounded-full transition-all duration-300 cursor-pointer ${
+                  className={`py-1 transition-all duration-300 cursor-pointer ${
                     isTabActive 
-                      ? 'bg-[#be123c]/10 text-[#be123c] font-black' 
-                      : 'text-neutral-600 hover:text-[#be123c] hover:bg-neutral-100/50'
+                      ? 'text-[#be123c] font-black scale-105' 
+                      : 'text-neutral-500 hover:text-[#be123c]'
                   }`}
                 >
                   {tab.label}
