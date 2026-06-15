@@ -161,7 +161,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'IMPACT' | 'PROCESS' | 'VISION' | 'GAMES' | 'CONTACT'>('IMPACT');
   const [contactName, setContactName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
-  const [contactSubject, setContactSubject] = useState('Consultoría UX');
+  const [contactSubject, setContactSubject] = useState('UX Consultancy');
   const [contactMessage, setContactMessage] = useState('');
   const [contactSubmitting, setContactSubmitting] = useState(false);
   const [contactSubmitted, setContactSubmitted] = useState(false);
@@ -242,13 +242,10 @@ export default function App() {
       });
 
       setContactSubmitted(true);
-      toast.success("Message sent successfully! ✉️", {
-        description: "Lia will respond to your inquiry shortly.",
-        duration: 4000
+      toast.success("Message logged successfully! ✉️", {
+        description: "Choose an instant option below to complete your connection.",
+        duration: 5000
       });
-      setContactName('');
-      setContactEmail('');
-      setContactMessage('');
     } catch (err) {
       console.error(err);
       toast.error("Could not send message. Please try again.");
@@ -1807,8 +1804,8 @@ export default function App() {
                 layout="position"
                 className={`custom-glass border rounded-[1.5rem] p-5 sm:p-7 flex flex-col justify-between transition-all duration-500 hover:shadow-lg ${
                   isExpanded
-                    ? 'md:col-span-2 border-neutral-900 shadow-xl bg-white ring-1 ring-neutral-950/5' 
-                    : 'md:col-span-1 border-neutral-200/40 hover:border-neutral-900/15 hover:bg-white'
+                    ? 'md:col-span-2 border-neutral-900/30 shadow-xl bg-white/50 backdrop-blur-3xl ring-1 ring-neutral-950/5' 
+                    : 'md:col-span-1 border-neutral-200/20 hover:border-neutral-900/15 hover:bg-white/60'
                 }`}
               >
                 <div className="space-y-4">
@@ -1822,7 +1819,7 @@ export default function App() {
                             className={`inline-flex items-center px-2.5 py-1 rounded-full text-[9px] font-bold tracking-wider uppercase transition-all duration-200 border ${
                               isTagSelected
                                 ? 'bg-black text-white border-black'
-                                : 'bg-white text-neutral-600 border-neutral-200/60'
+                                : 'bg-white/40 backdrop-blur-md text-neutral-600 border-neutral-200/40'
                             }`}
                           >
                             {tag}
@@ -2234,90 +2231,139 @@ export default function App() {
           </div>
 
           {/* Contact form block */}
-          <div className="lg:col-span-2 bg-white/80 border border-neutral-200/50 p-8 sm:p-10 rounded-3xl shadow-sm custom-glass">
-            <form onSubmit={handleContactSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label htmlFor="contact-name" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500">
-                    Your Name *
-                  </label>
-                  <input
-                    id="contact-name"
-                    type="text"
-                    required
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
-                    placeholder="e.g. Alex Smith"
-                    className="w-full bg-neutral-50 border border-neutral-200 rounded-xl p-3 text-sm font-sans focus:bg-white focus:border-black outline-none transition-all text-neutral-900"
-                  />
+          <div className="lg:col-span-2 bg-white/35 border border-white/40 p-8 sm:p-10 rounded-3xl shadow-lg custom-glass">
+            {contactSubmitted ? (
+              <div className="text-center py-6 space-y-6 animate-fade-in">
+                <div className="w-16 h-16 bg-emerald-100/80 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                  <span className="material-symbols-outlined text-3xl font-bold">check_circle</span>
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="contact-email" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500">
-                    Email Address *
+                  <h3 className="font-headline text-2xl font-black text-neutral-900 tracking-tight">
+                    Inquiry Received Successfully!
+                  </h3>
+                  <p className="font-sans text-sm text-neutral-500 max-w-md mx-auto leading-relaxed">
+                    Your details have been registered on our servers. To establish immediate contact and send this message instantly to my private channels, click one of the options below:
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto pt-4">
+                  <a
+                    href={`https://wa.me/5491156424162?text=${encodeURIComponent(`Hello Lia! This is ${contactName} (${contactEmail}).\n\n*Collaboration Area*: ${contactSubject}\n\n*Project Context*:\n${contactMessage}`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center gap-2 py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-sans text-xs font-black uppercase tracking-widest rounded-xl shadow-md hover:shadow-lg transition-all scale-100 hover:scale-[1.02] active:scale-95"
+                  >
+                    <span className="material-symbols-outlined text-lg">chat</span>
+                    Send via WhatsApp
+                  </a>
+                  <a
+                    href={`mailto:liangelyp@gmail.com?subject=${encodeURIComponent(`Portfolio Contact: ${contactSubject}`)}&body=${encodeURIComponent(`Hi Lia,\n\nMy name is ${contactName} (${contactEmail}).\n\nArea of Interaction: ${contactSubject}\n\nMessage Detail:\n${contactMessage}`)}`}
+                    className="flex items-center justify-center gap-2 py-3.5 px-4 bg-neutral-950 hover:bg-black text-white font-sans text-xs font-black uppercase tracking-widest rounded-xl shadow-md hover:shadow-lg transition-all scale-100 hover:scale-[1.02] active:scale-95"
+                  >
+                    <span className="material-symbols-outlined text-lg">mail</span>
+                    Send via Email Client
+                  </a>
+                </div>
+
+                <div className="pt-6 border-t border-neutral-100">
+                  <button
+                    onClick={() => {
+                      setContactSubmitted(false);
+                      setContactName('');
+                      setContactEmail('');
+                      setContactMessage('');
+                    }}
+                    className="text-[10px] font-sans font-black uppercase tracking-widest text-[#be123c] hover:text-[#9f1239] transition-colors cursor-pointer"
+                  >
+                    ← Send another message
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleContactSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label htmlFor="contact-name" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500">
+                      Your Name *
+                    </label>
+                    <input
+                      id="contact-name"
+                      type="text"
+                      required
+                      value={contactName}
+                      onChange={(e) => setContactName(e.target.value)}
+                      placeholder="e.g. Alex Smith"
+                      className="w-full bg-white/20 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-sm font-sans focus:bg-white/60 focus:border-black outline-none transition-all text-neutral-900 shadow-inner"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="contact-email" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500">
+                      Email Address *
+                    </label>
+                    <input
+                      id="contact-email"
+                      type="email"
+                      required
+                      value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                      placeholder="e.g. alex@company.com"
+                      className="w-full bg-white/20 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-sm font-sans focus:bg-white/60 focus:border-black outline-none transition-all text-neutral-900 shadow-inner"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500">
+                    Area of Collaboration
                   </label>
-                  <input
-                    id="contact-email"
-                    type="email"
+                  <div className="grid grid-cols-3 gap-2">
+                    {['UX Consultancy', 'Product Design', 'Game UX'].map((sub) => {
+                      const isSelected = contactSubject === sub;
+                      return (
+                        <button
+                          key={sub}
+                          type="button"
+                          id={`subject-${sub.replace(/\s+/g, '-').toLowerCase()}`}
+                          onClick={() => setContactSubject(sub)}
+                          className={`py-2.5 px-3 rounded-xl text-[10px] font-sans font-bold uppercase border tracking-wider transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-black text-white border-black shadow-md'
+                              : 'bg-white/30 backdrop-blur-sm border-neutral-200/45 text-neutral-600 hover:border-black'
+                          }`}
+                        >
+                          {sub}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="contact-message" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500">
+                    Tell me about your product challenge *
+                  </label>
+                  <textarea
+                    id="contact-message"
                     required
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder="e.g. alex@company.com"
-                    className="w-full bg-neutral-50 border border-neutral-200 rounded-xl p-3 text-sm font-sans focus:bg-white focus:border-black outline-none transition-all text-neutral-900"
+                    rows={4}
+                    value={contactMessage}
+                    onChange={(e) => setContactMessage(e.target.value)}
+                    placeholder="Describe your design objectives, timelines or parameters..."
+                    className="w-full bg-white/20 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-sm font-sans focus:bg-white/60 focus:border-black outline-none transition-all text-neutral-900 shadow-inner"
                   />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <label className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500">
-                  Area of Collaboration
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {['UX Consultancy', 'Product Design', 'Game UX'].map((sub) => {
-                    const isSelected = contactSubject === sub;
-                    return (
-                      <button
-                        key={sub}
-                        type="button"
-                        id={`subject-${sub.replace(/\s+/g, '-').toLowerCase()}`}
-                        onClick={() => setContactSubject(sub)}
-                        className={`py-2.5 px-3 rounded-xl text-[10px] font-sans font-bold uppercase border tracking-wider transition-all ${
-                          isSelected
-                            ? 'bg-black text-white border-black shadow-md'
-                            : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-black'
-                        }`}
-                      >
-                        {sub}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="contact-message" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500">
-                  Tell me about your product challenge *
-                </label>
-                <textarea
-                  id="contact-message"
-                  required
-                  rows={4}
-                  value={contactMessage}
-                  onChange={(e) => setContactMessage(e.target.value)}
-                  placeholder="Describe your design objectives, timelines or parameters..."
-                  className="w-full bg-neutral-50 border border-neutral-200 rounded-xl p-3 text-sm font-sans focus:bg-white focus:border-black outline-none transition-all text-neutral-900"
-                />
-              </div>
-
-              <button
-                type="submit"
-                id="contact-form-submit-btn"
-                disabled={contactSubmitting}
-                className="w-full py-4 bg-black text-white font-sans text-xs font-bold uppercase tracking-widest hover:bg-neutral-800 disabled:opacity-50 transition-all rounded-xl shadow-md active:scale-95 flex items-center justify-center gap-2"
-              >
-                {contactSubmitting ? 'Sending inquiry...' : 'Send Message'}
-                <span className="material-symbols-outlined text-sm">send</span>
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  id="contact-form-submit-btn"
+                  disabled={contactSubmitting}
+                  className="w-full py-4 bg-black text-white font-sans text-xs font-bold uppercase tracking-widest hover:bg-neutral-800 disabled:opacity-50 transition-all rounded-xl shadow-md active:scale-95 flex items-center justify-center gap-2"
+                >
+                  {contactSubmitting ? 'Sending inquiry...' : 'Send Message'}
+                  <span className="material-symbols-outlined text-sm">send</span>
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>
@@ -2333,77 +2379,166 @@ export default function App() {
       <Toaster position="top-right" richColors closeButton />
 
       {/* Dynamic Backgrounds */}
-      {activeTab === 'GAMES' ? (
-        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-          <div className="absolute -top-1/4 -left-1/4 w-full h-full neon-glow-pink animate-pulse"></div>
-          <div className="absolute -bottom-1/4 -right-1/4 w-full h-full neon-glow-cyan animate-pulse" style={{ animationDelay: '1s' }}></div>
-        </div>
-      ) : (
-        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#fafaf9]">
-          {/* Glassmorphic floating blobs */}
-          <motion.div 
-            animate={{
-              x: [0, 80, -40, 0],
-              y: [0, -60, 50, 0],
-              scale: [1, 1.15, 0.9, 1]
-            }}
-            transition={{
-              duration: 25,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="absolute top-0 right-1/4 w-[450px] h-[450px] bg-[#fecdd3]/35 rounded-full blur-[100px] mix-blend-multiply"
-          />
-          <motion.div 
-            animate={{
-              x: [0, -90, 50, 0],
-              y: [0, 70, -60, 0],
-              scale: [1, 0.9, 1.2, 1]
-            }}
-            transition={{
-              duration: 32,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="absolute bottom-1/4 left-1/4 w-[500px] h-[500px] bg-[#ffedd5]/40 rounded-full blur-[120px] mix-blend-multiply"
-          />
-          <motion.div 
-            animate={{
-              x: [0, 50, -60, 0],
-              y: [0, 80, -40, 0],
-              scale: [1, 1.1, 0.85, 1]
-            }}
-            transition={{
-              duration: 28,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="absolute top-1/3 left-1/3 w-[350px] h-[350px] bg-[#fef9c3]/40 rounded-full blur-[90px] mix-blend-multiply"
-          />
-          <motion.div 
-            animate={{
-              x: [0, 30, -30, 0],
-              y: [0, -50, 40, 0],
-              scale: [1, 1.05, 0.95, 1]
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="absolute bottom-10 right-1/3 w-[450px] h-[450px] bg-rose-100/30 rounded-full blur-[110px] mix-blend-multiply"
-          />
-          
-          {/* Grainy Noise texture overlay via SVG */}
-          <svg className="absolute inset-0 w-full h-full opacity-[0.05] pointer-events-none mix-blend-overlay">
-            <filter id="grainy-noise-filter">
-              <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
-              <feColorMatrix type="contrast" values="110%" />
-            </filter>
-            <rect width="100%" height="100%" filter="url(#grainy-noise-filter)" />
-          </svg>
-        </div>
-      )}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        {activeTab === 'GAMES' ? (
+          <>
+            {/* Cyberpunk Neon Tone Abstract Shapes */}
+            <motion.div 
+              animate={{
+                x: [0, 80, -60, 0],
+                y: [0, -80, 60, 0],
+                scale: [1, 1.25, 0.85, 1],
+                borderRadius: [
+                  "30% 70% 70% 30% / 30% 30% 70% 70%",
+                  "50% 50% 20% 80% / 20% 80% 20% 80%",
+                  "80% 20% 50% 50% / 50% 30% 70% 70%",
+                  "30% 70% 70% 30% / 30% 30% 70% 70%"
+                ],
+                rotate: [0, 120, 240, 360]
+              }}
+              transition={{
+                duration: 22,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="absolute -top-10 -left-10 w-[600px] h-[600px] bg-[#ff89ab]/12 blur-[120px]"
+            />
+            <motion.div 
+              animate={{
+                x: [0, -70, 60, 0],
+                y: [0, 90, -70, 0],
+                scale: [1, 0.9, 1.15, 1],
+                borderRadius: [
+                  "50% 50% 20% 80% / 20% 80% 20% 80%",
+                  "80% 20% 50% 50% / 50% 30% 70% 70%",
+                  "30% 70% 70% 30% / 30% 30% 70% 70%",
+                  "50% 50% 20% 80% / 20% 80% 20% 80%"
+                ],
+                rotate: [360, 240, 120, 0]
+              }}
+              transition={{
+                duration: 26,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="absolute -bottom-10 -right-10 w-[650px] h-[650px] bg-[#00f4fe]/10 blur-[140px]"
+            />
+            <motion.div 
+              animate={{
+                x: [0, 50, -50, 0],
+                y: [0, 50, -50, 0],
+                scale: [1, 1.1, 0.9, 1],
+                borderRadius: [
+                  "80% 20% 50% 50% / 50% 30% 70% 70%",
+                  "30% 70% 70% 30% / 30% 30% 70% 70%",
+                  "50% 50% 20% 80% / 20% 80% 20% 80%",
+                  "80% 20% 50% 50% / 50% 30% 70% 70%"
+                ],
+                rotate: [0, 180, 360]
+              }}
+              transition={{
+                duration: 20,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-[#ff89ab]/8 blur-[110px]"
+            />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-[#fafaf9]">
+            {/* Soft Warm Tone Editorial Theme Abstract Shapes */}
+            <motion.div 
+              animate={{
+                x: [0, 80, -40, 0],
+                y: [0, -60, 50, 0],
+                scale: [1, 1.15, 0.9, 1],
+                borderRadius: [
+                  "30% 70% 70% 30% / 30% 30% 70% 70%",
+                  "50% 50% 20% 80% / 20% 80% 20% 80%",
+                  "80% 20% 50% 50% / 50% 30% 70% 70%",
+                  "30% 70% 70% 30% / 30% 30% 70% 70%"
+                ],
+                rotate: [0, 120, 240, 360]
+              }}
+              transition={{
+                duration: 25,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="absolute top-0 right-1/4 w-[450px] h-[450px] bg-[#fecdd3]/35 blur-[100px] mix-blend-multiply"
+            />
+            <motion.div 
+              animate={{
+                x: [0, -90, 50, 0],
+                y: [0, 70, -60, 0],
+                scale: [1, 0.9, 1.2, 1],
+                borderRadius: [
+                  "50% 50% 20% 80% / 20% 80% 20% 80%",
+                  "80% 20% 50% 50% / 50% 30% 70% 70%",
+                  "30% 70% 70% 30% / 30% 30% 70% 70%",
+                  "50% 50% 20% 80% / 20% 80% 20% 80%"
+                ],
+                rotate: [360, 240, 120, 0]
+              }}
+              transition={{
+                duration: 32,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="absolute bottom-1/4 left-1/4 w-[500px] h-[500px] bg-[#ffedd5]/35 blur-[120px] mix-blend-multiply"
+            />
+            <motion.div 
+              animate={{
+                x: [0, 50, -60, 0],
+                y: [0, 80, -40, 0],
+                scale: [1, 1.1, 0.85, 1],
+                borderRadius: [
+                  "80% 20% 50% 50% / 50% 30% 70% 70%",
+                  "30% 70% 70% 30% / 30% 30% 70% 70%",
+                  "50% 50% 20% 80% / 20% 80% 20% 80%",
+                  "80% 20% 50% 50% / 50% 30% 70% 70%"
+                ],
+                rotate: [0, 180, 360]
+              }}
+              transition={{
+                duration: 28,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="absolute top-1/3 left-1/3 w-[350px] h-[350px] bg-[#fef9c3]/35 blur-[90px] mix-blend-multiply"
+            />
+            <motion.div 
+              animate={{
+                x: [0, 30, -30, 0],
+                y: [0, -50, 40, 0],
+                scale: [1, 1.05, 0.95, 1],
+                borderRadius: [
+                  "30% 70% 70% 30% / 30% 30% 70% 70%",
+                  "50% 50% 20% 80% / 20% 80% 20% 80%",
+                  "80% 20% 50% 50% / 50% 30% 70% 70%",
+                  "30% 70% 70% 30% / 30% 30% 70% 70%"
+                ],
+                rotate: [360, 0]
+              }}
+              transition={{
+                duration: 20,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="absolute bottom-10 right-1/3 w-[450px] h-[450px] bg-rose-100/25 blur-[110px] mix-blend-multiply"
+            />
+          </div>
+        )}
+        
+        {/* Grainy Noise texture overlay via SVG */}
+        <svg className="absolute inset-0 w-full h-full opacity-[0.05] pointer-events-none mix-blend-overlay">
+          <filter id="grainy-noise-filter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+            <feColorMatrix type="contrast" values="110%" />
+          </filter>
+          <rect width="100%" height="100%" filter="url(#grainy-noise-filter)" />
+        </svg>
+      </div>
 
       {/* Top Custom Navigation Bar */}
       <header className={`fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 sm:px-12 h-20 transition-all border-b ${
