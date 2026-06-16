@@ -1743,15 +1743,15 @@ export default function App() {
     );
 
     return (
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-12 py-6 text-left">
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 py-10 sm:py-16 space-y-16 md:space-y-24 text-left select-none">
         {/* Section Header with End-to-End Differential Showcase Mockup */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-          <div className="lg:col-span-7 space-y-4">
-            <div className="space-y-1.5 animate-fade-in">
-              <span className="font-sans text-[10px] font-black uppercase tracking-widest text-[#be123c] bg-[#be123c]/10 px-2.5 py-1 rounded-md">
+          <div className="lg:col-span-7 space-y-6">
+            <div className="space-y-3 animate-fade-in">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#be123c] bg-rose-50 border border-rose-200/50 shadow-3xs w-fit">
                 Sr. Product Designer UX / UI Lead
               </span>
-              <h2 className="font-headline text-3xl sm:text-5xl font-black text-neutral-900 tracking-tight leading-tighter">
+              <h2 className="font-headline text-3xl sm:text-5xl lg:text-6xl font-black text-neutral-900 tracking-tight leading-[1.1]">
                 Strategy & Design <br />as a Growth Engine
               </h2>
             </div>
@@ -1764,77 +1764,37 @@ export default function App() {
           </div>
         </div>
 
-        {/* Category Filters (Mini Badges for Filtering) */}
-        <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-neutral-200/30">
-          <span className="font-sans text-[10px] font-bold uppercase tracking-widest text-neutral-400 mr-2">Filter experiences:</span>
-          {[
-            { id: 'All', label: 'All' },
-            { id: 'UX Strategy', label: 'UX Strategy' },
-            { id: 'Design Systems', label: 'Design Systems' },
-            { id: 'Information Architecture', label: 'Information Architecture' },
-            { id: 'Branding', label: 'Branding' }
-          ].map((item) => {
-            const isSelected = useCaseFilter === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setUseCaseFilter(item.id as any);
-                  setExpandedProject('none'); // Collapse opened project when changing filters
-                }}
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all duration-200 border cursor-pointer ${
-                  isSelected
-                    ? 'bg-black text-white border-black'
-                    : 'bg-white text-neutral-600 border-neutral-200/60 hover:border-neutral-400 hover:text-neutral-800'
-                }`}
-              >
-                {item.label}
-              </button>
-            );
-          })}
-        </div>
-
         {/* Featured Case Studies Grid */}
-        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
           {filteredCases.map((project) => {
             const isExpanded = expandedProject === project.id;
             return (
               <motion.article 
                 key={project.id}
                 layout="position"
-                className={`custom-glass border rounded-[1.5rem] p-5 sm:p-7 flex flex-col justify-between transition-all duration-500 hover:shadow-lg ${
+                className={`custom-glass border rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] ${
                   isExpanded
-                    ? 'md:col-span-2 border-neutral-900/30 shadow-xl bg-white/50 backdrop-blur-3xl ring-1 ring-neutral-950/5' 
-                    : 'md:col-span-1 border-neutral-200/20 hover:border-neutral-900/15 hover:bg-white/60'
+                    ? 'md:col-span-2 border-neutral-350 bg-white/70 backdrop-blur-3xl ring-1 ring-neutral-950/5' 
+                    : 'md:col-span-1 border-neutral-200/50 hover:border-rose-200 hover:bg-white/60'
                 }`}
               >
-                <div className="space-y-4">
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex flex-wrap gap-1.5">
-                      {project.tags.map((tag) => {
-                        const isTagSelected = useCaseFilter === tag;
-                        return (
-                          <span
-                            key={tag}
-                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-[9px] font-bold tracking-wider uppercase transition-all duration-200 border ${
-                              isTagSelected
-                                ? 'bg-black text-white border-black'
-                                : 'bg-white/40 backdrop-blur-md text-neutral-600 border-neutral-200/40'
-                            }`}
-                          >
-                            {tag}
-                          </span>
-                        );
-                      })}
-                    </div>
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center gap-4">
+                    {project.tags && project.tags.length > 0 && (
+                      <span
+                        className="inline-flex items-center px-2.5 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase font-mono border bg-neutral-100/70 border-neutral-200/50 text-neutral-500 shadow-3xs"
+                      >
+                        {project.tags[0]}
+                      </span>
+                    )}
                     <span className="material-symbols-outlined text-[#be123c] text-xl shrink-0">{project.icon}</span>
                   </div>
-                  <div className="space-y-1.5">
-                    <h3 className="font-headline text-lg sm:text-xl font-bold text-neutral-900 tracking-tight">
+                  <div className="space-y-3">
+                    <h3 className="font-headline text-lg sm:text-xl font-bold text-neutral-900 tracking-tight leading-snug">
                       {project.title}
                     </h3>
                     <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
-                      <strong>Challenge:</strong> {project.challenge}
+                      <strong className="text-neutral-800 font-semibold">Challenge:</strong> {project.challenge}
                     </p>
                   </div>
 
@@ -1843,30 +1803,30 @@ export default function App() {
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
-                      className="pt-4 mt-4 border-t border-neutral-150 grid grid-cols-1 md:grid-cols-2 gap-6 text-xs sm:text-sm leading-relaxed text-neutral-800"
+                      className="pt-6 mt-6 border-t border-neutral-200/60 grid grid-cols-1 md:grid-cols-2 gap-6 text-xs sm:text-sm leading-relaxed text-neutral-800"
                     >
                       <div className="space-y-3">
-                        <p className="font-bold text-neutral-900 text-[10px] tracking-wider uppercase font-sans">{project.deepDive.leftTitle}</p>
+                        <p className="font-bold text-neutral-900 text-[10px] tracking-widest uppercase font-mono">{project.deepDive.leftTitle}</p>
                         {project.deepDive.leftParagraphs.map((para, pIdx) => (
                           <p key={pIdx} className="text-neutral-600 text-xs sm:text-sm leading-relaxed">{para}</p>
                         ))}
                       </div>
-                      <div className="space-y-3 bg-neutral-50/50 p-4 rounded-xl border border-neutral-100">
-                        <p className="font-bold text-neutral-900 text-[10px] tracking-wider uppercase font-sans">{project.deepDive.rightTitle}</p>
-                        <ul className="space-y-1.5 list-disc pl-4 text-xs text-neutral-600">
+                      <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-200/60">
+                        <p className="font-bold text-neutral-900 text-[10px] tracking-widest uppercase font-mono">{project.deepDive.rightTitle}</p>
+                        <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600 leading-relaxed">
                           {project.deepDive.rightBulletPoints.map((bullet, bIdx) => (
                             <li key={bIdx}>{bullet}</li>
                           ))}
                         </ul>
-                        <div className="bg-neutral-200/60 text-neutral-800 border border-neutral-300/40 p-3 rounded-lg font-headline font-semibold text-[10px] text-center uppercase tracking-wider mt-3">
+                        <div className="bg-neutral-200/50 text-neutral-800 border border-neutral-300/40 p-3 rounded-xl font-mono font-bold text-[9px] text-center uppercase tracking-widest mt-4 shadow-3xs">
                           {project.deepDive.footerBadge}
                         </div>
                       </div>
 
                       {/* Dynamic Mockup Template Section (Copy-paste friendly) */}
                       {project.mockupType && (
-                        <div className="md:col-span-2 pt-5 mt-2 border-t border-dashed border-neutral-200/80">
-                          <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-neutral-400 block mb-2.5">
+                        <div className="md:col-span-2 pt-6 mt-4 border-t border-dashed border-neutral-200">
+                          <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-neutral-400 block mb-3">
                             Visual Mockup Showcase — Static Draft Preview
                           </span>
                           <div className="pointer-events-none select-none">
@@ -1880,15 +1840,15 @@ export default function App() {
                   )}
                 </div>
                 
-                <div className="mt-6 space-y-3 font-sans">
+                <div className="mt-6 space-y-4 font-sans">
                   {!isExpanded && (
-                    <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-100 italic text-xs text-neutral-600">
-                      <strong>Impact:</strong> {project.impact}
+                    <div className="p-4 bg-neutral-50/80 rounded-xl border border-neutral-200/30 italic text-xs text-neutral-600 leading-relaxed">
+                      <strong className="text-neutral-800 font-semibold not-italic">Impact:</strong> {project.impact}
                     </div>
                   )}
                   <button
                     onClick={() => setExpandedProject(isExpanded ? 'none' : project.id as any)}
-                    className="w-full py-2 px-4 bg-neutral-100 hover:bg-neutral-200/80 text-neutral-800 border border-neutral-200/40 text-xs font-semibold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                    className="w-full py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-200/50 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-3xs hover:scale-[1.01] active:scale-[0.99]"
                   >
                     {isExpanded ? 'Close Case details' : 'Explore Case'}
                     <span className="material-symbols-outlined text-xs font-bold">
@@ -1901,37 +1861,86 @@ export default function App() {
           })}
         </motion.div>
 
-        {/* Flagship Technical Showcase Element: Holis Game Suite */}
-        <div className="custom-glass border border-neutral-200/40 rounded-[1.5rem] p-5 sm:p-8 space-y-6 shadow-xs">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            <div className="lg:col-span-8 space-y-3">
-              <span className="bg-primary/5 border border-primary/25 text-primary px-2.5 py-0.5 font-sans text-[9px] font-bold uppercase tracking-widest rounded-full w-fit block">
-                Technical Mastery Showcase
+        {/* Flagship Technical Showcase Element: Papelito Game AI Co-creation */}
+        <div className="custom-glass border border-neutral-200/40 rounded-2xl p-6 sm:p-8 md:p-10 space-y-8 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all">
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#be123c] bg-rose-50 border border-rose-200/60 shadow-3xs">
+                Technical Case Study: AI x UX Partnership
               </span>
-              <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
-                Flagship Project: Holis Social Party Game Suite
-              </h3>
-              <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed max-w-xl">
-                An immersive, real-time multiplayer application designed as a rigorous demonstration of interactive system design. Showcases low-latency state synchronizations and multimodal audio feedback loops.
-              </p>
-              <div className="flex flex-wrap gap-1.5 text-[9px] uppercase font-bold tracking-wider text-neutral-600">
-                <span className="bg-neutral-100 px-2.5 py-0.5 rounded-full">Firebase Firestore</span>
-                <span className="bg-neutral-100 px-2.5 py-0.5 rounded-full">Web Audio API</span>
-                <span className="bg-neutral-100 px-2.5 py-0.5 rounded-full">State Machine Orchestration</span>
-              </div>
+              <span className="text-[10px] text-neutral-400 font-serif italic">
+                From prompt to live multiplayer lobby
+              </span>
             </div>
             
-            <div className="lg:col-span-4 flex flex-col justify-center h-full">
-              <button
-                onClick={() => {
-                  setActiveTab('GAMES');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className="py-3 px-6 bg-black hover:bg-neutral-800 text-white font-sans text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
-              >
-                Launch Live Game Experience Test
-                <span className="material-symbols-outlined text-sm">sports_esports</span>
-              </button>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-8 space-y-6 text-left">
+                <h3 className="font-headline text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 tracking-tight leading-snug">
+                  Co-Creating Papelito: Rapid-Prototyping a Real-Time Party Game
+                </h3>
+                <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed max-w-2xl">
+                  Building a real-time multiplayer party game requires precise synchronization, dynamic room state-machines, and playful sensory feedback. Using structured prompt engineering and Generative AI, we co-designed and deployed the entire <strong>Papelito Game</strong>—incorporating customizable collections, custom Web Audio triggers, and Firestore subscribers—in record time.
+                </p>
+                
+                {/* Process Breakdown with elegant bullet points */}
+                <div className="space-y-4 pt-2">
+                  <h4 className="font-sans text-[10px] font-bold uppercase tracking-widest text-[#be123c]">
+                    The Development Process:
+                  </h4>
+                  <ul className="space-y-3 text-xs text-neutral-600 font-sans leading-relaxed">
+                    <li className="flex items-start gap-2.5">
+                      <span className="text-[#be123c] font-black mt-0.5">01 •</span>
+                      <div>
+                        <strong className="text-neutral-900 font-semibold">Vision & Structured Prompting:</strong> Outlined Papelito's core game loop and schema, using detailed prompt sequences to build clean, real-time Firebase room controllers.
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="text-[#be123c] font-black mt-0.5">02 •</span>
+                      <div>
+                        <strong className="text-neutral-900 font-semibold">Synchronous Room Flows:</strong> Designed dynamic lobby states (player entry, host handoffs, game triggers) and translated them instantly into responsive TypeScript state machines.
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="text-[#be123c] font-black mt-0.5">03 •</span>
+                      <div>
+                        <strong className="text-neutral-900 font-semibold">Web Audio Synth:</strong> Programmed a built-in sound engine with the Web Audio API, adding tactile sound triggers when pulling cards, skipping turns, or entering game lobbies.
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="text-[#be123c] font-black mt-0.5">04 •</span>
+                      <div>
+                        <strong className="text-neutral-900 font-semibold">Continuous Iteration:</strong> Streamlined Firestore subscriptions and adjusted mobile touch parameters, ensuring a lightweight, low-latency, and zero-flicker experience.
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              
+              {/* Interactive Sandbox Launch Tool */}
+              <div className="lg:col-span-4 p-6 rounded-2xl bg-neutral-50/50 border border-neutral-200/50 flex flex-col justify-between min-h-[280px] space-y-6">
+                <div className="space-y-3">
+                  <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-neutral-400 block">
+                    Interactive Sandbox
+                  </span>
+                  <h4 className="font-headline text-base font-bold text-neutral-800 leading-snug">
+                    Papelito Multiplayer Engine
+                  </h4>
+                  <p className="font-sans text-[11px] text-neutral-500 leading-relaxed">
+                    Test the real-time synchronous engine we designed—complete with Firebase Firestore state handlers, custom card decks, and client-side web audio synthesizers.
+                  </p>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    setActiveTab('GAMES');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="w-full py-3.5 px-4 bg-neutral-950 hover:bg-black text-white font-sans text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
+                >
+                  Launch Live Game Engine
+                  <span className="material-symbols-outlined text-sm">sports_esports</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1945,231 +1954,438 @@ export default function App() {
         title: "Discover",
         icon: "search",
         sub: "Research & Audit",
-        desc: "Immersion into corporate environments, behavioral log studies, empathy mappings, and stakeholder interviews to explicitly catalog inefficiencies."
+        desc: "Deep immersion into target user behaviors, workflows, and communication barriers to explicitly catalog inefficiencies and opportunities.",
+        deliverables: ["User & Host Journey Logs", "Bottleneck Friction Matrices", "Behavioral Target Maps"]
       },
       {
         title: "Define",
         icon: "fact_check",
-        sub: "Taxonomy & Flow",
-        desc: "Constructing system information hierarchies, drafting interactive logic wires, and modeling user states to alleviate friction bottlenecks."
+        sub: "Taxonomy & Protocol",
+        desc: "Constructing scalable data taxonomies, system states, and structured communication flows to build conflict-free real-time protocols.",
+        deliverables: ["Product Information Hierarchy", "State Transition Controllers", "Information Flow Pipelines"]
       },
       {
         title: "Design",
         icon: "palette",
-        sub: "Hi-Fi & Sound Systems",
-        desc: "Assembling beautiful high-contrast wireframes coupled with micro-animations, layout motions, and auditory confirmations that elevate task completion rates."
+        sub: "Auditory & Visual UX",
+        desc: "Drafting minimalist high-contrast layouts. Injecting micro-animations and custom synthetic sounds that elevate response speeds and player retention.",
+        deliverables: ["High-Contrast Adaptive Wireframes", "Web Audio Waveforms", "Responsive Motion Frameworks"]
       },
       {
         title: "Deliver",
         icon: "terminal",
-        sub: "Rigorous Dev Handoff",
-        desc: "Partnering strictly with front-end engineers, packaging structured design tokens, writing code audit parameters, and verifying smooth production-ready rendering."
+        sub: "Interactive Handoff",
+        desc: "Bundling atomic design tokens and optimizing real-time state listeners. Guaranteeing sub-20ms latency and high-performance cross-device rendering.",
+        deliverables: ["Atomic JSON Design Tokens", "Lighter Build Audits", "Production Lobby Integration"]
       }
     ];
 
     return (
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-12 py-6 text-left">
-        {/* Main Section Header */}
-        <div className="max-w-3xl space-y-4">
-          <span className="font-sans font-semibold text-xs text-outline tracking-[0.25em] uppercase block">
-            My Vision
-          </span>
-          <h2 className="font-headline text-4xl sm:text-6xl font-black text-neutral-900 tracking-tight leading-tighter">
-            Methodology Meets <br />Philosophy
-          </h2>
-          <p className="font-sans text-base sm:text-lg text-neutral-500 max-w-2xl leading-relaxed">
-            Beautiful visual systems without actual high-stakes utility represents raw luxury noise. Designing with craft is about reducing the obscure frictional thresholds of sophisticated everyday systems.
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 py-10 sm:py-16 space-y-16 md:space-y-24 text-left select-none">
+        {/* Header Block */}
+        <div className="max-w-3xl space-y-6">
+          <div className="space-y-3 animate-fade-in">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#be123c] bg-rose-50 border border-rose-200/50 shadow-3xs w-fit">
+              Core Vision
+            </span>
+            <h2 className="font-headline text-3xl sm:text-5xl lg:text-6xl font-black text-neutral-900 tracking-tight leading-[1.1]">
+              Empirical Architecture
+            </h2>
+          </div>
+          <p className="font-sans text-sm sm:text-base text-neutral-500 max-w-2xl leading-relaxed">
+            Every pixel must serve a metric. We design visual interfaces not as decorative static skins, but as high-fidelity operational flows engineered to eliminate user friction.
           </p>
         </div>
 
-        {/* 1. Core Methodology Section */}
-        <div className="space-y-6 border-t border-neutral-100 pt-6">
-          <div className="space-y-2">
-            <span className="font-sans text-[10px] font-black uppercase tracking-widest text-[#be123c] bg-[#be123c]/10 px-3 py-1 rounded-full w-fit block">
-              01 • Core Methodology
-            </span>
-            <h3 className="font-headline text-2xl sm:text-4xl font-black text-neutral-900 tracking-tight">
-              The Double-Diamond Cycle
-            </h3>
-            <p className="font-sans text-sm text-neutral-500 max-w-xl leading-relaxed">
-              Every product journey is subjected to rigorous, repeatable iterative feedback loops. Visual quality is measured directly against core performance parameters.
+        {/* 1. Double Diamond Infographic Section */}
+        <div className="space-y-8 border-t border-neutral-100 pt-10">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div className="space-y-3">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#be123c] bg-rose-50 border border-rose-200/50 shadow-3xs w-fit">
+                Methodology in Action
+              </span>
+              <h3 className="font-headline text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight">
+                The Double-Diamond Cycle
+              </h3>
+            </div>
+            <p className="font-sans text-xs sm:text-sm text-neutral-500 max-w-sm leading-relaxed">
+              Click any quadrant of the interactive dual-diamond map below to audit deliverables, methodologies, and outcomes across the product lifecycle.
             </p>
           </div>
 
-          {/* Unified Progress Timeline Stepper */}
-          <div className="relative py-4">
-            {/* Timeline background connectors */}
-            <div className="absolute top-[36px] left-[6%] right-[6%] h-[2px] bg-neutral-150 hidden md:block z-0" />
-            <div 
-              className="absolute top-[36px] left-[6%] h-[2px] bg-black hidden md:block transition-all duration-500 z-0" 
-              style={{ width: `${(selectedProcessStep / 3) * 88}%` }}
-            />
+          {/* Core Interactive SVG Diamond diagram */}
+          <div className="w-full bg-neutral-50/40 border border-neutral-200/40 p-6 sm:p-8 rounded-2xl custom-glass flex flex-col items-center justify-center shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-all">
+            {/* SVG Double Diamond */}
+            <div className="w-full overflow-x-auto scrollbar-thin py-6">
+              <div className="min-w-[640px] max-w-4xl mx-auto">
+                <svg className="w-full h-auto overflow-visible" viewBox="0 0 800 220" fill="none">
+                  {/* Gradients */}
+                  <defs>
+                    <linearGradient id="grad-active-discover" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#ff89ab" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="#fca5a5" stopOpacity="0.1" />
+                    </linearGradient>
+                    <linearGradient id="grad-active-define" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#fca5a5" stopOpacity="0.1" />
+                      <stop offset="100%" stopColor="#be123c" stopOpacity="0.3" />
+                    </linearGradient>
+                    <linearGradient id="grad-active-design" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#be123c" stopOpacity="0.3" />
+                      <stop offset="100%" stopColor="#fda4af" stopOpacity="0.1" />
+                    </linearGradient>
+                    <linearGradient id="grad-active-deliver" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#fda4af" stopOpacity="0.1" />
+                      <stop offset="100%" stopColor="#e11d48" stopOpacity="0.4" />
+                    </linearGradient>
+                  </defs>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4 relative z-10">
-              {steps.map((st, idx) => {
-                const isSelected = selectedProcessStep === idx;
-                const isCompleted = idx < selectedProcessStep;
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedProcessStep(idx)}
-                    id={`proc-step-${idx}`}
-                    className="flex flex-row md:flex-col items-center gap-3 md:gap-2.5 text-left md:text-center focus:outline-none group"
-                  >
-                    {/* Stepper Dot & Icon Indicator */}
-                    <div className={`w-11 h-11 rounded-full flex items-center justify-center border transition-all duration-300 shrink-0 ${
-                      isSelected 
-                        ? 'bg-black text-white border-black ring-4 ring-neutral-100 shadow-sm scale-110' 
-                        : isCompleted
-                          ? 'bg-neutral-900 text-white border-neutral-900'
-                          : 'bg-white text-neutral-400 border-neutral-200 group-hover:border-neutral-400 group-hover:text-neutral-700'
-                    }`}>
-                      <span className="material-symbols-outlined text-sm">
-                        {isCompleted ? 'check' : st.icon}
-                      </span>
-                    </div>
-                    
-                    <div className="flex flex-col md:items-center min-w-0">
-                      <span className="font-mono text-[9px] font-bold text-neutral-400 uppercase tracking-widest leading-none mb-1">
-                        Step 0{idx + 1}
-                      </span>
-                      <span className={`font-headline text-sm font-extrabold truncate ${isSelected ? 'text-black' : 'text-neutral-600 group-hover:text-black'}`}>
-                        {st.title}
-                      </span>
-                      <span className="hidden md:block font-sans text-[10px] text-neutral-400 truncate mt-0.5 max-w-[120px]">
-                        {st.sub}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
+                  {/* Flow Guide Line */}
+                  <path
+                    d="M 40,110 L 760,110"
+                    stroke="#e5e5e5"
+                    strokeWidth="1.5"
+                    strokeDasharray="6 6"
+                    className="opacity-70"
+                  />
+
+                  {/* Particle Flow path along diamond margins */}
+                  <motion.circle
+                     r="4"
+                     fill="#be123c"
+                     filter="drop-shadow(0 0 4px #be123c)"
+                     animate={{
+                       cx: [40, 200, 360, 440, 600, 760],
+                       cy: [110, 30, 110, 110, 30, 110],
+                       opacity: [0, 1, 0, 0, 1, 0]
+                     }}
+                     transition={{
+                       duration: 7,
+                       repeat: Infinity,
+                       ease: "easeInOut"
+                     }}
+                  />
+
+                  {/* DIAMOND 1: RESEARCH & STRATEGY */}
+                  <g className="cursor-pointer group">
+                    {/* Discover Segment */}
+                    <motion.path
+                      onClick={() => setSelectedProcessStep(0)}
+                      d="M 40,110 L 200,30 L 200,190 Z"
+                      fill={selectedProcessStep === 0 ? "url(#grad-active-discover)" : "transparent"}
+                      stroke={selectedProcessStep === 0 ? "#ff89ab" : "#e5e5e5"}
+                      strokeWidth={selectedProcessStep === 0 ? "2.5" : "1.5"}
+                      strokeDasharray={selectedProcessStep === 0 ? "0" : "5 5"}
+                      whileHover={{ scale: 1.01 }}
+                      transition={{ duration: 0.2 }}
+                      className="transition-colors"
+                    />
+
+                    {/* Define Segment */}
+                    <motion.path
+                      onClick={() => setSelectedProcessStep(1)}
+                      d="M 200,30 L 360,110 L 200,190 Z"
+                      fill={selectedProcessStep === 1 ? "url(#grad-active-define)" : "transparent"}
+                      stroke={selectedProcessStep === 1 ? "#be123c" : "#e5e5e5"}
+                      strokeWidth={selectedProcessStep === 1 ? "2.5" : "1.5"}
+                      strokeDasharray={selectedProcessStep === 1 ? "0" : "5 5"}
+                      whileHover={{ scale: 1.01 }}
+                      transition={{ duration: 0.2 }}
+                      className="transition-colors"
+                    />
+                  </g>
+
+                  {/* DIAMOND 2: CREATION & DEPLOYMENT */}
+                  <g className="cursor-pointer group">
+                    {/* Design Segment */}
+                    <motion.path
+                      onClick={() => setSelectedProcessStep(2)}
+                      d="M 440,110 L 600,30 L 600,190 Z"
+                      fill={selectedProcessStep === 2 ? "url(#grad-active-design)" : "transparent"}
+                      stroke={selectedProcessStep === 2 ? "#be123c" : "#e5e5e5"}
+                      strokeWidth={selectedProcessStep === 2 ? "2.5" : "1.5"}
+                      strokeDasharray={selectedProcessStep === 2 ? "0" : "5 5"}
+                      whileHover={{ scale: 1.01 }}
+                      transition={{ duration: 0.2 }}
+                      className="transition-colors"
+                    />
+
+                    {/* Deliver Segment */}
+                    <motion.path
+                      onClick={() => setSelectedProcessStep(3)}
+                      d="M 600,30 L 760,110 L 600,190 Z"
+                      fill={selectedProcessStep === 3 ? "url(#grad-active-deliver)" : "transparent"}
+                      stroke={selectedProcessStep === 3 ? "#e11d48" : "#e5e5e5"}
+                      strokeWidth={selectedProcessStep === 3 ? "2.5" : "1.5"}
+                      strokeDasharray={selectedProcessStep === 3 ? "0" : "5 5"}
+                      whileHover={{ scale: 1.01 }}
+                      transition={{ duration: 0.2 }}
+                      className="transition-colors"
+                    />
+                  </g>
+
+                  {/* Hotspot Circles / Anchor Vertices */}
+                  <circle cx="40" cy="110" r="5" fill="#fff" stroke="#ff89ab" strokeWidth="2" />
+                  <circle cx="200" cy="110" r="5" fill="#fff" stroke="#be123c" strokeWidth="2" />
+                  <circle cx="360" cy="110" r="5" fill="#fff" stroke="#be123c" strokeWidth="2" />
+                  <circle cx="440" cy="110" r="5" fill="#fff" stroke="#be123c" strokeWidth="2" />
+                  <circle cx="600" cy="110" r="5" fill="#fff" stroke="#be123c" strokeWidth="2" />
+                  <circle cx="760" cy="110" r="5" fill="#fff" stroke="#e11d48" strokeWidth="2" />
+
+                  {/* Phase Titles & Direction Labels */}
+                  <text x="120" y="114" fill="#a3a3a3" fontSize="8" fontFamily="sans-serif" fontWeight="bold" letterSpacing="0.1em" textAnchor="middle">DIVERGE</text>
+                  <text x="280" y="114" fill="#a3a3a3" fontSize="8" fontFamily="sans-serif" fontWeight="bold" letterSpacing="0.1em" textAnchor="middle">CONVERGE</text>
+                  <text x="520" y="114" fill="#a3a3a3" fontSize="8" fontFamily="sans-serif" fontWeight="bold" letterSpacing="0.1em" textAnchor="middle">DIVERGE</text>
+                  <text x="680" y="114" fill="#a3a3a3" fontSize="8" fontFamily="sans-serif" fontWeight="bold" letterSpacing="0.1em" textAnchor="middle">CONVERGE</text>
+
+                  {/* Anchor label tags */}
+                  <text x="40" y="130" fill="#a3a3a3" fontSize="8" fontFamily="sans-serif" fontWeight="bold" textAnchor="middle">INPUT</text>
+                  <text x="200" y="24" fill="#262626" fontSize="10" fontFamily="sans-serif" fontWeight="bold" textAnchor="middle">PROBLEM DEF</text>
+                  <text x="360" y="130" fill="#a3a3a3" fontSize="8" fontFamily="sans-serif" fontWeight="bold" textAnchor="middle">JUNCTION</text>
+                  <text x="600" y="24" fill="#262626" fontSize="10" fontFamily="sans-serif" fontWeight="bold" textAnchor="middle">CODE BLUEPRINT</text>
+                  <text x="760" y="130" fill="#a3a3a3" fontSize="8" fontFamily="sans-serif" fontWeight="bold" textAnchor="middle text-right">DEPLOY</text>
+
+                  {/* Dynamic Floating Labels on Top of diamonds */}
+                  <g onClick={() => setSelectedProcessStep(0)} className="cursor-pointer">
+                    <rect x="70" y="55" width="60" height="18" rx="4" fill={selectedProcessStep === 0 ? "#ff89ab" : "transparent"} />
+                    <text x="100" y="67" fill={selectedProcessStep === 0 ? "#fff" : "rgba(38,38,38,0.7)"} fontSize="9" fontFamily="sans-serif" fontWeight="black" textAnchor="middle">01. DISCOVER</text>
+                  </g>
+
+                  <g onClick={() => setSelectedProcessStep(1)} className="cursor-pointer">
+                    <rect x="270" y="55" width="50" height="18" rx="4" fill={selectedProcessStep === 1 ? "#be123c" : "transparent"} />
+                    <text x="295" y="67" fill={selectedProcessStep === 1 ? "#fff" : "rgba(38,38,38,0.7)"} fontSize="9" fontFamily="sans-serif" fontWeight="black" textAnchor="middle">02. DEFINE</text>
+                  </g>
+
+                  <g onClick={() => setSelectedProcessStep(2)} className="cursor-pointer">
+                    <rect x="470" y="55" width="50" height="18" rx="4" fill={selectedProcessStep === 2 ? "#be123c" : "transparent"} />
+                    <text x="495" y="67" fill={selectedProcessStep === 2 ? "#fff" : "rgba(38,38,38,0.7)"} fontSize="9" fontFamily="sans-serif" fontWeight="black" textAnchor="middle">03. DESIGN</text>
+                  </g>
+
+                  <g onClick={() => setSelectedProcessStep(3)} className="cursor-pointer">
+                    <rect x="670" y="55" width="50" height="18" rx="4" fill={selectedProcessStep === 3 ? "#e11d48" : "transparent"} />
+                    <text x="695" y="67" fill={selectedProcessStep === 3 ? "#fff" : "rgba(38,38,38,0.7)"} fontSize="9" fontFamily="sans-serif" fontWeight="black" textAnchor="middle">04. DELIVER</text>
+                  </g>
+                </svg>
+              </div>
+            </div>
+
+            {/* Selection indicators (Mobile layout switcher button pills) */}
+            <div className="flex flex-wrap justify-center gap-2 mt-4 sm:hidden">
+              {steps.map((st, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedProcessStep(idx)}
+                  className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border cursor-pointer transition-all ${
+                    selectedProcessStep === idx
+                      ? 'bg-[#be123c] text-white border-[#be123c]'
+                      : 'bg-white text-neutral-500 border-neutral-200'
+                  }`}
+                >
+                  {idx + 1}. {st.title}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Consolidated Active Stage Description */}
-          <div className="bg-neutral-50/50 border border-neutral-200/40 p-6 md:p-8 rounded-3xl grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 items-start custom-glass">
-            <div className="md:col-span-7 space-y-4">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-black text-white text-[10px] font-bold tracking-wider uppercase rounded-full">
-                <span className="material-symbols-outlined text-xs">auto_awesome</span>
-                Active Phase: {steps[selectedProcessStep].title}
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-headline text-lg sm:text-xl font-bold text-neutral-900 uppercase tracking-tight">
-                  {steps[selectedProcessStep].sub}
-                </h4>
-                <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
-                  {steps[selectedProcessStep].desc}
-                </p>
-              </div>
-            </div>
-
-            <div className="md:col-span-5 bg-white border border-neutral-150 p-5 rounded-2xl space-y-3 shadow-2xs">
-              <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-neutral-400 block">
-                Core Deliverables & Outcomes
+          {/* Connected Audit Card */}
+          <motion.div
+            key={selectedProcessStep}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start bg-white border border-neutral-200/40 p-6 sm:p-8 rounded-2xl shadow-2xs hover:shadow-xs transition-shadow text-left"
+          >
+            <div className="md:col-span-12 lg:col-span-7 space-y-4">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-[9px] xs:text-[10px] font-bold uppercase tracking-widest font-mono text-[#be123c] bg-rose-50 border border-rose-200/50 shadow-3xs w-fit block">
+                Stage 0{selectedProcessStep + 1} • {steps[selectedProcessStep].sub}
               </span>
-              <div className="font-sans text-xs font-semibold text-neutral-800 space-y-1.5">
-                {selectedProcessStep === 0 && (
-                  <>
-                    <p>• Deep user/stakeholder logs analysis</p>
-                    <p>• Current bottleneck friction map matrices</p>
-                    <p>• Detailed customer travel map tracking</p>
-                  </>
-                )}
-                {selectedProcessStep === 1 && (
-                  <>
-                    <p>• Wireframes & UX interaction flows</p>
-                    <p>• Content taxonomy schemas & indexes</p>
-                    <p>• Core logic path state outline tables</p>
-                  </>
-                )}
-                {selectedProcessStep === 2 && (
-                  <>
-                    <p>• Fully responsive high-contrast layouts</p>
-                    <p>• Dynamic interactive micro-interactions</p>
-                    <p>• Standard Design System typography tokens</p>
-                  </>
-                )}
-                {selectedProcessStep === 3 && (
-                  <>
-                    <p>• Coded design component tokens and JSONs</p>
-                    <p>• Rigid dev visual quality checking parameters</p>
-                    <p>• Interactive prototype specifications</p>
-                  </>
-                )}
-              </div>
-              <div className="bg-neutral-100 text-[9px] font-sans font-bold text-neutral-700 uppercase tracking-wider text-center py-2 rounded-lg">
-                Validated & Handoff Standard Ready
+              <h4 className="font-headline text-xl sm:text-2xl font-black text-neutral-900 tracking-tight leading-tight">
+                Evaluating the "{steps[selectedProcessStep].title}" Phase
+              </h4>
+              <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed font-sans leading-relaxed">
+                {steps[selectedProcessStep].desc}
+              </p>
+            </div>
+
+            <div className="lg:col-span-1 border-r border-[#ffe4e6] h-full hidden lg:block" />
+
+            <div className="md:col-span-12 lg:col-span-4 space-y-3">
+              <span className="font-sans text-[10px] font-black uppercase tracking-wider text-neutral-400 block">
+                Deliverable Checklist:
+              </span>
+              <div className="space-y-2">
+                {steps[selectedProcessStep].deliverables.map((item, id) => (
+                  <div key={id} className="flex items-center gap-2 text-xs font-semibold text-neutral-700">
+                    <span className="material-symbols-outlined text-[#be123c] text-base">verified</span>
+                    <span>{item}</span>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
 
-        {/* 2. Design Philosophy Section */}
-        <div className="space-y-6 border-t border-neutral-100 pt-6">
-          <div className="space-y-2">
-            <span className="font-sans text-[10px] font-black uppercase tracking-widest text-[#be123c] bg-[#be123c]/10 px-3 py-1 rounded-full w-fit block">
-              02 • Design Philosophy
+        {/* 2. Design Philosophy Infographic Row */}
+        <div className="space-y-8 border-t border-neutral-100 pt-10">
+          <div className="space-y-3">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#be123c] bg-rose-50 border border-rose-200/50 shadow-3xs w-fit">
+              02 • Aesthetics & Performance Infographic
             </span>
-            <h3 className="font-headline text-2xl sm:text-4xl font-black text-neutral-900 tracking-tight">
-              Empathy Over Vanity
+            <h3 className="font-headline text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight">
+              Design Pillars as Operational Metrics
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch">
-            {/* Quote Panel */}
-            <div className="bg-black text-white p-8 sm:p-12 rounded-[2.5rem] flex flex-col justify-between border border-neutral-800 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-2xl pointer-events-none" />
-              <span className="material-symbols-outlined text-4xl text-neutral-700 select-none">
-                format_quote
-              </span>
-              <p className="font-sans text-lg sm:text-xl font-medium tracking-tight italic leading-relaxed my-8 text-neutral-200">
-                "Interaction design is not static artwork; it is akin to melody. It requires pauses, purposeful accents, and visual hierarchy coordinates to effortlessly guide attention."
-              </p>
-              <div className="pt-6 border-t border-neutral-800 space-y-1">
-                <p className="font-sans font-black uppercase text-xs tracking-widest text-[#be123c]">
-                  Lia Parra
-                </p>
-                <p className="font-sans text-[10px] uppercase text-neutral-400">
-                  Sr. Product Designer UX / UI Lead
-                </p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+            {/* Infographic card 1: Functional Brutalism */}
+            <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-rose-200 hover:bg-white/60 transition-all duration-300">
+              <div className="space-y-4 text-left">
+                <span className="inline-flex items-center justify-center p-2 bg-rose-50 border border-rose-200/50 text-[#be123c] rounded-xl text-lg w-fit shadow-3xs">
+                  <span className="material-symbols-outlined leading-none">architecture</span>
+                </span>
+                <div className="space-y-1.5">
+                  <h4 className="font-headline text-lg font-bold text-neutral-900 tracking-tight leading-snug">
+                    Functional Brutalism
+                  </h4>
+                  <p className="font-sans text-xs text-neutral-500 leading-relaxed">
+                    We dismantle excessive cosmetic overlays to assert complete focus on structural, strategic user experiences.
+                  </p>
+                </div>
+              </div>
+
+              {/* Graphic element */}
+              <div className="bg-neutral-50 rounded-xl p-4 space-y-3 border border-neutral-100">
+                <div className="flex justify-between items-center text-[9px] font-bold text-neutral-500 uppercase tracking-widest">
+                  <span>UX Interaction Hierarchy</span>
+                  <span className="text-[#be123c]">92% Core Focus</span>
+                </div>
+                
+                {/* Horizontal Stack Bar Diagram */}
+                <div className="space-y-2">
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[10px]">
+                      <span className="text-neutral-700 font-bold">Utility Blocks</span>
+                      <span className="text-[#be123c] font-bold">92%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-neutral-200 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-[#ff89ab] to-[#be123c] rounded-full" style={{ width: '92%' }} />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[10px]">
+                      <span className="text-neutral-400">Decorative Visual Noise</span>
+                      <span className="text-neutral-400">8%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-neutral-200 rounded-full overflow-hidden">
+                      <div className="h-full bg-neutral-300 rounded-full" style={{ width: '8%' }} />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Pillars List */}
-            <div className="space-y-8 flex flex-col justify-center">
-              <div className="flex gap-4 items-start">
-                <span className="material-symbols-outlined p-2.5 bg-neutral-100 rounded-2xl text-neutral-900">
-                  architecture
+            {/* Infographic card 2: Tactile Sensory Audio */}
+            <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-rose-200 hover:bg-white/60 transition-all duration-300">
+              <div className="space-y-4 text-left">
+                <span className="inline-flex items-center justify-center p-2 bg-rose-50 border border-rose-200/50 text-[#be123c] rounded-xl text-lg w-fit shadow-3xs">
+                  <span className="material-symbols-outlined leading-none">volume_up</span>
                 </span>
-                <div className="space-y-1">
-                  <h3 className="font-headline text-base font-bold text-neutral-900 tracking-tight">Functional Brutalism</h3>
-                  <p className="font-sans text-sm text-neutral-500 leading-relaxed">
-                    We eliminate excessive graphic clutter and redundancies to assert focus on the strategic primary interactions of your digital ecosystem.
+                <div className="space-y-1.5">
+                  <h4 className="font-headline text-lg font-bold text-neutral-900 tracking-tight leading-snug">
+                    Multimodal Sound Resonance
+                  </h4>
+                  <p className="font-sans text-xs text-neutral-500 leading-relaxed">
+                    High-response chord checkers and subtle auditory checks prevent error loops, mimicking real physical play.
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-4 items-start">
-                <span className="material-symbols-outlined p-2.5 bg-[#be123c]/10 text-[#be123c] rounded-2xl">
-                  volume_up
+              {/* Graphical Synth Wave display */}
+              <div className="bg-neutral-50 rounded-xl p-4 flex flex-col justify-between border border-neutral-100 min-h-[96px]">
+                <div className="flex justify-between items-center text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-1">
+                  <span>Web Audio Wave Pattern</span>
+                  <span className="text-emerald-600 animate-pulse">• Wave Active</span>
+                </div>
+                
+                {/* SVG Sine Wave Graphics */}
+                <div className="h-10 flex items-end justify-between px-1 relative">
+                  <svg className="absolute inset-0 w-full h-full text-neutral-200" viewBox="0 0 160 40" fill="none">
+                    <path d="M0,20 Q20,5 40,20 T80,20 T120,20 T160,20" stroke="currentColor" strokeWidth="1" />
+                    <motion.path 
+                      id="synth-wave"
+                      d="M0,20 Q15,4 30,20 T60,20 T90,20 T120,20 T150,20 T160,20" 
+                      stroke="#ff89ab" 
+                      strokeWidth="2" 
+                      animate={{
+                        d: [
+                          "M0,20 Q15,4 30,20 T60,20 T90,20 T120,20 T150,20 T160,20",
+                          "M0,20 Q15,36 30,20 T60,20 T90,20 T120,20 T150,20 T160,20",
+                          "M0,20 Q15,4 30,20 T60,20 T90,20 T120,20 T150,20 T160,20"
+                        ]
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    />
+                  </svg>
+                  <div className="w-1.5 bg-[#be123c] h-3 animate-bounce" style={{ animationDelay: '0.1s' }} />
+                  <div className="w-1.5 bg-[#ff89ab] h-6 animate-bounce" style={{ animationDelay: '0.3s' }} />
+                  <div className="w-1.5 bg-[#be123c] h-4 animate-bounce" style={{ animationDelay: '0.5s' }} />
+                  <div className="w-1.5 bg-neutral-300 h-2 animate-bounce" style={{ animationDelay: '0.2s' }} />
+                  <div className="w-1.5 bg-[#be123c] h-5 animate-bounce" style={{ animationDelay: '0.4s' }} />
+                  <div className="w-1.5 bg-[#ff89ab] h-3 animate-bounce" style={{ animationDelay: '0.6s' }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Infographic card 3: Target Velocity Gauge */}
+            <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-rose-200 hover:bg-white/60 transition-all duration-300">
+              <div className="space-y-4 text-left">
+                <span className="inline-flex items-center justify-center p-2 bg-rose-50 border border-rose-200/50 text-[#be123c] rounded-xl text-lg w-fit shadow-3xs">
+                  <span className="material-symbols-outlined leading-none">speed</span>
                 </span>
-                <div className="space-y-1">
-                  <h3 className="font-headline text-base font-bold text-neutral-900 tracking-tight">Multimodal Sensory Systems</h3>
-                  <p className="font-sans text-sm text-neutral-500 leading-relaxed">
-                    Subtle, well-timed auditory checkpoints prevent error states. As verified within our live **Holis Social Suite** demonstration, integrated audio feedback drives user action retention.
+                <div className="space-y-1.5">
+                  <h4 className="font-headline text-lg font-bold text-neutral-900 tracking-tight leading-snug">
+                    Velocity is a Core Metric
+                  </h4>
+                  <p className="font-sans text-xs text-neutral-500 leading-relaxed">
+                    Every user interaction is optimized to avoid script delays, producing smooth and clean layouts instantly.
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-4 items-start">
-                <span className="material-symbols-outlined p-2.5 bg-neutral-100 rounded-2xl text-neutral-900">
-                  speed
-                </span>
-                <div className="space-y-1">
-                  <h3 className="font-headline text-base font-bold text-neutral-900 tracking-tight">Velocity is a Metric</h3>
-                  <p className="font-sans text-sm text-neutral-500 leading-relaxed">
-                    Friction is born from lag. We build and design layouts to render smooth animations at high target frames per second benchmarks.
-                  </p>
+              {/* Graphic element speed parameters */}
+              <div className="bg-neutral-50 rounded-xl p-4 flex justify-between items-center border border-neutral-100">
+                <div className="space-y-1.5">
+                  <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block">Operational specs</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-headline font-black text-neutral-900">0.1</span>
+                    <span className="text-[10px] text-neutral-500 font-bold">ms Engine lag</span>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-headline font-black text-[#be123c]">120</span>
+                    <span className="text-[10px] text-neutral-500 font-bold">FPS Active target</span>
+                  </div>
+                </div>
+
+                {/* Circular indicator infographic */}
+                <div className="relative w-14 h-14 flex items-center justify-center">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle cx="28" cy="28" r="24" stroke="#e5e5e5" strokeWidth="4" fill="transparent" />
+                    <motion.circle 
+                      cx="28" 
+                      cy="28" 
+                      r="24" 
+                      stroke="#be123c" 
+                      strokeWidth="4" 
+                      fill="transparent" 
+                      strokeDasharray="150"
+                      animate={{ strokeDashoffset: [150, 25, 25] }}
+                      transition={{ duration: 2.5, ease: "easeOut" }}
+                    />
+                  </svg>
+                  <span className="absolute text-[9px] font-black text-neutral-800">100%</span>
                 </div>
               </div>
             </div>
@@ -2181,28 +2397,30 @@ export default function App() {
 
   const renderContact = () => {
     return (
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 space-y-6 py-6 text-left">
-        <div className="space-y-4">
-          <span className="font-sans font-semibold text-xs text-outline tracking-[0.25em] uppercase block">
-            Partner with Lia
-          </span>
-          <h2 className="font-headline text-3xl sm:text-4xl font-bold text-neutral-900 tracking-tight leading-snug">
-            Consultancy & Action
-          </h2>
-          <p className="font-sans text-base sm:text-lg text-neutral-500 max-w-2xl leading-relaxed">
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 py-10 sm:py-16 space-y-16 md:space-y-24 text-left select-none">
+        <div className="space-y-6">
+          <div className="space-y-3 animate-fade-in">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#be123c] bg-rose-50 border border-rose-200/50 shadow-3xs w-fit">
+              Partner with Lia
+            </span>
+            <h2 className="font-headline text-3xl sm:text-5xl lg:text-6xl font-black text-neutral-900 tracking-tight leading-[1.1]">
+              Consultancy & Action
+            </h2>
+          </div>
+          <p className="font-sans text-sm sm:text-base text-neutral-500 max-w-2xl leading-relaxed">
             Need to solve immediate conversions boundaries, improve retention rates, or build clean corporate design languages? Leave a message or connect directly.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10">
           {/* Information block */}
-          <div className="custom-glass border border-neutral-200/40 p-8 sm:p-10 rounded-3xl space-y-8 flex flex-col justify-between">
+          <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-rose-200 hover:bg-white/60 space-y-8">
             <div className="space-y-6">
-              <h3 className="font-headline text-2xl font-bold text-neutral-900 tracking-tight">Lia Parra</h3>
+              <h3 className="font-headline text-2xl font-black text-neutral-900 tracking-tight">Lia Parra</h3>
               <p className="font-sans text-sm text-neutral-500 leading-relaxed">
                 Sr. Product Designer UX / UI Lead and experience strategist driving conversion, interactive interfaces, and cross-platform UX structures.
               </p>
-              <div className="space-y-4 pt-6 border-t border-neutral-100 text-sm font-sans">
+              <div className="space-y-4 pt-6 border-t border-neutral-150 text-sm font-sans">
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-[#45474b]">mail</span>
                   <a href="mailto:liangelyp@gmail.com" className="text-neutral-700 select-all font-medium hover:text-[#be123c] transition-all">liangelyp@gmail.com</a>
@@ -2218,12 +2436,12 @@ export default function App() {
               </div>
             </div>
 
-            <div className="flex gap-6 pt-6 border-t border-neutral-100">
+            <div className="flex gap-6 pt-6 border-t border-neutral-150">
               <a 
                 href="https://linkedin.com/in/liangely-diseno-grafico"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 font-sans text-xs font-bold uppercase tracking-widest text-neutral-500 hover:text-neutral-850 transition-colors"
+                className="inline-flex items-center gap-1.5 font-sans text-xs font-bold uppercase tracking-widest text-[#be123c] hover:text-[#9f1239] transition-colors"
                 id="contact-linkedin-link"
               >
                 <Linkedin className="w-3.5 h-3.5 shrink-0" />
@@ -2233,7 +2451,7 @@ export default function App() {
           </div>
 
           {/* Contact form block */}
-          <div className="lg:col-span-2 bg-white/35 border border-white/40 p-8 sm:p-10 rounded-3xl shadow-lg custom-glass">
+          <div className="lg:col-span-2 custom-glass border border-neutral-200/50 bg-white/45 p-6 sm:p-8 rounded-2xl transition-all duration-300 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-rose-200 hover:bg-white/60">
             {contactSubmitted ? (
               <div className="text-center py-6 space-y-6 animate-fade-in">
                 <div className="w-16 h-16 bg-emerald-100/80 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
@@ -2243,7 +2461,7 @@ export default function App() {
                   <h3 className="font-headline text-2xl font-black text-neutral-900 tracking-tight">
                     Inquiry Received Successfully!
                   </h3>
-                  <p className="font-sans text-sm text-neutral-500 max-w-md mx-auto leading-relaxed">
+                  <p className="font-sans text-sm text-neutral-500 max-w-sm mx-auto leading-relaxed">
                     Your details have been registered on our servers. To establish immediate contact and send this message instantly to my private channels, click one of the options below:
                   </p>
                 </div>
@@ -2253,21 +2471,21 @@ export default function App() {
                     href={`https://wa.me/5491156424162?text=${encodeURIComponent(`Hello Lia! This is ${contactName} (${contactEmail}).\n\n*Collaboration Area*: ${contactSubject}\n\n*Project Context*:\n${contactMessage}`)}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-center gap-2 py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-sans text-xs font-black uppercase tracking-widest rounded-xl shadow-md hover:shadow-lg transition-all scale-100 hover:scale-[1.02] active:scale-95"
+                    className="flex items-center justify-center gap-2 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-sans text-xs font-black uppercase tracking-widest rounded-xl shadow-md hover:shadow-lg transition-all scale-100 hover:scale-[1.02] active:scale-95 animate-fade-in"
                   >
                     <span className="material-symbols-outlined text-lg">chat</span>
                     Send via WhatsApp
                   </a>
                   <a
                     href={`mailto:liangelyp@gmail.com?subject=${encodeURIComponent(`Portfolio Contact: ${contactSubject}`)}&body=${encodeURIComponent(`Hi Lia,\n\nMy name is ${contactName} (${contactEmail}).\n\nArea of Interaction: ${contactSubject}\n\nMessage Detail:\n${contactMessage}`)}`}
-                    className="flex items-center justify-center gap-2 py-3.5 px-4 bg-neutral-950 hover:bg-black text-white font-sans text-xs font-black uppercase tracking-widest rounded-xl shadow-md hover:shadow-lg transition-all scale-100 hover:scale-[1.02] active:scale-95"
+                    className="flex items-center justify-center gap-2 py-3 px-4 bg-neutral-950 hover:bg-black text-white font-sans text-xs font-black uppercase tracking-widest rounded-xl shadow-md hover:shadow-lg transition-all scale-100 hover:scale-[1.02] active:scale-95 animate-fade-in"
                   >
                     <span className="material-symbols-outlined text-lg">mail</span>
                     Send via Email Client
                   </a>
                 </div>
 
-                <div className="pt-6 border-t border-neutral-100">
+                <div className="pt-6 border-t border-neutral-150">
                   <button
                     onClick={() => {
                       setContactSubmitted(false);
@@ -2285,7 +2503,7 @@ export default function App() {
               <form onSubmit={handleContactSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label htmlFor="contact-name" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500">
+                    <label htmlFor="contact-name" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-[#be123c] font-mono">
                       Your Name *
                     </label>
                     <input
@@ -2295,11 +2513,11 @@ export default function App() {
                       value={contactName}
                       onChange={(e) => setContactName(e.target.value)}
                       placeholder="e.g. Alex Smith"
-                      className="w-full bg-white/20 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-sm font-sans focus:bg-white/60 focus:border-black outline-none transition-all text-neutral-900 shadow-inner"
+                      className="w-full bg-white/40 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-xs sm:text-sm font-sans focus:bg-white focus:border-[#be123c] outline-none transition-all text-neutral-900 shadow-3xs focus:ring-1 focus:ring-[#be123c]/10"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="contact-email" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500">
+                    <label htmlFor="contact-email" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-[#be123c] font-mono">
                       Email Address *
                     </label>
                     <input
@@ -2309,13 +2527,13 @@ export default function App() {
                       value={contactEmail}
                       onChange={(e) => setContactEmail(e.target.value)}
                       placeholder="e.g. alex@company.com"
-                      className="w-full bg-white/20 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-sm font-sans focus:bg-white/60 focus:border-black outline-none transition-all text-neutral-900 shadow-inner"
+                      className="w-full bg-white/40 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-xs sm:text-sm font-sans focus:bg-white focus:border-[#be123c] outline-none transition-all text-neutral-900 shadow-3xs focus:ring-1 focus:ring-[#be123c]/10"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500">
+                  <label className="block text-[10px] font-sans font-bold uppercase tracking-widest text-[#be123c] font-mono">
                     Area of Collaboration
                   </label>
                   <div className="grid grid-cols-3 gap-2">
@@ -2327,10 +2545,10 @@ export default function App() {
                           type="button"
                           id={`subject-${sub.replace(/\s+/g, '-').toLowerCase()}`}
                           onClick={() => setContactSubject(sub)}
-                          className={`py-2.5 px-3 rounded-xl text-[10px] font-sans font-bold uppercase border tracking-wider transition-all cursor-pointer ${
+                          className={`py-2 px-2 sm:px-3 rounded-xl text-[9px] sm:text-[10px] font-mono font-bold uppercase border tracking-widest transition-all cursor-pointer ${
                             isSelected
-                              ? 'bg-black text-white border-black shadow-md'
-                              : 'bg-white/30 backdrop-blur-sm border-neutral-200/45 text-neutral-600 hover:border-black'
+                              ? 'bg-neutral-950 text-white border-neutral-950 shadow-2xs scale-[1.01]'
+                              : 'bg-white/40 border-neutral-200/50 text-neutral-500 hover:border-rose-200 hover:text-[#be123c] hover:bg-rose-50/25 shadow-3xs'
                           }`}
                         >
                           {sub}
@@ -2341,7 +2559,7 @@ export default function App() {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="contact-message" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500">
+                  <label htmlFor="contact-message" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-[#be123c] font-mono">
                     Tell me about your product challenge *
                   </label>
                   <textarea
@@ -2351,7 +2569,7 @@ export default function App() {
                     value={contactMessage}
                     onChange={(e) => setContactMessage(e.target.value)}
                     placeholder="Describe your design objectives, timelines or parameters..."
-                    className="w-full bg-white/20 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-sm font-sans focus:bg-white/60 focus:border-black outline-none transition-all text-neutral-900 shadow-inner"
+                    className="w-full bg-white/40 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-xs sm:text-sm font-sans focus:bg-white focus:border-[#be123c] outline-none transition-all text-neutral-900 shadow-3xs focus:ring-1 focus:ring-[#be123c]/10"
                   />
                 </div>
 
@@ -2359,7 +2577,7 @@ export default function App() {
                   type="submit"
                   id="contact-form-submit-btn"
                   disabled={contactSubmitting}
-                  className="w-full py-4 bg-black text-white font-sans text-xs font-bold uppercase tracking-widest hover:bg-neutral-800 disabled:opacity-50 transition-all rounded-xl shadow-md active:scale-95 flex items-center justify-center gap-2"
+                  className="w-full py-3.5 bg-neutral-950 text-white font-sans text-xs font-bold uppercase tracking-widest hover:bg-black disabled:opacity-50 transition-all rounded-xl shadow-sm active:scale-95 flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
                 >
                   {contactSubmitting ? 'Sending inquiry...' : 'Send Message'}
                   <span className="material-symbols-outlined text-sm">send</span>
@@ -2651,11 +2869,6 @@ export default function App() {
                         : 'bg-white/95 border-neutral-200/50 text-neutral-800 shadow-neutral-900/5 shadow-2xl'
                     }`}
                   >
-                    <div className="px-3 py-1.5 border-b border-neutral-200/10 mb-1">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-[#be123c]">
-                        Let's Collaborate
-                      </p>
-                    </div>
                     <a
                       href="mailto:liangelyp@gmail.com"
                       onClick={() => setAvailableMenuOpen(false)}
