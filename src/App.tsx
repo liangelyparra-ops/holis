@@ -1867,11 +1867,13 @@ export default function App() {
                       {project.mockupType && (
                         <div className="md:col-span-2 pt-5 mt-2 border-t border-dashed border-neutral-200/80">
                           <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-neutral-400 block mb-2.5">
-                            Visual Interactive Mockup — Clickable Draft Preview
+                            Visual Mockup Showcase — Static Draft Preview
                           </span>
-                          {project.mockupType === 'analytics' && <AnalyticsMockup />}
-                          {project.mockupType === 'wireframe' && <WireframeMockup />}
-                          {project.mockupType === 'tokens' && <DesignTokensMockup />}
+                          <div className="pointer-events-none select-none">
+                            {project.mockupType === 'analytics' && <AnalyticsMockup />}
+                            {project.mockupType === 'wireframe' && <WireframeMockup />}
+                            {project.mockupType === 'tokens' && <DesignTokensMockup />}
+                          </div>
                         </div>
                       )}
                     </motion.div>
