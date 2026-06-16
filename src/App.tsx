@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Gamepad2, 
@@ -169,6 +169,13 @@ export default function App() {
   const [useCaseFilter, setUseCaseFilter] = useState<'All' | 'UX Strategy' | 'Design Systems' | 'Information Architecture' | 'Branding'>('All');
   const [showGameInstructions, setShowGameInstructions] = useState(true);
 
+  // Memoized useCases filtering for optimal rendering performance
+  const filteredCases = useMemo(() => {
+    return useCases.filter(
+      (item) => useCaseFilter === 'All' || item.tags.includes(useCaseFilter as any)
+    );
+  }, [useCaseFilter]);
+
   // Sync tab with URL hash for deep linking & back/forward navigation support
   useEffect(() => {
     const handleHashChange = () => {
@@ -254,19 +261,29 @@ export default function App() {
     }
   };
   
+  const soundCacheRef = useRef<Record<string, HTMLAudioElement>>({});
+
   const playSound = (url: string) => {
     console.log(`[Sound] Attempting to play: ${url}`);
-    const audio = new Audio(url);
-    audio.volume = 0.8;
-    
-    // Preload to improve start time
-    audio.preload = 'auto';
-    
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(error => {
-        console.warn("[Sound] Playback failed/blocked:", error);
-      });
+    try {
+      let audio = soundCacheRef.current[url];
+      if (!audio) {
+        audio = new Audio(url);
+        audio.preload = 'auto';
+        soundCacheRef.current[url] = audio;
+      } else {
+        audio.currentTime = 0;
+      }
+      audio.volume = 0.8;
+      
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.warn("[Sound] Playback failed/blocked:", error);
+        });
+      }
+    } catch (error) {
+      console.warn("[Sound] Error playing audio:", error);
     }
   };
 
@@ -1737,10 +1754,6 @@ export default function App() {
   const [expandedProject, setExpandedProject] = useState<'none' | 'illow_start' | 'illow_evolution' | 'bigid_cookie' | 'bojana'>('none');
 
   const renderImpact = () => {
-    // Filter the use cases dynamically
-    const filteredCases = useCases.filter(
-      (item) => useCaseFilter === 'All' || item.tags.includes(useCaseFilter as any)
-    );
 
     return (
       <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 py-10 sm:py-16 space-y-16 md:space-y-24 text-left select-none">
