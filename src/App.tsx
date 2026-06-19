@@ -30,6 +30,7 @@ import { db } from './firebase';
 import { useCases } from './data/useCases';
 import { AnalyticsMockup, WireframeMockup, DesignTokensMockup } from './components/ProjectMockups';
 import { DifferentialMockup } from './components/DifferentialMockup';
+import { IllowCaseStudy } from './components/IllowCaseStudy';
 
 const USER_ID_KEY = 'party-game-user-id-v2';
 const NICKNAME_KEY = 'party-game-nickname';
@@ -130,6 +131,322 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
   }
   console.error('Firestore Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
+}
+
+function getDirectDriveUrl(url: string | undefined): string {
+  if (!url) return '';
+  if (url.includes('drive.google.com')) {
+    // 1. Matches /file/d/FILE_ID/
+    const fileDMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (fileDMatch && fileDMatch[1]) {
+      return `https://lh3.googleusercontent.com/d/${fileDMatch[1]}`;
+    }
+    // 2. Matches ?id=FILE_ID
+    const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (idMatch && idMatch[1]) {
+      return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
+    }
+  }
+  return url;
+}
+
+const getFirstMediaBlock = (project: any) => {
+  if (project.blocks && project.blocks.length > 0) {
+    return project.blocks.find((b: any) => ['image', 'carousel', 'video', 'pdf'].includes(b.type));
+  }
+  return null;
+};
+
+const CardCarousel: React.FC<{ images: string[]; getDirectDriveUrl: (url: string) => string }> = ({ images, getDirectDriveUrl }) => {
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  if (!images || images.length === 0) return null;
+
+  return (
+    <div className="relative w-full h-full">
+      <AnimatePresence mode="wait">
+        <motion.img 
+          key={activeSlide}
+          src={getDirectDriveUrl(images[activeSlide])}
+          alt={`Card slide showcase ${activeSlide + 1}`}
+          initial={{ opacity: 0, x: 15 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -15 }}
+          transition={{ duration: 0.3 }}
+          referrerPolicy="no-referrer"
+          className="w-full h-full object-cover"
+        />
+      </AnimatePresence>
+
+      {/* Navigation overlays */}
+      <button
+        type="button"
+        onClick={() => setActiveSlide(prev => (prev === 0 ? images.length - 1 : prev - 1))}
+        className="absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white text-neutral-800 flex items-center justify-center transition-all cursor-pointer shadow-3xs hover:scale-105 active:scale-95 z-10 animate-fade-in"
+      >
+        <span className="material-symbols-outlined text-xs font-bold leading-none">chevron_left</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => setActiveSlide(prev => (prev === images.length - 1 ? 0 : prev + 1))}
+        className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white text-neutral-800 flex items-center justify-center transition-all cursor-pointer shadow-3xs hover:scale-105 active:scale-95 z-10"
+      >
+        <span className="material-symbols-outlined text-xs font-bold leading-none">chevron_right</span>
+      </button>
+
+      {/* Dot markers */}
+      <div className="absolute bottom-2.5 left-0 right-0 flex items-center justify-center gap-1 pointer-events-none">
+        {images.map((_: string, idx: number) => (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => setActiveSlide(idx)}
+            className={`w-1.5 h-1.5 rounded-full pointer-events-auto transition-all duration-300 ${
+              idx === activeSlide ? 'w-3.5 bg-white' : 'bg-white/40 hover:bg-white/60'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const CarouselBlock: React.FC<{ block: any; getDirectDriveUrl: (url: string) => string }> = ({ block, getDirectDriveUrl }) => {
+  const [index, setIndex] = useState(0);
+  const images = block.carouselImages || [];
+
+  if (images.length === 0) return null;
+
+  return (
+    <div className="space-y-2 select-none">
+      <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-neutral-250 bg-neutral-900 shadow-3xs">
+        <AnimatePresence mode="wait">
+          <motion.img 
+            key={index}
+            src={getDirectDriveUrl(images[index])}
+            alt={`Deep dive slide showcase ${index + 1}`}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-cover select-none"
+          />
+        </AnimatePresence>
+
+        {/* Navigation overlays */}
+        <button
+          type="button"
+          onClick={() => setIndex(prev => (prev === 0 ? images.length - 1 : prev - 1))}
+          className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-neutral-800 flex items-center justify-center transition-all cursor-pointer shadow-3xs hover:scale-105 active:scale-95 z-10"
+        >
+          <span className="material-symbols-outlined text-sm font-bold">chevron_left</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setIndex(prev => (prev === images.length - 1 ? 0 : prev + 1))}
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-[#2563eb] flex items-center justify-center transition-all cursor-pointer shadow-3xs hover:scale-105 active:scale-95 z-10"
+        >
+          <span className="material-symbols-outlined text-sm font-bold">chevron_right</span>
+        </button>
+
+        {/* Navigation dot pips */}
+        <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-1.5 pointer-events-none">
+          {images.map((_: string, idx: number) => {
+            const isActive = idx === index;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setIndex(idx)}
+                className={`w-1.5 h-1.5 rounded-full pointer-events-auto transition-all ${
+                  isActive ? 'w-4 bg-white' : 'bg-white/40 hover:bg-white/70'
+                }`}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      {block.carouselCaption && (
+        <p className="font-sans text-xs text-neutral-500 italic mt-2 select-text pl-0.5">
+          {block.carouselCaption}
+        </p>
+      )}
+    </div>
+  );
+};
+
+interface CaseStudyCardProps {
+  key?: string | number;
+  project: any;
+  idx: number;
+  onOpen: () => void;
+}
+
+function CaseStudyCard({ project, idx, onOpen }: CaseStudyCardProps) {
+  return (
+    <motion.article 
+      initial={{ opacity: 0, y: 45 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.8, delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
+      onClick={onOpen}
+      className="group relative custom-glass border border-neutral-150/80 rounded-2xl p-6 sm:p-8 flex flex-col gap-6 transition-all duration-500 ease-out shadow-xs hover:shadow-[0_24px_48px_rgba(37,99,235,0.06),0_1px_3px_rgba(37,99,235,0.02)] hover:border-blue-200/80 hover:bg-white/95 hover:-translate-y-1.5 cursor-pointer select-none overflow-hidden"
+    >
+      {/* Subtle background glow inspired by Pomelli */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+      {/* Top Bar Indicators */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          {project.tags?.map((tag: string) => (
+            <span
+              key={tag}
+              className="inline-flex items-center px-2.5 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase font-mono border bg-neutral-100/70 border-neutral-200/40 text-neutral-500 shadow-3xs group-hover:bg-blue-50 group-hover:text-[#2563eb] group-hover:border-blue-100 transition-all duration-500"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+        <span className="material-symbols-outlined text-neutral-400 group-hover:text-[#2563eb] group-hover:scale-110 transition-all duration-500 text-lg shrink-0">
+          {project.icon}
+        </span>
+      </div>
+
+      {/* Title & Challenge Description */}
+      <div className="space-y-2">
+        <h3 className="font-headline text-lg sm:text-2xl font-bold text-neutral-900 tracking-tight leading-snug group-hover:text-black transition-colors duration-300">
+          {project.title}
+          <span className="inline-block text-[#2563eb] opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-500 ml-2 font-sans font-normal text-lg sm:text-xl">
+            →
+          </span>
+        </h3>
+        <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed max-w-3xl">
+          <strong className="text-neutral-800 font-semibold group-hover:text-neutral-900 transition-all duration-300">Challenge:</strong> {project.challenge}
+        </p>
+      </div>
+
+      {/* IN-BETWEEN RESPONSIVE MEDIA BLOCK (Dynamic showcase of the FIRST media block in the project) */}
+      <div className="w-full" onClick={(e) => e.stopPropagation()}>
+        {(() => {
+          const firstMediaBlock = getFirstMediaBlock(project);
+          if (!firstMediaBlock) return null;
+
+          if (firstMediaBlock.type === 'image' && firstMediaBlock.imageUrl) {
+            return (
+              <div className="space-y-2.5 bg-neutral-50/40 border border-neutral-200/40 rounded-xl p-3 sm:p-4 group/media transition-all duration-500 hover:border-neutral-250">
+                <div className="overflow-hidden rounded-lg border border-neutral-200/50 relative bg-neutral-900 aspect-video shadow-3xs">
+                  <img 
+                    src={getDirectDriveUrl(firstMediaBlock.imageUrl)} 
+                    alt={firstMediaBlock.imageCaption || "Image style preview"} 
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover group-hover/media:scale-[1.02] transition-transform duration-700 ease-out brightness-[0.98] group-hover/media:brightness-100"
+                  />
+                </div>
+                {firstMediaBlock.imageCaption && (
+                  <p className="font-sans text-[11px] text-neutral-500 italic">
+                    {firstMediaBlock.imageCaption}
+                  </p>
+                )}
+              </div>
+            );
+          }
+
+          if (firstMediaBlock.type === 'carousel' && firstMediaBlock.carouselImages && firstMediaBlock.carouselImages.length > 0) {
+            return (
+              <div className="space-y-3 bg-neutral-50/40 border border-neutral-200/40 rounded-xl p-3 sm:p-4 group/media transition-all duration-500 hover:border-neutral-250">
+                <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-neutral-200/50 bg-neutral-950 shadow-3xs select-none">
+                  <CardCarousel images={firstMediaBlock.carouselImages} getDirectDriveUrl={getDirectDriveUrl} />
+                </div>
+                {firstMediaBlock.carouselCaption && (
+                  <p className="font-sans text-[11px] text-neutral-500 italic">
+                    {firstMediaBlock.carouselCaption}
+                  </p>
+                )}
+              </div>
+            );
+          }
+
+          if (firstMediaBlock.type === 'video' && firstMediaBlock.videoUrl) {
+            const isVideoEmbed = firstMediaBlock.videoUrl.includes('youtube.com') || 
+                                firstMediaBlock.videoUrl.includes('youtu.be') || 
+                                firstMediaBlock.videoUrl.includes('vimeo.com') ||
+                                firstMediaBlock.videoUrl.includes('embed');
+            return (
+              <div className="space-y-2.5 bg-neutral-50/40 border border-neutral-200/40 rounded-xl p-3 sm:p-4 group/media transition-all duration-500 hover:border-neutral-250">
+                <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-neutral-200/50 bg-neutral-950 shadow-3xs">
+                  {isVideoEmbed ? (
+                    <iframe 
+                      src={firstMediaBlock.videoUrl} 
+                      title="Dynamic collapsed video presentation"
+                      className="absolute inset-0 w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video 
+                      src={firstMediaBlock.videoUrl} 
+                      controls 
+                      playsInline
+                      preload="metadata"
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  )}
+                </div>
+                {firstMediaBlock.videoCaption && (
+                  <p className="font-sans text-[11px] text-neutral-500 italic">
+                    {firstMediaBlock.videoCaption}
+                  </p>
+                )}
+              </div>
+            );
+          }
+
+          if (firstMediaBlock.type === 'pdf' && firstMediaBlock.pdfUrl) {
+            return (
+              <div className="space-y-2.5 bg-neutral-50/40 border border-neutral-200/40 rounded-xl p-3 sm:p-4 group/media transition-all duration-500 hover:border-neutral-250">
+                <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-neutral-200/50 bg-neutral-950 shadow-3xs">
+                  <iframe 
+                    src={firstMediaBlock.pdfUrl}
+                    className="w-full h-full border-0"
+                    title="PDF collapsed stream frame preview"
+                  />
+                </div>
+                {firstMediaBlock.pdfCaption && (
+                  <p className="font-sans text-[11px] text-neutral-500 italic">
+                    {firstMediaBlock.pdfCaption}
+                  </p>
+                )}
+              </div>
+            );
+          }
+
+          return null;
+        })()}
+      </div>
+
+      {/* Decorative Bottom / Empirical Metrics Block (Key Results) */}
+      <div className="flex flex-col gap-3.5 border-t border-neutral-100/80 pt-4 mt-2 select-none">
+        <div className="p-3.5 bg-neutral-50/60 rounded-xl border border-neutral-200/30 italic text-[11px] sm:text-xs text-neutral-600 leading-relaxed group-hover:bg-blue-50/15 group-hover:border-blue-100/40 transition-all duration-500">
+          <strong className="text-neutral-800 font-bold not-italic block mb-0.5 group-hover:text-[#2563eb] transition-colors">Key Result Integration:</strong> 
+          {project.impact}
+        </div>
+        
+        <div className="w-full">
+          <button
+            type="button"
+            className="w-full py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-200/50 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-3xs group-hover:bg-neutral-950 group-hover:text-white group-hover:border-neutral-950 group-hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+          >
+            Explore Case Study
+            <span className="material-symbols-outlined text-xs font-bold group-hover:translate-x-0.5 transition-transform duration-300">
+              arrow_forward
+            </span>
+          </button>
+        </div>
+      </div>
+    </motion.article>
+  );
 }
 
 export default function App() {
@@ -1751,7 +2068,15 @@ export default function App() {
   };
 
   const [selectedProcessStep, setSelectedProcessStep] = useState(0);
-  const [expandedProject, setExpandedProject] = useState<'none' | 'illow_start' | 'illow_evolution' | 'bigid_cookie' | 'bojana'>('none');
+  const [selectedProjectForModal, setSelectedProjectForModal] = useState<any | null>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [deepDiveCarouselIndex, setDeepDiveCarouselIndex] = useState(0);
+
+  // Automatically reset the carousel indexes when a new project is selected
+  useEffect(() => {
+    setCarouselIndex(0);
+    setDeepDiveCarouselIndex(0);
+  }, [selectedProjectForModal]);
 
   const renderImpact = () => {
 
@@ -1761,11 +2086,12 @@ export default function App() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           <div className="lg:col-span-7 space-y-6">
             <div className="space-y-3 animate-fade-in">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#be123c] bg-rose-50 border border-rose-200/50 shadow-3xs w-fit">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#2563eb] bg-blue-50 border border-blue-200/50 shadow-3xs w-fit">
                 Sr. Product Designer UX / UI Lead
               </span>
-              <h2 className="font-headline text-3xl sm:text-5xl lg:text-6xl font-black text-neutral-900 tracking-tight leading-[1.1]">
-                Strategy & Design <br />as a Growth Engine
+              <h2 className="font-headline text-4xl sm:text-6xl lg:text-7xl font-light text-neutral-900 tracking-[-0.03em] leading-[1.05]">
+                Strategy &amp; <span className="font-cursive italic font-normal text-[#2563eb] pr-1">Design</span> <br />
+                as a Growth Engine
               </h2>
             </div>
             <p className="font-sans text-sm sm:text-base text-neutral-500 max-w-2xl leading-relaxed">
@@ -1778,180 +2104,79 @@ export default function App() {
         </div>
 
         {/* Featured Case Studies Grid */}
-        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-          {filteredCases.map((project) => {
-            const isExpanded = expandedProject === project.id;
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto w-full">
+          {filteredCases.map((project, idx) => {
             return (
-              <motion.article 
+              <CaseStudyCard 
                 key={project.id}
-                layout="position"
-                className={`custom-glass border rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] ${
-                  isExpanded
-                    ? 'md:col-span-2 border-neutral-350 bg-white/70 backdrop-blur-3xl ring-1 ring-neutral-950/5' 
-                    : 'md:col-span-1 border-neutral-200/50 hover:border-rose-200 hover:bg-white/60'
-                }`}
-              >
-                <div className="space-y-6">
-                  <div className="flex justify-between items-center gap-4">
-                    {project.tags && project.tags.length > 0 && (
-                      <span
-                        className="inline-flex items-center px-2.5 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase font-mono border bg-neutral-100/70 border-neutral-200/50 text-neutral-500 shadow-3xs"
-                      >
-                        {project.tags[0]}
-                      </span>
-                    )}
-                    <span className="material-symbols-outlined text-[#be123c] text-xl shrink-0">{project.icon}</span>
-                  </div>
-                  <div className="space-y-3">
-                    <h3 className="font-headline text-lg sm:text-xl font-bold text-neutral-900 tracking-tight leading-snug">
-                      {project.title}
-                    </h3>
-                    <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
-                      <strong className="text-neutral-800 font-semibold">Challenge:</strong> {project.challenge}
-                    </p>
-                  </div>
-
-                  {/* Inline Expanded Deep-dive Content */}
-                  {isExpanded && project.deepDive && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      className="pt-6 mt-6 border-t border-neutral-200/60 grid grid-cols-1 md:grid-cols-2 gap-6 text-xs sm:text-sm leading-relaxed text-neutral-800"
-                    >
-                      <div className="space-y-3">
-                        <p className="font-bold text-neutral-900 text-[10px] tracking-widest uppercase font-mono">{project.deepDive.leftTitle}</p>
-                        {project.deepDive.leftParagraphs.map((para, pIdx) => (
-                          <p key={pIdx} className="text-neutral-600 text-xs sm:text-sm leading-relaxed">{para}</p>
-                        ))}
-                      </div>
-                      <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-200/60">
-                        <p className="font-bold text-neutral-900 text-[10px] tracking-widest uppercase font-mono">{project.deepDive.rightTitle}</p>
-                        <ul className="space-y-2 list-disc pl-4 text-xs text-neutral-600 leading-relaxed">
-                          {project.deepDive.rightBulletPoints.map((bullet, bIdx) => (
-                            <li key={bIdx}>{bullet}</li>
-                          ))}
-                        </ul>
-                        <div className="bg-neutral-200/50 text-neutral-800 border border-neutral-300/40 p-3 rounded-xl font-mono font-bold text-[9px] text-center uppercase tracking-widest mt-4 shadow-3xs">
-                          {project.deepDive.footerBadge}
-                        </div>
-                      </div>
-
-                      {/* Dynamic Mockup Template Section (Copy-paste friendly) */}
-                      {project.mockupType && (
-                        <div className="md:col-span-2 pt-6 mt-4 border-t border-dashed border-neutral-200">
-                          <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-neutral-400 block mb-3">
-                            Visual Mockup Showcase — Static Draft Preview
-                          </span>
-                          <div className="pointer-events-none select-none">
-                            {project.mockupType === 'analytics' && <AnalyticsMockup />}
-                            {project.mockupType === 'wireframe' && <WireframeMockup />}
-                            {project.mockupType === 'tokens' && <DesignTokensMockup />}
-                          </div>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </div>
-                
-                <div className="mt-6 space-y-4 font-sans">
-                  {!isExpanded && (
-                    <div className="p-4 bg-neutral-50/80 rounded-xl border border-neutral-200/30 italic text-xs text-neutral-600 leading-relaxed">
-                      <strong className="text-neutral-800 font-semibold not-italic">Impact:</strong> {project.impact}
-                    </div>
-                  )}
-                  <button
-                    onClick={() => setExpandedProject(isExpanded ? 'none' : project.id as any)}
-                    className="w-full py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-200/50 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-3xs hover:scale-[1.01] active:scale-[0.99]"
-                  >
-                    {isExpanded ? 'Close Case details' : 'Explore Case'}
-                    <span className="material-symbols-outlined text-xs font-bold">
-                      {isExpanded ? 'expand_less' : 'expand_more'}
-                    </span>
-                  </button>
-                </div>
-              </motion.article>
+                project={project} 
+                idx={idx} 
+                onOpen={() => setSelectedProjectForModal(project)} 
+              />
             );
           })}
-        </motion.div>
+        </div>
 
         {/* Flagship Technical Showcase Element: Papelito Game AI Co-creation */}
-        <div className="custom-glass border border-neutral-200/40 rounded-2xl p-6 sm:p-8 md:p-10 space-y-8 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all">
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#be123c] bg-rose-50 border border-rose-200/60 shadow-3xs">
-                Technical Case Study: AI x UX Partnership
-              </span>
-              <span className="text-[10px] text-neutral-400 font-serif italic">
-                From prompt to live multiplayer lobby
-              </span>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              <div className="lg:col-span-8 space-y-6 text-left">
-                <h3 className="font-headline text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 tracking-tight leading-snug">
-                  Co-Creating Papelito: Rapid-Prototyping a Real-Time Party Game
-                </h3>
-                <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed max-w-2xl">
-                  Building a real-time multiplayer party game requires precise synchronization, dynamic room state-machines, and playful sensory feedback. Using structured prompt engineering and Generative AI, we co-designed and deployed the entire <strong>Papelito Game</strong>—incorporating customizable collections, custom Web Audio triggers, and Firestore subscribers—in record time.
-                </p>
-                
-                {/* Process Breakdown with elegant bullet points */}
-                <div className="space-y-4 pt-2">
-                  <h4 className="font-sans text-[10px] font-bold uppercase tracking-widest text-[#be123c]">
-                    The Development Process:
-                  </h4>
-                  <ul className="space-y-3 text-xs text-neutral-600 font-sans leading-relaxed">
-                    <li className="flex items-start gap-2.5">
-                      <span className="text-[#be123c] font-black mt-0.5">01 •</span>
-                      <div>
-                        <strong className="text-neutral-900 font-semibold">Vision & Structured Prompting:</strong> Outlined Papelito's core game loop and schema, using detailed prompt sequences to build clean, real-time Firebase room controllers.
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-2.5">
-                      <span className="text-[#be123c] font-black mt-0.5">02 •</span>
-                      <div>
-                        <strong className="text-neutral-900 font-semibold">Synchronous Room Flows:</strong> Designed dynamic lobby states (player entry, host handoffs, game triggers) and translated them instantly into responsive TypeScript state machines.
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-2.5">
-                      <span className="text-[#be123c] font-black mt-0.5">03 •</span>
-                      <div>
-                        <strong className="text-neutral-900 font-semibold">Web Audio Synth:</strong> Programmed a built-in sound engine with the Web Audio API, adding tactile sound triggers when pulling cards, skipping turns, or entering game lobbies.
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-2.5">
-                      <span className="text-[#be123c] font-black mt-0.5">04 •</span>
-                      <div>
-                        <strong className="text-neutral-900 font-semibold">Continuous Iteration:</strong> Streamlined Firestore subscriptions and adjusted mobile touch parameters, ensuring a lightweight, low-latency, and zero-flicker experience.
-                      </div>
-                    </li>
-                  </ul>
-                </div>
+        <div className="bg-[#111113] border border-neutral-800 rounded-2xl p-4 sm:p-5 shadow-sm transition-all duration-300 hover:border-neutral-700 max-w-6xl mx-auto w-full select-none">
+          <div className="flex flex-col sm:flex-row gap-5 items-stretch">
+            {/* Left Hand: Smaller, low-height Preview Image */}
+            <div className="w-full sm:w-40 md:w-48 shrink-0 flex flex-col justify-center space-y-1.5">
+              <div className="overflow-hidden rounded-xl border border-neutral-800 relative bg-neutral-900 aspect-video shadow-3xs">
+                <img 
+                  src="/src/assets/images/papelito_preview_1781827745352.jpg" 
+                  alt="Papelito game interface preview" 
+                  className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                  referrerPolicy="no-referrer"
+                />
               </div>
-              
-              {/* Interactive Sandbox Launch Tool */}
-              <div className="lg:col-span-4 p-6 rounded-2xl bg-neutral-50/50 border border-neutral-200/50 flex flex-col justify-between min-h-[280px] space-y-6">
-                <div className="space-y-3">
-                  <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-neutral-400 block">
-                    Interactive Sandbox
+              <p className="font-sans text-[9px] text-neutral-450 italic pl-0.5 leading-normal select-text">
+                Preview: Real-time Papelito Multi-agent Engine
+              </p>
+            </div>
+
+            {/* Right Hand: Description & Horizontal Steps Bar & Play Trigger */}
+            <div className="flex-1 flex flex-col justify-between space-y-3 sm:space-y-4 text-left">
+              {/* Header Details */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest font-mono text-blue-300 bg-blue-950/20 border border-blue-900/40">
+                    AI x UX Co-Creation
                   </span>
-                  <h4 className="font-headline text-base font-bold text-neutral-800 leading-snug">
-                    Papelito Multiplayer Engine
-                  </h4>
-                  <p className="font-sans text-[11px] text-neutral-500 leading-relaxed">
-                    Test the real-time synchronous engine we designed—complete with Firebase Firestore state handlers, custom card decks, and client-side web audio synthesizers.
-                  </p>
+                  <span className="text-[10px] text-neutral-400 font-body italic">
+                    From raw prompt to live lobby
+                  </span>
                 </div>
-                
+                <h3 className="font-headline text-sm sm:text-base font-bold text-white tracking-tight">
+                  Co-Creating Papelito Lobby Engine
+                </h3>
+                <p className="font-sans text-[11px] sm:text-xs text-neutral-400 leading-relaxed">
+                  Designing a multiplayer party game requires granular event management. Using structured prompt sequencing, we co-designed and deployed the entire party flow featuring custom Web Audio synthesizers and low-latency Firestore subscriptions.
+                </p>
+              </div>
+
+              {/* Bottom Row / Flat horizontal layout */}
+              <div className="pt-2 border-t border-neutral-900 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex gap-x-3 gap-y-1 flex-wrap text-[10px] text-neutral-400 select-text">
+                  <span className="text-blue-500 font-bold uppercase text-[8px] tracking-widest">Pipeline:</span>
+                  <span className="font-mono text-[9px] text-neutral-300">01 Direct Prompt</span>
+                  <span className="text-neutral-700">•</span>
+                  <span className="font-mono text-[9px] text-neutral-300">02 State Machine</span>
+                  <span className="text-neutral-700">•</span>
+                  <span className="font-mono text-[9px] text-neutral-300">03 Web Synth</span>
+                  <span className="text-neutral-700">•</span>
+                  <span className="font-mono text-[9px] text-neutral-300">04 Subscriptions</span>
+                </div>
+
                 <button
                   onClick={() => {
                     setActiveTab('GAMES');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="w-full py-3.5 px-4 bg-neutral-950 hover:bg-black text-white font-sans text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
+                  className="shrink-0 py-1.5 px-3 bg-white hover:bg-neutral-200 text-[#111113] font-sans text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 cursor-pointer hover:scale-[1.01] active:scale-[0.99] shadow-xs"
                 >
-                  Launch Live Game Engine
-                  <span className="material-symbols-outlined text-sm">sports_esports</span>
+                  Launch engine
+                  <span className="material-symbols-outlined text-[12px] font-bold">sports_esports</span>
                 </button>
               </div>
             </div>
@@ -1998,11 +2223,11 @@ export default function App() {
         {/* Header Block */}
         <div className="max-w-3xl space-y-6">
           <div className="space-y-3 animate-fade-in">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#be123c] bg-rose-50 border border-rose-200/50 shadow-3xs w-fit">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#2563eb] bg-blue-50 border border-blue-200/50 shadow-3xs w-fit">
               Core Vision
             </span>
-            <h2 className="font-headline text-3xl sm:text-5xl lg:text-6xl font-black text-neutral-900 tracking-tight leading-[1.1]">
-              Empirical Architecture
+            <h2 className="font-headline text-4xl sm:text-6xl lg:text-7xl font-light text-neutral-900 tracking-[-0.03em] leading-[1.05]">
+              Empirical <span className="font-cursive italic font-normal text-[#2563eb] pr-1">Architecture</span>
             </h2>
           </div>
           <p className="font-sans text-sm sm:text-base text-neutral-500 max-w-2xl leading-relaxed">
@@ -2014,11 +2239,11 @@ export default function App() {
         <div className="space-y-8 border-t border-neutral-100 pt-10">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="space-y-3">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#be123c] bg-rose-50 border border-rose-200/50 shadow-3xs w-fit">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#2563eb] bg-blue-50 border border-blue-200/50 shadow-3xs w-fit">
                 Methodology in Action
               </span>
-              <h3 className="font-headline text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight">
-                The Double-Diamond Cycle
+              <h3 className="font-headline text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">
+                The <span className="font-cursive italic font-normal text-[#2563eb]">Double-Diamond</span> Cycle
               </h3>
             </div>
             <p className="font-sans text-xs sm:text-sm text-neutral-500 max-w-sm leading-relaxed">
@@ -2035,15 +2260,15 @@ export default function App() {
                   {/* Gradients */}
                   <defs>
                     <linearGradient id="grad-active-discover" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#ff89ab" stopOpacity="0.4" />
+                      <stop offset="0%" stopColor="#818cf8" stopOpacity="0.4" />
                       <stop offset="100%" stopColor="#fca5a5" stopOpacity="0.1" />
                     </linearGradient>
                     <linearGradient id="grad-active-define" x1="0" y1="0" x2="1" y2="0">
                       <stop offset="0%" stopColor="#fca5a5" stopOpacity="0.1" />
-                      <stop offset="100%" stopColor="#be123c" stopOpacity="0.3" />
+                      <stop offset="100%" stopColor="#2563eb" stopOpacity="0.3" />
                     </linearGradient>
                     <linearGradient id="grad-active-design" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#be123c" stopOpacity="0.3" />
+                      <stop offset="0%" stopColor="#2563eb" stopOpacity="0.3" />
                       <stop offset="100%" stopColor="#fda4af" stopOpacity="0.1" />
                     </linearGradient>
                     <linearGradient id="grad-active-deliver" x1="0" y1="0" x2="1" y2="0">
@@ -2064,8 +2289,8 @@ export default function App() {
                   {/* Particle Flow path along diamond margins */}
                   <motion.circle
                      r="4"
-                     fill="#be123c"
-                     filter="drop-shadow(0 0 4px #be123c)"
+                     fill="#2563eb"
+                     filter="drop-shadow(0 0 4px #2563eb)"
                      animate={{
                        cx: [40, 200, 360, 440, 600, 760],
                        cy: [110, 30, 110, 110, 30, 110],
@@ -2085,7 +2310,7 @@ export default function App() {
                       onClick={() => setSelectedProcessStep(0)}
                       d="M 40,110 L 200,30 L 200,190 Z"
                       fill={selectedProcessStep === 0 ? "url(#grad-active-discover)" : "transparent"}
-                      stroke={selectedProcessStep === 0 ? "#ff89ab" : "#e5e5e5"}
+                      stroke={selectedProcessStep === 0 ? "#818cf8" : "#e5e5e5"}
                       strokeWidth={selectedProcessStep === 0 ? "2.5" : "1.5"}
                       strokeDasharray={selectedProcessStep === 0 ? "0" : "5 5"}
                       whileHover={{ scale: 1.01 }}
@@ -2098,7 +2323,7 @@ export default function App() {
                       onClick={() => setSelectedProcessStep(1)}
                       d="M 200,30 L 360,110 L 200,190 Z"
                       fill={selectedProcessStep === 1 ? "url(#grad-active-define)" : "transparent"}
-                      stroke={selectedProcessStep === 1 ? "#be123c" : "#e5e5e5"}
+                      stroke={selectedProcessStep === 1 ? "#2563eb" : "#e5e5e5"}
                       strokeWidth={selectedProcessStep === 1 ? "2.5" : "1.5"}
                       strokeDasharray={selectedProcessStep === 1 ? "0" : "5 5"}
                       whileHover={{ scale: 1.01 }}
@@ -2114,7 +2339,7 @@ export default function App() {
                       onClick={() => setSelectedProcessStep(2)}
                       d="M 440,110 L 600,30 L 600,190 Z"
                       fill={selectedProcessStep === 2 ? "url(#grad-active-design)" : "transparent"}
-                      stroke={selectedProcessStep === 2 ? "#be123c" : "#e5e5e5"}
+                      stroke={selectedProcessStep === 2 ? "#2563eb" : "#e5e5e5"}
                       strokeWidth={selectedProcessStep === 2 ? "2.5" : "1.5"}
                       strokeDasharray={selectedProcessStep === 2 ? "0" : "5 5"}
                       whileHover={{ scale: 1.01 }}
@@ -2137,11 +2362,11 @@ export default function App() {
                   </g>
 
                   {/* Hotspot Circles / Anchor Vertices */}
-                  <circle cx="40" cy="110" r="5" fill="#fff" stroke="#ff89ab" strokeWidth="2" />
-                  <circle cx="200" cy="110" r="5" fill="#fff" stroke="#be123c" strokeWidth="2" />
-                  <circle cx="360" cy="110" r="5" fill="#fff" stroke="#be123c" strokeWidth="2" />
-                  <circle cx="440" cy="110" r="5" fill="#fff" stroke="#be123c" strokeWidth="2" />
-                  <circle cx="600" cy="110" r="5" fill="#fff" stroke="#be123c" strokeWidth="2" />
+                  <circle cx="40" cy="110" r="5" fill="#fff" stroke="#818cf8" strokeWidth="2" />
+                  <circle cx="200" cy="110" r="5" fill="#fff" stroke="#2563eb" strokeWidth="2" />
+                  <circle cx="360" cy="110" r="5" fill="#fff" stroke="#2563eb" strokeWidth="2" />
+                  <circle cx="440" cy="110" r="5" fill="#fff" stroke="#2563eb" strokeWidth="2" />
+                  <circle cx="600" cy="110" r="5" fill="#fff" stroke="#2563eb" strokeWidth="2" />
                   <circle cx="760" cy="110" r="5" fill="#fff" stroke="#e11d48" strokeWidth="2" />
 
                   {/* Phase Titles & Direction Labels */}
@@ -2159,17 +2384,17 @@ export default function App() {
 
                   {/* Dynamic Floating Labels on Top of diamonds */}
                   <g onClick={() => setSelectedProcessStep(0)} className="cursor-pointer">
-                    <rect x="70" y="55" width="60" height="18" rx="4" fill={selectedProcessStep === 0 ? "#ff89ab" : "transparent"} />
+                    <rect x="70" y="55" width="60" height="18" rx="4" fill={selectedProcessStep === 0 ? "#818cf8" : "transparent"} />
                     <text x="100" y="67" fill={selectedProcessStep === 0 ? "#fff" : "rgba(38,38,38,0.7)"} fontSize="9" fontFamily="sans-serif" fontWeight="black" textAnchor="middle">01. DISCOVER</text>
                   </g>
 
                   <g onClick={() => setSelectedProcessStep(1)} className="cursor-pointer">
-                    <rect x="270" y="55" width="50" height="18" rx="4" fill={selectedProcessStep === 1 ? "#be123c" : "transparent"} />
+                    <rect x="270" y="55" width="50" height="18" rx="4" fill={selectedProcessStep === 1 ? "#2563eb" : "transparent"} />
                     <text x="295" y="67" fill={selectedProcessStep === 1 ? "#fff" : "rgba(38,38,38,0.7)"} fontSize="9" fontFamily="sans-serif" fontWeight="black" textAnchor="middle">02. DEFINE</text>
                   </g>
 
                   <g onClick={() => setSelectedProcessStep(2)} className="cursor-pointer">
-                    <rect x="470" y="55" width="50" height="18" rx="4" fill={selectedProcessStep === 2 ? "#be123c" : "transparent"} />
+                    <rect x="470" y="55" width="50" height="18" rx="4" fill={selectedProcessStep === 2 ? "#2563eb" : "transparent"} />
                     <text x="495" y="67" fill={selectedProcessStep === 2 ? "#fff" : "rgba(38,38,38,0.7)"} fontSize="9" fontFamily="sans-serif" fontWeight="black" textAnchor="middle">03. DESIGN</text>
                   </g>
 
@@ -2189,7 +2414,7 @@ export default function App() {
                   onClick={() => setSelectedProcessStep(idx)}
                   className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border cursor-pointer transition-all ${
                     selectedProcessStep === idx
-                      ? 'bg-[#be123c] text-white border-[#be123c]'
+                      ? 'bg-[#2563eb] text-white border-[#2563eb]'
                       : 'bg-white text-neutral-500 border-neutral-200'
                   }`}
                 >
@@ -2207,7 +2432,7 @@ export default function App() {
             className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start bg-white border border-neutral-200/40 p-6 sm:p-8 rounded-2xl shadow-2xs hover:shadow-xs transition-shadow text-left"
           >
             <div className="md:col-span-12 lg:col-span-7 space-y-4">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-[9px] xs:text-[10px] font-bold uppercase tracking-widest font-mono text-[#be123c] bg-rose-50 border border-rose-200/50 shadow-3xs w-fit block">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-[9px] xs:text-[10px] font-bold uppercase tracking-widest font-mono text-[#2563eb] bg-blue-50 border border-blue-200/50 shadow-3xs w-fit block">
                 Stage 0{selectedProcessStep + 1} • {steps[selectedProcessStep].sub}
               </span>
               <h4 className="font-headline text-xl sm:text-2xl font-black text-neutral-900 tracking-tight leading-tight">
@@ -2227,7 +2452,7 @@ export default function App() {
               <div className="space-y-2">
                 {steps[selectedProcessStep].deliverables.map((item, id) => (
                   <div key={id} className="flex items-center gap-2 text-xs font-semibold text-neutral-700">
-                    <span className="material-symbols-outlined text-[#be123c] text-base">verified</span>
+                    <span className="material-symbols-outlined text-[#2563eb] text-base">verified</span>
                     <span>{item}</span>
                   </div>
                 ))}
@@ -2239,19 +2464,19 @@ export default function App() {
         {/* 2. Design Philosophy Infographic Row */}
         <div className="space-y-8 border-t border-neutral-100 pt-10">
           <div className="space-y-3">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#be123c] bg-rose-50 border border-rose-200/50 shadow-3xs w-fit">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#2563eb] bg-blue-50 border border-blue-200/50 shadow-3xs w-fit">
               02 • Aesthetics & Performance Infographic
             </span>
-            <h3 className="font-headline text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight">
-              Design Pillars as Operational Metrics
+            <h3 className="font-headline text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">
+              Design Pillars as <span className="font-cursive italic font-normal text-[#2563eb]">Operational Metrics</span>
             </h3>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
             {/* Infographic card 1: Functional Brutalism */}
-            <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-rose-200 hover:bg-white/60 transition-all duration-300">
+            <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-blue-200 hover:bg-white/60 transition-all duration-300">
               <div className="space-y-4 text-left">
-                <span className="inline-flex items-center justify-center p-2 bg-rose-50 border border-rose-200/50 text-[#be123c] rounded-xl text-lg w-fit shadow-3xs">
+                <span className="inline-flex items-center justify-center p-2 bg-blue-50 border border-blue-200/50 text-[#2563eb] rounded-xl text-lg w-fit shadow-3xs">
                   <span className="material-symbols-outlined leading-none">architecture</span>
                 </span>
                 <div className="space-y-1.5">
@@ -2268,7 +2493,7 @@ export default function App() {
               <div className="bg-neutral-50 rounded-xl p-4 space-y-3 border border-neutral-100">
                 <div className="flex justify-between items-center text-[9px] font-bold text-neutral-500 uppercase tracking-widest">
                   <span>UX Interaction Hierarchy</span>
-                  <span className="text-[#be123c]">92% Core Focus</span>
+                  <span className="text-[#2563eb]">92% Core Focus</span>
                 </div>
                 
                 {/* Horizontal Stack Bar Diagram */}
@@ -2276,10 +2501,10 @@ export default function App() {
                   <div className="space-y-1">
                     <div className="flex justify-between text-[10px]">
                       <span className="text-neutral-700 font-bold">Utility Blocks</span>
-                      <span className="text-[#be123c] font-bold">92%</span>
+                      <span className="text-[#2563eb] font-bold">92%</span>
                     </div>
                     <div className="w-full h-1.5 bg-neutral-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-[#ff89ab] to-[#be123c] rounded-full" style={{ width: '92%' }} />
+                      <div className="h-full bg-gradient-to-r from-[#818cf8] to-[#2563eb] rounded-full" style={{ width: '92%' }} />
                     </div>
                   </div>
 
@@ -2297,9 +2522,9 @@ export default function App() {
             </div>
 
             {/* Infographic card 2: Tactile Sensory Audio */}
-            <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-rose-200 hover:bg-white/60 transition-all duration-300">
+            <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-blue-200 hover:bg-white/60 transition-all duration-300">
               <div className="space-y-4 text-left">
-                <span className="inline-flex items-center justify-center p-2 bg-rose-50 border border-rose-200/50 text-[#be123c] rounded-xl text-lg w-fit shadow-3xs">
+                <span className="inline-flex items-center justify-center p-2 bg-blue-50 border border-blue-200/50 text-[#2563eb] rounded-xl text-lg w-fit shadow-3xs">
                   <span className="material-symbols-outlined leading-none">volume_up</span>
                 </span>
                 <div className="space-y-1.5">
@@ -2326,7 +2551,7 @@ export default function App() {
                     <motion.path 
                       id="synth-wave"
                       d="M0,20 Q15,4 30,20 T60,20 T90,20 T120,20 T150,20 T160,20" 
-                      stroke="#ff89ab" 
+                      stroke="#818cf8" 
                       strokeWidth="2" 
                       animate={{
                         d: [
@@ -2342,20 +2567,20 @@ export default function App() {
                       }}
                     />
                   </svg>
-                  <div className="w-1.5 bg-[#be123c] h-3 animate-bounce" style={{ animationDelay: '0.1s' }} />
-                  <div className="w-1.5 bg-[#ff89ab] h-6 animate-bounce" style={{ animationDelay: '0.3s' }} />
-                  <div className="w-1.5 bg-[#be123c] h-4 animate-bounce" style={{ animationDelay: '0.5s' }} />
+                  <div className="w-1.5 bg-[#2563eb] h-3 animate-bounce" style={{ animationDelay: '0.1s' }} />
+                  <div className="w-1.5 bg-[#818cf8] h-6 animate-bounce" style={{ animationDelay: '0.3s' }} />
+                  <div className="w-1.5 bg-[#2563eb] h-4 animate-bounce" style={{ animationDelay: '0.5s' }} />
                   <div className="w-1.5 bg-neutral-300 h-2 animate-bounce" style={{ animationDelay: '0.2s' }} />
-                  <div className="w-1.5 bg-[#be123c] h-5 animate-bounce" style={{ animationDelay: '0.4s' }} />
-                  <div className="w-1.5 bg-[#ff89ab] h-3 animate-bounce" style={{ animationDelay: '0.6s' }} />
+                  <div className="w-1.5 bg-[#2563eb] h-5 animate-bounce" style={{ animationDelay: '0.4s' }} />
+                  <div className="w-1.5 bg-[#818cf8] h-3 animate-bounce" style={{ animationDelay: '0.6s' }} />
                 </div>
               </div>
             </div>
 
             {/* Infographic card 3: Target Velocity Gauge */}
-            <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-rose-200 hover:bg-white/60 transition-all duration-300">
+            <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-blue-200 hover:bg-white/60 transition-all duration-300">
               <div className="space-y-4 text-left">
-                <span className="inline-flex items-center justify-center p-2 bg-rose-50 border border-rose-200/50 text-[#be123c] rounded-xl text-lg w-fit shadow-3xs">
+                <span className="inline-flex items-center justify-center p-2 bg-blue-50 border border-blue-200/50 text-[#2563eb] rounded-xl text-lg w-fit shadow-3xs">
                   <span className="material-symbols-outlined leading-none">speed</span>
                 </span>
                 <div className="space-y-1.5">
@@ -2377,7 +2602,7 @@ export default function App() {
                     <span className="text-[10px] text-neutral-500 font-bold">ms Engine lag</span>
                   </div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-headline font-black text-[#be123c]">120</span>
+                    <span className="text-xl font-headline font-black text-[#2563eb]">120</span>
                     <span className="text-[10px] text-neutral-500 font-bold">FPS Active target</span>
                   </div>
                 </div>
@@ -2390,7 +2615,7 @@ export default function App() {
                       cx="28" 
                       cy="28" 
                       r="24" 
-                      stroke="#be123c" 
+                      stroke="#2563eb" 
                       strokeWidth="4" 
                       fill="transparent" 
                       strokeDasharray="150"
@@ -2413,11 +2638,11 @@ export default function App() {
       <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 py-10 sm:py-16 space-y-16 md:space-y-24 text-left select-none">
         <div className="space-y-6">
           <div className="space-y-3 animate-fade-in">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#be123c] bg-rose-50 border border-rose-200/50 shadow-3xs w-fit">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#2563eb] bg-blue-50 border border-blue-200/50 shadow-3xs w-fit">
               Partner with Lia
             </span>
-            <h2 className="font-headline text-3xl sm:text-5xl lg:text-6xl font-black text-neutral-900 tracking-tight leading-[1.1]">
-              Consultancy & Action
+            <h2 className="font-headline text-4xl sm:text-6xl lg:text-7xl font-light text-neutral-900 tracking-[-0.03em] leading-[1.05]">
+              Consultancy &amp; <span className="font-cursive italic font-normal text-[#2563eb] pr-1">Action</span>
             </h2>
           </div>
           <p className="font-sans text-sm sm:text-base text-neutral-500 max-w-2xl leading-relaxed">
@@ -2427,7 +2652,7 @@ export default function App() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10">
           {/* Information block */}
-          <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-rose-200 hover:bg-white/60 space-y-8">
+          <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-blue-200 hover:bg-white/60 space-y-8">
             <div className="space-y-6">
               <h3 className="font-headline text-2xl font-black text-neutral-900 tracking-tight">Lia Parra</h3>
               <p className="font-sans text-sm text-neutral-500 leading-relaxed">
@@ -2436,11 +2661,11 @@ export default function App() {
               <div className="space-y-4 pt-6 border-t border-neutral-150 text-sm font-sans">
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-[#45474b]">mail</span>
-                  <a href="mailto:liangelyp@gmail.com" className="text-neutral-700 select-all font-medium hover:text-[#be123c] transition-all">liangelyp@gmail.com</a>
+                  <a href="mailto:liangelyp@gmail.com" className="text-neutral-700 select-all font-medium hover:text-[#2563eb] transition-all">liangelyp@gmail.com</a>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-[#45474b]">chat</span>
-                  <a href="https://wa.me/5491156424162?text=Hello%20Lia!%20I%20saw%20your%20portfolio%20and%20would%20love%20to%20connect%20with%20you." target="_blank" rel="noreferrer" className="text-neutral-700 font-medium hover:text-[#be123c] transition-all">+54 9 11 5642-4162 (WhatsApp)</a>
+                  <a href="https://wa.me/5491156424162?text=Hello%20Lia!%20I%20saw%20your%20portfolio%20and%20would%20love%20to%20connect%20with%20you." target="_blank" rel="noreferrer" className="text-neutral-700 font-medium hover:text-[#2563eb] transition-all">+54 9 11 5642-4162 (WhatsApp)</a>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-[#45474b]">location_on</span>
@@ -2454,7 +2679,7 @@ export default function App() {
                 href="https://linkedin.com/in/liangely-diseno-grafico"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 font-sans text-xs font-bold uppercase tracking-widest text-[#be123c] hover:text-[#9f1239] transition-colors"
+                className="inline-flex items-center gap-1.5 font-sans text-xs font-bold uppercase tracking-widest text-[#2563eb] hover:text-[#1d4ed8] transition-colors"
                 id="contact-linkedin-link"
               >
                 <Linkedin className="w-3.5 h-3.5 shrink-0" />
@@ -2464,7 +2689,7 @@ export default function App() {
           </div>
 
           {/* Contact form block */}
-          <div className="lg:col-span-2 custom-glass border border-neutral-200/50 bg-white/45 p-6 sm:p-8 rounded-2xl transition-all duration-300 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-rose-200 hover:bg-white/60">
+          <div className="lg:col-span-2 custom-glass border border-neutral-200/50 bg-white/45 p-6 sm:p-8 rounded-2xl transition-all duration-300 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-blue-200 hover:bg-white/60">
             {contactSubmitted ? (
               <div className="text-center py-6 space-y-6 animate-fade-in">
                 <div className="w-16 h-16 bg-emerald-100/80 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
@@ -2506,7 +2731,7 @@ export default function App() {
                       setContactEmail('');
                       setContactMessage('');
                     }}
-                    className="text-[10px] font-sans font-black uppercase tracking-widest text-[#be123c] hover:text-[#9f1239] transition-colors cursor-pointer"
+                    className="text-[10px] font-sans font-black uppercase tracking-widest text-[#2563eb] hover:text-[#1d4ed8] transition-colors cursor-pointer"
                   >
                     ← Send another message
                   </button>
@@ -2516,7 +2741,7 @@ export default function App() {
               <form onSubmit={handleContactSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label htmlFor="contact-name" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-[#be123c] font-mono">
+                    <label htmlFor="contact-name" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-[#2563eb] font-mono">
                       Your Name *
                     </label>
                     <input
@@ -2526,11 +2751,11 @@ export default function App() {
                       value={contactName}
                       onChange={(e) => setContactName(e.target.value)}
                       placeholder="e.g. Alex Smith"
-                      className="w-full bg-white/40 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-xs sm:text-sm font-sans focus:bg-white focus:border-[#be123c] outline-none transition-all text-neutral-900 shadow-3xs focus:ring-1 focus:ring-[#be123c]/10"
+                      className="w-full bg-white/40 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-xs sm:text-sm font-sans focus:bg-white focus:border-[#2563eb] outline-none transition-all text-neutral-900 shadow-3xs focus:ring-1 focus:ring-[#2563eb]/10"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="contact-email" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-[#be123c] font-mono">
+                    <label htmlFor="contact-email" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-[#2563eb] font-mono">
                       Email Address *
                     </label>
                     <input
@@ -2540,13 +2765,13 @@ export default function App() {
                       value={contactEmail}
                       onChange={(e) => setContactEmail(e.target.value)}
                       placeholder="e.g. alex@company.com"
-                      className="w-full bg-white/40 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-xs sm:text-sm font-sans focus:bg-white focus:border-[#be123c] outline-none transition-all text-neutral-900 shadow-3xs focus:ring-1 focus:ring-[#be123c]/10"
+                      className="w-full bg-white/40 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-xs sm:text-sm font-sans focus:bg-white focus:border-[#2563eb] outline-none transition-all text-neutral-900 shadow-3xs focus:ring-1 focus:ring-[#2563eb]/10"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-sans font-bold uppercase tracking-widest text-[#be123c] font-mono">
+                  <label className="block text-[10px] font-sans font-bold uppercase tracking-widest text-[#2563eb] font-mono">
                     Area of Collaboration
                   </label>
                   <div className="grid grid-cols-3 gap-2">
@@ -2561,7 +2786,7 @@ export default function App() {
                           className={`py-2 px-2 sm:px-3 rounded-xl text-[9px] sm:text-[10px] font-mono font-bold uppercase border tracking-widest transition-all cursor-pointer ${
                             isSelected
                               ? 'bg-neutral-950 text-white border-neutral-950 shadow-2xs scale-[1.01]'
-                              : 'bg-white/40 border-neutral-200/50 text-neutral-500 hover:border-rose-200 hover:text-[#be123c] hover:bg-rose-50/25 shadow-3xs'
+                              : 'bg-white/40 border-neutral-200/50 text-neutral-500 hover:border-blue-200 hover:text-[#2563eb] hover:bg-blue-50/25 shadow-3xs'
                           }`}
                         >
                           {sub}
@@ -2572,7 +2797,7 @@ export default function App() {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="contact-message" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-[#be123c] font-mono">
+                  <label htmlFor="contact-message" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-[#2563eb] font-mono">
                     Tell me about your product challenge *
                   </label>
                   <textarea
@@ -2582,7 +2807,7 @@ export default function App() {
                     value={contactMessage}
                     onChange={(e) => setContactMessage(e.target.value)}
                     placeholder="Describe your design objectives, timelines or parameters..."
-                    className="w-full bg-white/40 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-xs sm:text-sm font-sans focus:bg-white focus:border-[#be123c] outline-none transition-all text-neutral-900 shadow-3xs focus:ring-1 focus:ring-[#be123c]/10"
+                    className="w-full bg-white/40 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-xs sm:text-sm font-sans focus:bg-white focus:border-[#2563eb] outline-none transition-all text-neutral-900 shadow-3xs focus:ring-1 focus:ring-[#2563eb]/10"
                   />
                 </div>
 
@@ -2607,7 +2832,7 @@ export default function App() {
 
   return (
     <div className={`min-h-screen font-body transition-colors duration-500 overflow-x-hidden ${
-      activeTab === 'GAMES' ? 'bg-[#0e0e0e] text-on-surface' : 'bg-[#f8f9ff] text-on-surface'
+      activeTab === 'GAMES' ? 'bg-[#0e0e0e] text-on-surface' : 'bg-[#fafafa] text-on-surface'
     }`}>
       <Toaster position="top-right" richColors closeButton />
 
@@ -2634,7 +2859,7 @@ export default function App() {
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
-              className="absolute -top-10 -left-10 w-[600px] h-[600px] bg-[#ff89ab]/12 blur-[120px]"
+              className="absolute -top-10 -left-10 w-[600px] h-[600px] bg-[#818cf8]/12 blur-[120px]"
             />
             <motion.div 
               animate={{
@@ -2674,7 +2899,7 @@ export default function App() {
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
-              className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-[#ff89ab]/8 blur-[110px]"
+              className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-[#818cf8]/8 blur-[110px]"
             />
           </>
         ) : (
@@ -2758,7 +2983,7 @@ export default function App() {
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
-              className="absolute bottom-10 right-1/3 w-[450px] h-[450px] bg-rose-100/25 blur-[110px] mix-blend-multiply"
+              className="absolute bottom-10 right-1/3 w-[450px] h-[450px] bg-blue-100/25 blur-[110px] mix-blend-multiply"
             />
           </div>
         )}
@@ -2777,7 +3002,7 @@ export default function App() {
       <header className={`fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 sm:px-12 h-20 transition-all border-b ${
         activeTab === 'GAMES' 
           ? 'bg-[#0e0e0e]/90 text-white border-outline-variant/10 backdrop-blur-md' 
-          : 'bg-[#f8f9ff]/90 text-on-surface border-outline-variant/30 backdrop-blur-md'
+          : 'bg-[#fafafa]/90 text-on-surface border-outline-variant/30 backdrop-blur-md'
       }`}>
         <div 
           onClick={() => { 
@@ -2796,22 +3021,23 @@ export default function App() {
         >
           {activeTab === 'GAMES' ? (
             <div className="flex items-center gap-1.5">
-              <h1 className="font-cursive text-3xl font-bold tracking-wide leading-none text-[#ff89ab] lowercase">
-                lia
-              </h1>
-              <span className="font-sans text-[9px] font-bold tracking-widest text-[#ff89ab] bg-[#ff89ab]/10 px-1.5 py-0.5 rounded uppercase">
-                papelito game
+              <span className="font-sans text-xs font-black tracking-widest text-[#818cf8] uppercase">
+                Lia Parra
+              </span>
+              <span className="font-mono text-[9px] font-bold tracking-widest text-[#818cf8] bg-[#818cf8]/10 px-1.5 py-0.5 rounded uppercase">
+                Labs Game
               </span>
             </div>
           ) : (
-            <>
-              <h1 className="font-cursive text-4xl font-bold tracking-wide leading-none text-neutral-950 lowercase">
-                lia
-              </h1>
-              <span className="font-sans text-xl font-bold text-[#be123c] tracking-wider">
-                ♡
+            <div className="flex items-center gap-2">
+              <span className="font-sans text-sm font-black uppercase tracking-widest text-neutral-900">
+                Lia Parra
               </span>
-            </>
+              <span className="w-1.5 h-1.5 bg-[#2563eb] rounded-full animate-pulse shrink-0" />
+              <span className="font-mono text-[9px] font-bold text-neutral-400 uppercase tracking-widest bg-neutral-100 border border-neutral-200/50 px-1.5 py-0.5 rounded leading-none">
+                Lab Sandbox
+              </span>
+            </div>
           )}
         </div>
 
@@ -2834,8 +3060,8 @@ export default function App() {
                   }}
                   className={`py-1 transition-all duration-300 cursor-pointer ${
                     isTabActive 
-                      ? 'text-[#be123c] font-black scale-105' 
-                      : 'text-neutral-500 hover:text-[#be123c]'
+                      ? 'text-[#2563eb] font-black scale-105' 
+                      : 'text-neutral-500 hover:text-[#2563eb]'
                   }`}
                 >
                   {tab.label}
@@ -2915,7 +3141,7 @@ export default function App() {
           </div>
 
           {activeTab === 'GAMES' && myPlayer && (
-            <div className="hidden sm:flex items-center gap-2 bg-[#201f1f] border border-[#ff89ab]/30 px-3 py-1 bg-opacity-65 rounded-full">
+            <div className="hidden sm:flex items-center gap-2 bg-[#201f1f] border border-[#818cf8]/30 px-3 py-1 bg-opacity-65 rounded-full">
               <img src={myPlayer.avatar} alt={myPlayer.name} className="w-4 h-4 rounded-full" />
               <span className="font-sans text-[11px] font-bold text-white truncate max-w-[80px]">
                 {myPlayer.name}
@@ -2930,7 +3156,7 @@ export default function App() {
               activeTab === 'GAMES' ? '' : 'md:hidden'
             }`}
           >
-            <span className={`material-symbols-outlined text-2xl ${activeTab === 'GAMES' ? 'text-[#ff89ab]' : 'text-primary'}`}>
+            <span className={`material-symbols-outlined text-2xl ${activeTab === 'GAMES' ? 'text-[#818cf8]' : 'text-primary'}`}>
               {mobileMenuOpen ? 'close' : 'menu'}
             </span>
           </button>
@@ -2947,7 +3173,7 @@ export default function App() {
             className={`fixed inset-0 z-40 p-6 pt-24 flex flex-col justify-center items-center gap-6 shadow-lg backdrop-blur-2xl ${
               activeTab === 'GAMES' 
                 ? 'bg-[#0e0e0e]/98 text-white' 
-                : 'bg-[#f8f9ff]/95 text-on-surface md:hidden'
+                : 'bg-[#fafafa]/95 text-on-surface md:hidden'
             }`}
           >
             {[
@@ -2967,8 +3193,8 @@ export default function App() {
                   }}
                   className={`py-3 text-xl font-headline font-bold uppercase tracking-widest text-center transition-all duration-300 ${
                     activeTab === 'GAMES' 
-                      ? isTabActive ? 'text-[#ff89ab] scale-105' : 'text-neutral-400 hover:text-white'
-                      : isTabActive ? 'text-[#be123c] scale-105' : 'text-on-surface-variant'
+                      ? isTabActive ? 'text-[#818cf8] scale-105' : 'text-neutral-400 hover:text-white'
+                      : isTabActive ? 'text-[#2563eb] scale-105' : 'text-on-surface-variant'
                   }`}
                 >
                   {tab.label}
@@ -2976,6 +3202,240 @@ export default function App() {
               );
             })}
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Case Study Dialog Modal */}
+      <AnimatePresence>
+        {selectedProjectForModal && (
+          <div 
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-neutral-950/50 backdrop-blur-md overflow-hidden select-none"
+            onClick={() => setSelectedProjectForModal(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 25 }}
+              transition={{ type: 'spring', damping: 26, stiffness: 210 }}
+              onClick={(e) => e.stopPropagation()}
+              className={`bg-white/95 backdrop-blur-2xl border border-neutral-200/80 rounded-3xl w-full max-h-[88vh] sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden text-neutral-900 ${selectedProjectForModal.id === 'illow_case1' ? 'max-w-5xl' : 'max-w-4xl'}`}
+            >
+              {/* Modal Top Bar */}
+              {selectedProjectForModal.id !== 'illow_case1' && (
+                <div className="flex justify-between items-center px-6 sm:px-8 py-4 border-b border-neutral-100 bg-neutral-50/70">
+                  <div className="flex items-center gap-3">
+                    {selectedProjectForModal.tags?.map((tag: string) => (
+                      <span 
+                        key={tag} 
+                        className="inline-flex items-center px-2.5 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase font-mono border bg-neutral-150/50 border-neutral-200/50 text-neutral-600 shadow-3xs"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    <span className="material-symbols-outlined text-[#2563eb] text-lg leading-none shrink-0" aria-hidden="true">
+                      {selectedProjectForModal.icon}
+                    </span>
+                  </div>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setSelectedProjectForModal(null)}
+                    className="w-10 h-10 rounded-full border border-neutral-200 bg-white hover:bg-neutral-50 hover:text-black hover:border-neutral-300 flex items-center justify-center text-neutral-500 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer shadow-3xs"
+                  >
+                    <span className="material-symbols-outlined text-base font-bold leading-none">close</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Scrollable Modal Content */}
+              <div className={`flex-1 overflow-y-auto style-scrollbar text-left ${selectedProjectForModal.id === 'illow_case1' ? 'p-0 bg-[#F7F7FB]' : 'p-6 sm:p-8 md:p-10 space-y-8'}`}>
+                {selectedProjectForModal.id === 'illow_case1' ? (
+                  <IllowCaseStudy onClose={() => setSelectedProjectForModal(null)} />
+                ) : (
+                  <>
+                    <div className="space-y-4">
+                      <h2 className="font-headline text-2xl sm:text-4xl font-black text-neutral-900 tracking-tight leading-tight">
+                        {selectedProjectForModal.title}
+                      </h2>
+                      <div className="p-5 bg-neutral-50/80 rounded-2xl border border-neutral-200/50 select-text">
+                        <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
+                          <strong className="text-neutral-800 font-semibold uppercase font-mono text-[9px] tracking-widest block mb-2 text-[#2563eb]">The Challenge</strong>
+                          {selectedProjectForModal.challenge}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Dynamic Block-Based Narrative Case Study Flow */}
+                    {selectedProjectForModal.blocks && selectedProjectForModal.blocks.length > 0 ? (
+                      <div className="space-y-6 sm:space-y-8 select-text">
+                        {selectedProjectForModal.blocks.map((block: any, idx: number) => {
+                          switch (block.type) {
+                            case 'text':
+                              return (
+                                <div key={idx} className="space-y-4 select-text">
+                                  {block.title && (
+                                    <h4 className="font-headline text-base sm:text-lg font-bold text-neutral-900 uppercase tracking-wider font-mono border-b border-neutral-100 pb-1.5 pt-2">
+                                      {block.title}
+                                    </h4>
+                                  )}
+                                  
+                                  {block.paragraphs && block.paragraphs.length > 0 && (
+                                    <div className="space-y-3.5">
+                                      {block.paragraphs.map((para: string, pIdx: number) => (
+                                        <p key={pIdx} className="text-neutral-600 font-sans text-xs sm:text-sm leading-relaxed">
+                                          {para}
+                                        </p>
+                                      ))}
+                                    </div>
+                                  )}
+
+                                  {block.bulletPoints && block.bulletPoints.length > 0 && (
+                                    <div className="space-y-4 bg-blue-50/25 p-5 sm:p-6 rounded-2xl border border-blue-100/60 mt-4 text-left">
+                                      {block.title && (
+                                        <h5 className="font-headline text-xs font-bold text-[#2563eb] uppercase tracking-wider font-mono mb-2">
+                                          {block.title} Key Action Points
+                                        </h5>
+                                      )}
+                                      <ul className="space-y-3 font-sans text-xs sm:text-sm text-neutral-600 leading-relaxed">
+                                        {block.bulletPoints.map((bullet: string, bIdx: number) => (
+                                          <li key={bIdx} className="flex items-start gap-2.5">
+                                            <span className="text-[#2563eb] font-black text-sm select-none leading-none mt-0.5">•</span>
+                                            <span>{bullet}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+
+                        case 'image':
+                          return (
+                            <div key={idx} className="space-y-2 select-none">
+                              <div className="overflow-hidden rounded-xl border border-neutral-250 group/img relative bg-neutral-900 aspect-video sm:aspect-[21/9] shadow-3xs">
+                                <img 
+                                  src={getDirectDriveUrl(block.imageUrl)} 
+                                  alt={block.imageCaption || "Case study graphics block"} 
+                                  referrerPolicy="no-referrer"
+                                  className="w-full h-full object-cover group-hover/img:scale-101 transition-transform duration-700 ease-out brightness-[0.98] group-hover/img:brightness-100"
+                                />
+                              </div>
+                              {block.imageCaption && (
+                                <p className="font-sans text-xs text-neutral-500 italic mt-2 select-text pl-0.5">
+                                  {block.imageCaption}
+                                </p>
+                              )}
+                            </div>
+                          );
+
+                        case 'carousel':
+                          return (
+                            <CarouselBlock key={idx} block={block} getDirectDriveUrl={getDirectDriveUrl} />
+                          );
+
+                        case 'video':
+                          const isEmbed = block.videoUrl?.includes('youtube.com') || 
+                                          block.videoUrl?.includes('youtu.be') || 
+                                          block.videoUrl?.includes('vimeo.com') ||
+                                          block.videoUrl?.includes('embed');
+                          return (
+                            <div key={idx} className="space-y-2 select-none">
+                              <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-neutral-250 bg-neutral-950 shadow-3xs">
+                                {isEmbed ? (
+                                  <iframe 
+                                    src={block.videoUrl} 
+                                    title="Video presentation player"
+                                    className="absolute inset-0 w-full h-full border-0"
+                                    style={{ border: 0 }}
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                  />
+                                ) : (
+                                  <video 
+                                    src={block.videoUrl} 
+                                    controls 
+                                    playsInline
+                                    preload="metadata"
+                                    className="absolute inset-0 w-full h-full object-cover"
+                                  />
+                                )}
+                              </div>
+
+                              {block.videoCaption && (
+                                <p className="font-sans text-xs text-neutral-500 italic mt-2 select-text pl-0.5">
+                                  {block.videoCaption}
+                                </p>
+                              )}
+                            </div>
+                          );
+
+                        case 'pdf':
+                          return (
+                            <div key={idx} className="space-y-2 select-none">
+                              <div className="relative bg-neutral-150 rounded-xl overflow-hidden border border-neutral-250 aspect-video sm:aspect-[21/9] flex flex-col shadow-3xs group">
+                                <iframe 
+                                  src={block.pdfUrl}
+                                  className="w-full h-full border-0 rounded-xl bg-neutral-100"
+                                  title="Case study PDF document"
+                                />
+                                <div className="absolute top-3 right-3 opacity-90 hover:opacity-100 transition-opacity">
+                                  <a 
+                                    href={block.pdfUrl} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="font-mono text-[9px] text-[#2563eb] bg-white hover:bg-[#2563eb] hover:text-white border border-neutral-200 hover:border-[#2563eb] px-2.5 py-1 rounded-full font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs"
+                                  >
+                                    Open PDF
+                                    <span className="material-symbols-outlined text-[10px] font-bold">open_in_new</span>
+                                  </a>
+                                </div>
+                              </div>
+
+                              {block.pdfCaption && (
+                                <p className="font-sans text-xs text-neutral-500 italic mt-2 select-text pl-0.5">
+                                  {block.pdfCaption}
+                                </p>
+                              )}
+                            </div>
+                          );
+
+                        default:
+                          return null;
+                      }
+                    })}
+
+                    {/* Styled Footer Badge at the end of deep-dive blocks flow */}
+                    {selectedProjectForModal.footerBadge && (
+                      <div className="pt-4 border-t border-neutral-150 select-none">
+                        <div className="bg-blue-600 text-white border border-blue-700 p-3.5 rounded-2xl font-mono font-bold text-[10px] tracking-widest text-center uppercase shadow-sm">
+                          {selectedProjectForModal.footerBadge}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-neutral-400 text-xs text-center py-8">
+                    No modules or narrative blocks found.
+                  </div>
+                )}
+                  </>
+                )}
+              </div>
+
+              {/* Modal Bottom Footer */}
+              {selectedProjectForModal.id !== 'illow_case1' && (
+                <div className="px-6 sm:px-8 py-4 border-t border-neutral-100 bg-neutral-50/50 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedProjectForModal(null)}
+                    className="px-5 py-2.5 bg-neutral-950 hover:bg-neutral-800 text-white font-mono text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer shadow-3xs"
+                  >
+                    Close Case Study
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
@@ -3045,7 +3505,7 @@ export default function App() {
       <footer className={`relative z-10 w-full border-t py-8 font-sans text-xs transition-colors duration-300 ${
         activeTab === 'GAMES'
           ? 'bg-[#090909] text-neutral-400 border-neutral-800/60'
-          : 'bg-[#f8f9ff] text-neutral-500 border-neutral-200/45'
+          : 'bg-[#fafafa] text-neutral-500 border-neutral-200/45'
       }`}>
         <div className="max-w-6xl mx-auto px-4 sm:px-12 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-left">
           <div className="space-y-1">
@@ -3059,7 +3519,7 @@ export default function App() {
             </p>
           </div>
           <div className="sm:text-right space-y-0.5">
-            <p className="text-[10px] uppercase tracking-widest font-black text-[#be123c]">
+            <p className="text-[10px] uppercase tracking-widest font-black text-[#2563eb]">
               B2B SAAS, AI & ENTERPRISE SYSTEMS
             </p>
             <a 
@@ -3091,7 +3551,7 @@ export default function App() {
               style={{ boxShadow: '0 0 50px rgba(255, 137, 171, 0.15)' }}
             >
               {/* Subtle background glow */}
-              <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#ff89ab]/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#818cf8]/10 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
               {/* Close "X" Button */}
@@ -3106,7 +3566,7 @@ export default function App() {
               <div className="space-y-6">
                 {/* Header */}
                 <div className="space-y-1.5 pr-8">
-                  <span className="font-sans text-[10px] font-black tracking-widest text-[#ff89ab] bg-[#ff89ab]/10 px-2.5 py-1 rounded-md uppercase">
+                  <span className="font-sans text-[10px] font-black tracking-widest text-[#818cf8] bg-[#818cf8]/10 px-2.5 py-1 rounded-md uppercase">
                     How to Play Papelito! 📝🎮
                   </span>
                   <h3 className="font-headline text-2xl sm:text-3xl font-black text-white tracking-tight leading-none mt-2">
@@ -3120,7 +3580,7 @@ export default function App() {
                 {/* Steps/Rounds */}
                 <div className="space-y-4">
                   <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
-                    <span className="font-headline font-black text-xs text-[#ff89ab] bg-[#ff89ab]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                    <span className="font-headline font-black text-xs text-[#818cf8] bg-[#818cf8]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
                       1
                     </span>
                     <div className="space-y-0.5">
@@ -3132,7 +3592,7 @@ export default function App() {
                   </div>
 
                   <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
-                    <span className="font-headline font-black text-xs text-[#ff89ab] bg-[#ff89ab]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                    <span className="font-headline font-black text-xs text-[#818cf8] bg-[#818cf8]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
                       2
                     </span>
                     <div className="space-y-0.5">
@@ -3144,7 +3604,7 @@ export default function App() {
                   </div>
 
                   <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
-                    <span className="font-headline font-black text-[#ff89ab] bg-[#ff89ab]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                    <span className="font-headline font-black text-[#818cf8] bg-[#818cf8]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
                       3
                     </span>
                     <div className="space-y-0.5">
@@ -3159,7 +3619,7 @@ export default function App() {
                 {/* Primary Button */}
                 <button
                   onClick={() => setShowGameInstructions(false)}
-                  className="w-full py-4 bg-gradient-to-r from-[#ff89ab] to-[#e30071] hover:brightness-110 active:scale-[0.98] transition-all text-white font-headline font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(255,137,171,0.3)] block text-center cursor-pointer"
+                  className="w-full py-4 bg-gradient-to-r from-[#818cf8] to-[#4f46e5] hover:brightness-110 active:scale-[0.98] transition-all text-white font-headline font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(255,137,171,0.3)] block text-center cursor-pointer"
                 >
                   Got it • Let's Play! 🚀
                 </button>

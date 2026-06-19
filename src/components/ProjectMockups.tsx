@@ -23,7 +23,7 @@ export const AnalyticsMockup: React.FC = () => {
       {/* Browser bar */}
       <div className="flex items-center justify-between border-b border-neutral-800 pb-3 -mt-2 -mx-2">
         <div className="flex gap-1.5 items-center pl-1">
-          <span className="w-2.5 h-2.5 rounded-full bg-rose-600/70 block" />
+          <span className="w-2.5 h-2.5 rounded-full bg-blue-600/70 block" />
           <span className="w-2.5 h-2.5 rounded-full bg-amber-500/70 block" />
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/70 block" />
         </div>
@@ -54,7 +54,7 @@ export const AnalyticsMockup: React.FC = () => {
             </span>
           </div>
           <div className="w-full bg-neutral-800 h-1.5 rounded-full overflow-hidden mt-1.5">
-            <div className="bg-rose-700 h-full rounded-full" style={{ width: '94.8%' }} />
+            <div className="bg-blue-700 h-full rounded-full" style={{ width: '94.8%' }} />
           </div>
         </div>
 
@@ -84,7 +84,7 @@ export const AnalyticsMockup: React.FC = () => {
           {[20, 35, 45, 30, 55, 65, 40, 75, 80, 95, 85, 98].map((height, idx) => (
             <div key={idx} className="w-[6%] bg-neutral-800/80 hover:bg-neutral-700 rounded-sm relative group h-full">
               <div 
-                className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-rose-900 to-rose-700 rounded-sm group-hover:from-rose-800 group-hover:to-rose-600 transition-all"
+                className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-900 to-blue-700 rounded-sm group-hover:from-blue-800 group-hover:to-blue-600 transition-all"
                 style={{ height: `${height}%` }}
               />
             </div>
@@ -119,7 +119,7 @@ export const WireframeMockup: React.FC = () => {
       <div className="border border-neutral-300/80 bg-white rounded-xl p-4 shadow-xs space-y-3.5 relative">
         <div className="flex justify-between items-start">
           <div className="space-y-1">
-            <span className="text-[8px] font-bold uppercase tracking-widest text-[#be123c] bg-rose-50 px-1.5 py-0.5 rounded">Consent Banner Model</span>
+            <span className="text-[8px] font-bold uppercase tracking-widest text-[#2563eb] bg-blue-50 px-1.5 py-0.5 rounded">Consent Banner Model</span>
             <h5 className="text-xs font-bold text-neutral-800">Choose cookie classification preferences</h5>
           </div>
           <span className="w-2   h-2 bg-neutral-300 rounded-full" />
@@ -137,7 +137,7 @@ export const WireframeMockup: React.FC = () => {
               </div>
             </div>
             {/* Disabled switch wireframe */}
-            <div className="w-7 h-4 bg-[#be123c] rounded-full p-0.5 flex justify-end cursor-not-allowed opacity-85">
+            <div className="w-7 h-4 bg-[#2563eb] rounded-full p-0.5 flex justify-end cursor-not-allowed opacity-85">
               <span className="w-3 h-3 bg-white rounded-full block" />
             </div>
           </div>
@@ -163,7 +163,7 @@ export const WireframeMockup: React.FC = () => {
           <button className="px-3 py-1 bg-neutral-100 hover:bg-neutral-200/80 border border-neutral-200 text-[10px] font-bold uppercase tracking-wider rounded-md text-neutral-600 transition-all">
             Customize
           </button>
-          <button className="px-3 py-1 bg-[#be123c] hover:bg-[#9f1239] text-white text-[10px] font-bold uppercase tracking-wider rounded-md transition-all">
+          <button className="px-3 py-1 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-[10px] font-bold uppercase tracking-wider rounded-md transition-all">
             Save & Allow
           </button>
         </div>
@@ -180,7 +180,7 @@ export const DesignTokensMockup: React.FC = () => {
     <div className="w-full bg-white text-neutral-900 rounded-2xl border border-neutral-200/80 p-5 font-sans space-y-4 shadow-sm mt-4">
       {/* Design System Identification */}
       <div className="flex justify-between items-center">
-        <div className="inline-flex items-center gap-1.5 bg-rose-50 text-[#be123c] text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+        <div className="inline-flex items-center gap-1.5 bg-blue-50 text-[#2563eb] text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
           <Palette className="w-2.5 h-2.5" /> Design System Tokens
         </div>
         <span className="text-[10px] font-mono text-neutral-400">Ver 2.1 • Coded Swatches</span>
@@ -192,10 +192,10 @@ export const DesignTokensMockup: React.FC = () => {
           <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-2">Palette Color Swatches</span>
           <div className="grid grid-cols-4 gap-2">
             {[
-              { hex: '#be123c', name: 'Rose Dark', bg: 'bg-[#be123c]', text: 'text-white' },
-              { hex: '#9f1239', name: 'Rose Deep', bg: 'bg-[#9f1239]', text: 'text-white' },
-              { hex: '#cb3a65', name: 'Rose Bright', bg: 'bg-[#cb3a65]', text: 'text-white' },
-              { hex: '#fdf2f4', name: 'Rose Light', bg: 'bg-[#fdf2f4]', text: 'text-neutral-800' }
+              { hex: '#2563eb', name: 'Rose Dark', bg: 'bg-[#2563eb]', text: 'text-white' },
+              { hex: '#1d4ed8', name: 'Rose Deep', bg: 'bg-[#1d4ed8]', text: 'text-white' },
+              { hex: '#3b82f6', name: 'Rose Bright', bg: 'bg-[#3b82f6]', text: 'text-white' },
+              { hex: '#f0f5ff', name: 'Rose Light', bg: 'bg-[#f0f5ff]', text: 'text-neutral-800' }
             ].map((swatch, idx) => (
               <div key={idx} className="bg-neutral-50/70 border border-neutral-200/60 p-1.5 rounded-lg space-y-1.5">
                 <div className={`h-8 w-full rounded ${swatch.bg} flex items-center justify-center`} />
@@ -215,14 +215,14 @@ export const DesignTokensMockup: React.FC = () => {
             {/* Primary active component */}
             <div className="bg-neutral-50 border border-neutral-200 p-2.5 rounded-xl space-y-1 text-center">
               <span className="text-[7.5px] font-semibold text-neutral-400 uppercase tracking-wider block">Btn-Primary (Default)</span>
-              <button className="w-full py-1.5 bg-[#be123c] text-white rounded-md text-[9px] uppercase font-bold tracking-wider cursor-pointer hover:bg-[#9f1239] transition-all">
+              <button className="w-full py-1.5 bg-[#2563eb] text-white rounded-md text-[9px] uppercase font-bold tracking-wider cursor-pointer hover:bg-[#1d4ed8] transition-all">
                 Submit Data
               </button>
             </div>
             {/* Action secondary component */}
             <div className="bg-neutral-50 border border-neutral-200 p-2.5 rounded-xl space-y-1 text-center">
               <span className="text-[7.5px] font-semibold text-neutral-400 uppercase tracking-wider block">Btn-Secondary (Border)</span>
-              <button className="w-full py-1.5 border border-[#be123c] text-[#be123c] hover:bg-rose-50/50 rounded-md text-[9px] uppercase font-bold tracking-wider cursor-pointer transition-all">
+              <button className="w-full py-1.5 border border-[#2563eb] text-[#2563eb] hover:bg-blue-50/50 rounded-md text-[9px] uppercase font-bold tracking-wider cursor-pointer transition-all">
                 Cancel Draft
               </button>
             </div>

@@ -1,46 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital,wght@0,400;1,400&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  /* Default Portfolio Theme Variables (Light, Elegant, Slate UI) */
-  --color-background: #f8f9ff;
-  --color-surface: #f8f9ff;
-  --color-surface-bright: #f8f9ff;
-  --color-surface-dim: #cbdbf5;
+  /* Premium Labs.Google Inspired Theme Variables (Delicate, Airy, Hyper-Professional, Luxe Off-White UI) */
+  --color-background: #fafafa;
+  --color-surface: #ffffff;
+  --color-surface-bright: #ffffff;
+  --color-surface-dim: #f3f4f6;
   --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #eff4ff;
-  --color-surface-container: #e5eeff;
-  --color-surface-container-high: #dce9ff;
-  --color-surface-container-highest: #d3e4fe;
-  --color-surface-variant: #d3e4fe;
+  --color-surface-container-low: #f8f9fa;
+  --color-surface-container: #f1f3f4;
+  --color-surface-container-high: #e8eaed;
+  --color-surface-container-highest: #dadce0;
+  --color-surface-variant: #f1f3f4;
   
-  --color-on-surface: #0b1c30;
-  --color-on-surface-variant: #45474b;
+  --color-on-surface: #111111;
+  --color-on-surface-variant: #5f6368;
   
-  --color-primary: #000000;
-  --color-primary-dim: #1a1c20;
+  --color-primary: #1a73e8; /* Google Labs Blue */
+  --color-primary-dim: #1557b0;
   --color-on-primary: #ffffff;
-  --color-on-primary-fixed: #1a1c20;
+  --color-on-primary-fixed: #1a73e8;
   
-  --color-secondary: #5c5f60;
-  --color-secondary-dim: #c5c7c8;
+  --color-secondary: #202124;
+  --color-secondary-dim: #3c4043;
   --color-on-secondary: #ffffff;
   
-  --color-tertiary: #000000;
-  --color-tertiary-dim: #d1c4bb;
+  --color-tertiary: #10b981;
+  --color-tertiary-dim: #059669;
   --color-on-tertiary: #ffffff;
   
-  --color-error: #ba1a1a;
-  --color-outline: #76777b;
-  --color-outline-variant: #c6c6cb;
+  --color-error: #d93025;
+  --color-outline: #80868b;
+  --color-outline-variant: #dadce0;
 
-  --font-headline: "Montserrat", sans-serif;
-  --font-body: "Inter", sans-serif;
-  --font-label: "Inter", sans-serif;
-  --font-cursive: "Caveat", cursive;
+  --font-headline: "Plus Jakarta Sans", "Space Grotesk", sans-serif;
+  --font-body: "Plus Jakarta Sans", sans-serif;
+  --font-label: "Space Grotesk", sans-serif;
+  --font-cursive: "Instrument Serif", serif;
 
   @keyframes pulse-border {
-    0%, 100% { border-color: var(--color-primary); box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); }
-    50% { border-color: #76777b; box-shadow: 0 0 30px rgba(0, 0, 0, 0.2); }
+    0%, 100% { border-color: var(--color-primary); box-shadow: 0 0 20px rgba(26, 115, 232, 0.1); }
+    50% { border-color: #dadce0; box-shadow: 0 0 30px rgba(26, 115, 232, 0.15); }
   }
 }
 
@@ -87,18 +88,18 @@
   --color-on-surface: #ffffff;
   --color-on-surface-variant: #adaaaa;
   
-  --color-primary: #ff89ab;
-  --color-primary-dim: #e30071;
-  --color-on-primary: #62002d;
+  --color-primary: #818cf8;
+  --color-primary-dim: #4f46e5;
+  --color-on-primary: #ffffff;
   --color-on-primary-fixed: #000000;
   
   --color-secondary: #00f4fe;
   --color-secondary-dim: #00e5ee;
   --color-on-secondary: #00575b;
   
-  --color-tertiary: #69fd5d;
-  --color-tertiary-dim: #49e043;
-  --color-on-tertiary: #005e07;
+  --color-tertiary: #10b981;
+  --color-tertiary-dim: #059669;
+  --color-on-tertiary: #ffffff;
   
   --color-error: #ff6e84;
   --color-outline: #777575;
@@ -113,7 +114,7 @@
 }
 
 .game-theme .neon-glow-pink {
-  background: radial-gradient(circle at center, rgba(255, 137, 171, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle at center, rgba(129, 140, 248, 0.15) 0%, transparent 70%);
 }
 
 .game-theme .neon-glow-cyan {
@@ -130,7 +131,7 @@
 
 .game-theme .neon-tube-primary {
   background: linear-gradient(to bottom right, var(--color-primary), var(--color-primary-dim));
-  box-shadow: 0 0 20px rgba(255, 137, 171, 0.3);
+  box-shadow: 0 0 20px rgba(129, 140, 248, 0.3);
 }
 
 .game-theme .neon-tube-secondary {

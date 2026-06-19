@@ -1,3 +1,27 @@
+export interface UseCaseBlock {
+  type: 'text' | 'image' | 'carousel' | 'video' | 'pdf';
+  // Text options
+  title?: string;
+  paragraphs?: string[];
+  bulletPoints?: string[];
+  
+  // Image options
+  imageUrl?: string;
+  imageCaption?: string;
+  
+  // Carousel options
+  carouselImages?: string[];
+  carouselCaption?: string;
+  
+  // Video options
+  videoUrl?: string;
+  videoCaption?: string;
+  
+  // PDF options
+  pdfUrl?: string;
+  pdfCaption?: string;
+}
+
 export interface UseCase {
   id: string;
   title: string;
@@ -5,107 +29,110 @@ export interface UseCase {
   impact: string;
   icon: string;
   tags: string[];
-  mockupType?: 'analytics' | 'wireframe' | 'tokens';
-  deepDive?: {
-    leftTitle: string;
-    leftParagraphs: string[];
-    rightTitle: string;
-    rightBulletPoints: string[];
-    footerBadge: string;
-  };
+  footerBadge: string;
+  blocks: UseCaseBlock[];
+  liveUrl?: string;
+  metrics?: { value: string; label: string }[];
 }
 
 export const useCases: UseCase[] = [
   {
-    id: "illow_start",
-    title: "illow from the Beginning",
-    challenge: "Designing the initial brand identity, visual systems, high-converting checkout funnels, and initial UX wireframes for an early-stage privacy tech startup from zero to one.",
+    id: "illow_case1",
+    title: "illow: Scaling a B2B Data Privacy Platform from Startup to Acquisition.",
+    challenge: "How I owned the end-to-end product design and visual strategy for a data-privacy compliance startup, working hand-in-hand with executive leadership to transform complex global regulations into an intuitive SaaS platform—ultimately leading to its successful acquisition by BigID.",
     impact: "Secured early market traction under a cohesive product aesthetic, with the visual identity and user interface driving robust early-stage signups.",
     icon: "rocket_launch",
     tags: ["UX Strategy", "Branding"],
-    mockupType: "wireframe",
-    deepDive: {
-      leftTitle: "The Startup Spark",
-      leftParagraphs: [
-        "I worked on designing the startup's brand DNA, choosing color tokens, typography systems, and web architecture to resonate with developers and compliance officers alike. By controlling the complete zero-to-one design pipeline, I framed privacy compliance as a beautiful interactive asset.",
-        "This aesthetic control laid a groundwork, allowing me to establish the company's internal UX department confidently before scaling processes."
-      ],
-      rightTitle: "Methodology & Launch Actions",
-      rightBulletPoints: [
-        "Designed high-converting interactive landing pages for developer signups.",
-        "Built user experience blueprints for the original modal cookie sliders to maximize consent collection.",
-        "Attracted capital and early-stage trials by presenting interactive clickable high-contrast prototypes representing a mature product."
-      ],
-      footerBadge: "Zero-To-One Blueprint • Cohesive Privacy Identity"
-    }
+    footerBadge: "Zero-To-One Blueprint • Cohesive Privacy Identity",
+    liveUrl: "https://illow.io",
+    metrics: [
+      { value: "40+", label: "Core B2B Workflows Designed" },
+      { value: "1×", label: "Shared Component Ecosystem" },
+      { value: "→ BigID", label: "Commercial Acquisition" }
+    ],
+    blocks: [
+
+      {
+        type: "image",
+        imageUrl: "https://drive.google.com/file/d/1RaXo5PfAY3AWsNuaJ9BVLhl1UVl-RN9p/view?usp=sharing",
+        imageCaption: "illow Marketing asset."
+      },
+      {
+        type: "text",
+        title: "The Startup Spark",
+        paragraphs: [
+          "I worked on designing the startup's brand DNA, choosing color tokens, typography systems, and web architecture to resonate with developers and compliance officers alike. By controlling the complete zero-to-one design pipeline, I framed privacy compliance as a beautiful interactive asset.",
+          "This aesthetic control laid a groundwork, allowing me to establish the company's internal UX department confidently before scaling processes."
+        ]
+      },
+      {
+        type: "carousel",
+        carouselImages: [
+          "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80",
+          "https://images.unsplash.com/photo-1581291518655-9523c932bfcf?auto=format&fit=crop&w=800&q=80",
+          "https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?auto=format&fit=crop&w=800&q=80"
+        ],
+        carouselCaption: "Brand Architecture Guidelines & Cookie Banner Consent Flow blueprints ready for audit reviews."
+      },
+      {
+        type: "text",
+        title: "Methodology & Launch Actions",
+        bulletPoints: [
+          "Designed high-converting interactive landing pages, ads for developer signups.",
+          "Built user experience blueprints for the original modal cookie sliders to maximize consent collection.",
+          "Attracted capital and early-stage trials by presenting interactive clickable high-contrast prototypes representing a mature product."
+        ]
+      }
+    ]
   },
-  {
-    id: "illow_evolution",
-    title: "illow to BigID Evolution",
-    challenge: "Leading the branding, visual system, and user experience strategy from early-stage startup through its eventual, high-profile acquisition by enterprise titan BigID.",
-    impact: "Unified the marketing and product workflows under a robust design system, allowing seamless enterprise transition to process complex high-volume compliance data.",
-    icon: "trending_up",
-    tags: ["Design Systems", "Branding"],
-    mockupType: "tokens",
-    deepDive: {
-      leftTitle: "Acquisition & Enterprise Scale",
-      leftParagraphs: [
-        "Ensuring brand consistency through corporate transitions is a severe friction risk. I led the transition from illow's lightweight visual language to BigID's global compliance system, structuring UX patterns to support massive algorithmic volume without losing sensory clarity.",
-        "This absolute control over aesthetics laid a profound groundwork, allowing me to comfortably establish the company's internal UX department from the ground up prior to acquisition."
-      ],
-      rightTitle: "Methodology & Adaptations",
-      rightBulletPoints: [
-        "Developed a streamlined Design System (UI Kit) translating marketing brand elements into reusable component code.",
-        "Significantly reduced engineering visual debt, aligning product development with marketing brand consistency.",
-        "Redesigned complex data-consent tables and user dashboards for BigID's global compliance standards post-acquisition."
-      ],
-      footerBadge: "Acquisition Catalyst • Enterprise Scale Orchestration Ready"
-    }
-  },
-  {
-    id: "bigid_cookie",
-    title: "BigID Cookie Classification",
-    challenge: "Streamlining nested compliance tabs, massive cookies datasets, and classification settings schemas containing heavily dense enterprise governance logic arrays into frictionless interactive interfaces.",
-    impact: "Decreased overall system task navigation durations significantly through strict layout alignment and non-fatiguing data hierarchies.",
-    icon: "grid_view",
-    tags: ["Information Architecture", "UX Strategy"],
-    mockupType: "analytics",
-    deepDive: {
-      leftTitle: "Overcoming Density Fatigue",
-      leftParagraphs: [
-        "Enterprise compliance auditors face huge cognitive overload when cataloging raw tracking cookies. By grouping massive cookie lists into logical categories and clean grids, the raw configurations became digestible and highly actionable.",
-        "This re-architecture stripped away secondary visual noise, resulting in a clean grid system designed after strict interactive Fitts's and Hick's Laws."
-      ],
-      rightTitle: "Auditing & Control Milestones",
-      rightBulletPoints: [
-        "Designed clear classification and tagging status indicators for corporate tracking data blocks.",
-        "Built easy pagination, smart quick-filtering, and drag-and-drop bucket systems.",
-        "Successfully decreased auditor page travel durations and human identification errors."
-      ],
-      footerBadge: "Friction-Free Task Navigation Optimization"
-    }
-  },
+ 
+  
   {
     id: "bojana",
     title: "Bojana Estudio Redesign",
     challenge: "Directing the physical-to-digital high-end storefront, structural visual grid architecture, and luxury branding framework for a premium architectural studio.",
     impact: "Generated substantial increase in qualified inquiries by framing structural portfolios inside an eye-catching luxury museum aesthetic.",
     icon: "palette",
-    tags: ["Branding", "Design Systems"],
-    mockupType: "tokens",
-    deepDive: {
-      leftTitle: "Digitalizing Physical Craft",
-      leftParagraphs: [
-        "Architecture is about the dialogue of empty spaces, materials, and light. I designed the studio's digital storefront as an extension of their buildings—crafted around extensive empty margins, stunning high-contrast typography, and seamless transitions.",
-        "The minimal interface preserves and amplifies the high-value physical catalog, transforming digital viewers into design consult clients."
-      ],
-      rightTitle: "Spatial Interactive Elements",
-      rightBulletPoints: [
-        "Designed an editorial masonry grid aligning blueprints and photographs symmetrically.",
-        "Paired high-impact display fonts with Fira Code for technical metric captions.",
-        "Optimized high-resolution graphic rendering for immediate loading without visual stutter."
-      ],
-      footerBadge: "Luxury Preservation • Qualified High-Ticket Conversion"
-    }
+    tags: ["Branding", "Design Assets"],
+    footerBadge: "Luxury Preservation • Qualified High-Ticket Conversion",
+    liveUrl: "https://drive.google.com/file/d/17VQemWoQ3Hi07G55l94_M8p7MCeaJ3xi/view?usp=share_link",
+    metrics: [
+      { value: "2.4x", label: "Increase in Qualified Leads" },
+      { value: "400px", label: "Generous White Space Layouts" },
+      { value: "15+", label: "Architectural Projects Showcased" }
+    ],
+    blocks: [
+      {
+        type: "image",
+        imageUrl: "https://drive.google.com/file/d/17VQemWoQ3Hi07G55l94_M8p7MCeaJ3xi/view?usp=share_link",
+        imageCaption: "Bojana Estudio Site"
+      },
+      {
+        type: "carousel",
+        carouselImages: [
+          "https://drive.google.com/file/d/1vdWNqsGOWLzNbLyUkuPGGqMSu0L8ojd4/view?usp=sharing",
+          "https://drive.google.com/file/d/1qsUJH2sjn-IMr4WHkzEFCwS808pDSCEZ/view?usp=share_link",
+          "https://drive.google.com/file/d/1VZ1u9iofm4heZVHjPDJPBlTDN7kQG1zi/view?usp=share_link"
+        ],
+        carouselCaption: "Brandbook"
+      },
+      {
+        type: "text",
+        title: "Digitalizing Physical Craft",
+        paragraphs: [
+          "Architecture is about the dialogue of empty spaces, materials, and light. I designed the studio's digital storefront as an extension of their buildings—crafted around extensive empty margins, stunning high-contrast typography, and seamless transitions.",
+          "The minimal interface preserves and amplifies the high-value physical catalog, transforming digital viewers into design consult clients."
+        ]
+      },
+      {
+        type: "text",
+        title: "Spatial Interactive Elements",
+        bulletPoints: [
+          "Designed an editorial masonry grid aligning blueprints and photographs symmetrically.",
+          "Paired high-impact display fonts with Fira Code for technical metric captions.",
+          "Optimized high-resolution graphic rendering for immediate loading without visual stutter."
+        ]
+      }
+    ]
   }
 ];

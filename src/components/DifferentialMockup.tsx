@@ -13,7 +13,7 @@ export const DifferentialMockup: React.FC = () => {
           <motion.path
             d="M 80,105 Q 140,45 200,105"
             fill="none"
-            stroke="#ff89ab"
+            stroke="#818cf8"
             strokeWidth="2"
             strokeLinecap="round"
             strokeDasharray="5 5"
@@ -27,7 +27,7 @@ export const DifferentialMockup: React.FC = () => {
           <motion.path
             d="M 200,105 Q 260,165 320,105"
             fill="none"
-            stroke="#be123c"
+            stroke="#2563eb"
             strokeWidth="2"
             strokeLinecap="round"
             strokeDasharray="5 5"
@@ -40,8 +40,8 @@ export const DifferentialMockup: React.FC = () => {
           {/* Sparkles / Flow particles gliding along the path */}
           <motion.circle
             r="3.5"
-            fill="#ff89ab"
-            filter="drop-shadow(0px 0px 3px #ff89ab)"
+            fill="#818cf8"
+            filter="drop-shadow(0px 0px 3px #818cf8)"
             animate={{
               cx: [80, 105, 140, 175, 200],
               cy: [105, 80, 63, 76, 105],
@@ -56,8 +56,8 @@ export const DifferentialMockup: React.FC = () => {
 
           <motion.circle
             r="3.5"
-            fill="#be123c"
-            filter="drop-shadow(0px 0px 3px #be123c)"
+            fill="#2563eb"
+            filter="drop-shadow(0px 0px 3px #2563eb)"
             animate={{
               cx: [200, 225, 260, 295, 320],
               cy: [105, 134, 147, 134, 105],
@@ -83,11 +83,11 @@ export const DifferentialMockup: React.FC = () => {
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            className="w-12 h-12 rounded-full border border-[#ff89ab]/40 bg-white/40 backdrop-blur-sm shadow-sm flex items-center justify-center text-[#ff89ab]"
+            className="w-12 h-12 rounded-full border border-[#818cf8]/40 bg-white/40 backdrop-blur-sm shadow-sm flex items-center justify-center text-[#818cf8]"
           >
             <div className="relative">
               <Palette className="w-5 h-5 stroke-[1.5]" />
-              <Heart className="w-2 h-2 fill-current absolute -top-1 -right-1.5 text-[#ff89ab] animate-pulse" />
+              <Heart className="w-2 h-2 fill-current absolute -top-1 -right-1.5 text-[#818cf8] animate-pulse" />
             </div>
           </motion.div>
           <span className="font-headline text-[9px] font-bold uppercase tracking-widest mt-2 text-neutral-600">
@@ -107,11 +107,11 @@ export const DifferentialMockup: React.FC = () => {
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            className="w-12 h-12 rounded-2xl border border-rose-300/40 bg-white/40 backdrop-blur-sm shadow-sm flex items-center justify-center text-rose-500"
+            className="w-12 h-12 rounded-2xl border border-blue-300/40 bg-white/40 backdrop-blur-sm shadow-sm flex items-center justify-center text-blue-500"
           >
             <div className="relative">
               <Layers className="w-5 h-5 stroke-[1.5]" />
-              <Star className="w-2 h-2 fill-current absolute -top-1 -right-1 text-rose-400" />
+              <Star className="w-2 h-2 fill-current absolute -top-1 -right-1 text-blue-400" />
             </div>
           </motion.div>
           <span className="font-headline text-[9px] font-bold uppercase tracking-widest mt-2 text-neutral-600">
@@ -131,11 +131,11 @@ export const DifferentialMockup: React.FC = () => {
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            className="w-12 h-12 rounded-full border border-[#be123c]/40 bg-white/40 backdrop-blur-sm shadow-sm flex items-center justify-center text-[#be123c]"
+            className="w-12 h-12 rounded-full border border-[#2563eb]/40 bg-white/40 backdrop-blur-sm shadow-sm flex items-center justify-center text-[#2563eb]"
           >
             <div className="relative">
               <Sparkles className="w-5 h-5 stroke-[1.5]" />
-              <span className="absolute -top-1 -right-1.5 text-[8px] font-bold text-[#be123c]">↗</span>
+              <span className="absolute -top-1 -right-1.5 text-[8px] font-bold text-[#2563eb]">↗</span>
             </div>
           </motion.div>
           <span className="font-headline text-[9px] font-bold uppercase tracking-widest mt-2 text-neutral-600">
@@ -144,7 +144,7 @@ export const DifferentialMockup: React.FC = () => {
         </div>
 
         {/* Center organic hand-sketched connector tag annotation */}
-        <div className="absolute top-[48%] left-[34%] bg-[#fce7f3]/40 border border-[#fbcfe8]/40 text-[#be123c] font-sans text-[8px] font-medium uppercase tracking-widest px-2 py-0.5 rounded-full scale-90 sm:scale-100">
+        <div className="absolute top-[48%] left-[34%] bg-[#eff6ff]/40 border border-[#dbeafe]/40 text-[#2563eb] font-sans text-[8px] font-medium uppercase tracking-widest px-2 py-0.5 rounded-full scale-90 sm:scale-100">
           synergy • lead
         </div>
       </div>
