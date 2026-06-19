@@ -2124,7 +2124,7 @@ export default function App() {
             <div className="w-full sm:w-40 md:w-48 shrink-0 flex flex-col justify-center space-y-1.5">
               <div className="overflow-hidden rounded-xl border border-neutral-800 relative bg-neutral-900 aspect-video shadow-3xs">
                 <img 
-                  src="./src/assets/images/papelito_preview_1781827745352.jpg" 
+                  imageurl="https://drive.google.com/file/d/1xN0fZzNMSZKh5252z38-m09XZokC0_Qf/view?usp=share_link" 
                   alt="Papelito game interface preview" 
                   className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                   referrerPolicy="no-referrer"
