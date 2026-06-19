@@ -14,21 +14,10 @@ import {
   Maximize2
 } from 'lucide-react';
 
-// Module-level static data (moved out of render to avoid recreating on each render)
-const OPT_IN_PERCENT = 94.8;
-const PRIVACY_PERCENT = 30;
-const SPARKLINE_VALUES = [20, 35, 45, 30, 55, 65, 40, 75, 80, 95, 85, 98];
-const PALETTE_SWATCHES = [
-  { hex: '#2563eb', name: 'Rose Dark', bg: 'bg-[#2563eb]', text: 'text-white' },
-  { hex: '#1d4ed8', name: 'Rose Deep', bg: 'bg-[#1d4ed8]', text: 'text-white' },
-  { hex: '#3b82f6', name: 'Rose Bright', bg: 'bg-[#3b82f6]', text: 'text-white' },
-  { hex: '#f0f5ff', name: 'Rose Light', bg: 'bg-[#f0f5ff]', text: 'text-neutral-800' }
-];
-
 // ==========================================
 // MOCKUP TYPE 1: Analytics & Conversion Dashboard Panel
 // ==========================================
-const AnalyticsMockupComponent: React.FC = () => {
+export const AnalyticsMockup: React.FC = () => {
   return (
     <div className="w-full bg-neutral-900 text-white rounded-2xl border border-neutral-800 p-5 font-sans space-y-4 shadow-xl overflow-hidden mt-4">
       {/* Browser bar */}
@@ -59,17 +48,13 @@ const AnalyticsMockupComponent: React.FC = () => {
         <div className="bg-neutral-950/40 border border-neutral-800/80 p-3 rounded-xl space-y-1">
           <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block">Opt-in Conversion Rate</span>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-xl font-bold tracking-tight text-white">{OPT_IN_PERCENT}%</span>
+            <span className="text-xl font-bold tracking-tight text-white">94.8%</span>
             <span className="text-emerald-500 text-[10px] font-semibold flex items-center">
               <TrendingUp className="w-2.5 h-2.5 mr-0.5" /> +12.4%
             </span>
           </div>
           <div className="w-full bg-neutral-800 h-1.5 rounded-full overflow-hidden mt-1.5">
-            {/* Use transform: scaleX to render progress (GPU-accelerated) */}
-            <div
-              className="bg-blue-700 h-full rounded-full origin-left transform"
-              style={{ transform: `scaleX(${OPT_IN_PERCENT / 100})` }}
-            />
+            <div className="bg-blue-700 h-full rounded-full" style={{ width: '94.8%' }} />
           </div>
         </div>
 
@@ -82,10 +67,7 @@ const AnalyticsMockupComponent: React.FC = () => {
             </span>
           </div>
           <div className="w-full bg-neutral-800 h-1.5 rounded-full overflow-hidden mt-1.5">
-            <div
-              className="bg-emerald-600 h-full rounded-full origin-left transform"
-              style={{ transform: `scaleX(${PRIVACY_PERCENT / 100})` }}
-            />
+            <div className="bg-emerald-600 h-full rounded-full" style={{ width: '30%' }} />
           </div>
         </div>
       </div>
@@ -97,13 +79,13 @@ const AnalyticsMockupComponent: React.FC = () => {
           <span className="text-neutral-500 font-mono">Completed: 14.8k / 15k</span>
         </div>
         
-        {/* Custom pure Tailwind micro-graph bars (use scaleY transforms to avoid layout thrash) */}
+        {/* Custom pure Tailwind micro-graph bars */}
         <div className="flex items-end justify-between h-14 pt-2 px-1">
-          {SPARKLINE_VALUES.map((height, idx) => (
-            <div key={`bar-${idx}-${height}`} className="w-[6%] bg-neutral-800/80 hover:bg-neutral-700 rounded-sm relative group h-full">
+          {[20, 35, 45, 30, 55, 65, 40, 75, 80, 95, 85, 98].map((height, idx) => (
+            <div key={idx} className="w-[6%] bg-neutral-800/80 hover:bg-neutral-700 rounded-sm relative group h-full">
               <div 
-                className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-900 to-blue-700 rounded-sm group-hover:from-blue-800 group-hover:to-blue-600 transition-transform transform origin-bottom"
-                style={{ transform: `scaleY(${height / 100})` }}
+                className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-900 to-blue-700 rounded-sm group-hover:from-blue-800 group-hover:to-blue-600 transition-all"
+                style={{ height: `${height}%` }}
               />
             </div>
           ))}
@@ -119,12 +101,10 @@ const AnalyticsMockupComponent: React.FC = () => {
   );
 };
 
-export const AnalyticsMockup = React.memo(AnalyticsMockupComponent);
-
 // ==========================================
 // MOCKUP TYPE 2: Interactive Wireframe & Field Configuration Canvas
 // ==========================================
-const WireframeMockupComponent: React.FC = () => {
+export const WireframeMockup: React.FC = () => {
   return (
     <div className="w-full bg-neutral-50 text-neutral-900 rounded-2xl border border-neutral-200/80 p-5 font-sans space-y-4 shadow-sm mt-4">
       {/* Wireframe Identifier */}
@@ -192,12 +172,10 @@ const WireframeMockupComponent: React.FC = () => {
   );
 };
 
-export const WireframeMockup = React.memo(WireframeMockupComponent);
-
 // ==========================================
 // MOCKUP TYPE 3: Design Tokens System Style Kit
 // ==========================================
-const DesignTokensMockupComponent: React.FC = () => {
+export const DesignTokensMockup: React.FC = () => {
   return (
     <div className="w-full bg-white text-neutral-900 rounded-2xl border border-neutral-200/80 p-5 font-sans space-y-4 shadow-sm mt-4">
       {/* Design System Identification */}
@@ -213,8 +191,13 @@ const DesignTokensMockupComponent: React.FC = () => {
         <div>
           <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-2">Palette Color Swatches</span>
           <div className="grid grid-cols-4 gap-2">
-            {PALETTE_SWATCHES.map((swatch) => (
-              <div key={swatch.hex} className="bg-neutral-50/70 border border-neutral-200/60 p-1.5 rounded-lg space-y-1.5">
+            {[
+              { hex: '#2563eb', name: 'Rose Dark', bg: 'bg-[#2563eb]', text: 'text-white' },
+              { hex: '#1d4ed8', name: 'Rose Deep', bg: 'bg-[#1d4ed8]', text: 'text-white' },
+              { hex: '#3b82f6', name: 'Rose Bright', bg: 'bg-[#3b82f6]', text: 'text-white' },
+              { hex: '#f0f5ff', name: 'Rose Light', bg: 'bg-[#f0f5ff]', text: 'text-neutral-800' }
+            ].map((swatch, idx) => (
+              <div key={idx} className="bg-neutral-50/70 border border-neutral-200/60 p-1.5 rounded-lg space-y-1.5">
                 <div className={`h-8 w-full rounded ${swatch.bg} flex items-center justify-center`} />
                 <div className="text-[8px] leading-tight text-center">
                   <p className="font-bold text-neutral-800 truncate">{swatch.name}</p>
@@ -249,6 +232,3 @@ const DesignTokensMockupComponent: React.FC = () => {
     </div>
   );
 };
-
-export const DesignTokensMockup = React.memo(DesignTokensMockupComponent);
-
