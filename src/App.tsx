@@ -2095,7 +2095,7 @@ export default function App() {
               </h2>
             </div>
             <p className="font-sans text-sm sm:text-base text-neutral-500 max-w-2xl leading-relaxed">
-              A curated portfolio connecting premium visual narratives with empirical business outcomes. Every design decision serves to translate complex engineering workflows into frictionless user experiences and lasting brand value.
+              Connecting premium visual narratives with empirical business outcomes. Every design decision serves to translate complex engineering workflows into frictionless user experiences and lasting brand value.
             </p>
           </div>
           <div className="lg:col-span-5 w-full">

@@ -23,7 +23,7 @@ export function IllowCaseStudy({ onClose }: IllowCaseStudyProps) {
       {/* Scrollable View Navigation bar modeled after B2B SaaS layout */}
       <nav className="sticky top-0 z-40 bg-[#f8f9ff]/90 backdrop-blur-md border-b border-[#E5E5F0] flex items-center justify-between px-6 py-3.5 select-none">
         <div className="flex items-center gap-1.5 animate-fade-in">
-          <span className="font-cursive text-2xl font-black tracking-tight text-neutral-950 lowercase">lia.</span>
+     
           <span className="text-[10px] uppercase tracking-widest text-[#2563eb] bg-blue-50 border border-blue-200/50 font-bold font-mono px-2.5 py-0.5 rounded-md">
             UX Case Study
           </span>
