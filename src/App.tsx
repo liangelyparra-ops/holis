@@ -30,7 +30,6 @@ import { db } from './firebase';
 import { useCases } from './data/useCases';
 import { AnalyticsMockup, WireframeMockup, DesignTokensMockup } from './components/ProjectMockups';
 import { DifferentialMockup } from './components/DifferentialMockup';
-import { IllowCaseStudy } from './components/IllowCaseStudy';
 
 const USER_ID_KEY = 'party-game-user-id-v2';
 const NICKNAME_KEY = 'party-game-nickname';
@@ -181,14 +180,20 @@ const CardCarousel: React.FC<{ images: string[]; getDirectDriveUrl: (url: string
       {/* Navigation overlays */}
       <button
         type="button"
-        onClick={() => setActiveSlide(prev => (prev === 0 ? images.length - 1 : prev - 1))}
+        onClick={(e) => {
+          e.stopPropagation();
+          setActiveSlide(prev => (prev === 0 ? images.length - 1 : prev - 1));
+        }}
         className="absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white text-neutral-800 flex items-center justify-center transition-all cursor-pointer shadow-3xs hover:scale-105 active:scale-95 z-10 animate-fade-in"
       >
         <span className="material-symbols-outlined text-xs font-bold leading-none">chevron_left</span>
       </button>
       <button
         type="button"
-        onClick={() => setActiveSlide(prev => (prev === images.length - 1 ? 0 : prev + 1))}
+        onClick={(e) => {
+          e.stopPropagation();
+          setActiveSlide(prev => (prev === images.length - 1 ? 0 : prev + 1));
+        }}
         className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white text-neutral-800 flex items-center justify-center transition-all cursor-pointer shadow-3xs hover:scale-105 active:scale-95 z-10"
       >
         <span className="material-symbols-outlined text-xs font-bold leading-none">chevron_right</span>
@@ -200,7 +205,10 @@ const CardCarousel: React.FC<{ images: string[]; getDirectDriveUrl: (url: string
           <button
             key={idx}
             type="button"
-            onClick={() => setActiveSlide(idx)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveSlide(idx);
+            }}
             className={`w-1.5 h-1.5 rounded-full pointer-events-auto transition-all duration-300 ${
               idx === activeSlide ? 'w-3.5 bg-white' : 'bg-white/40 hover:bg-white/60'
             }`}
@@ -245,7 +253,7 @@ const CarouselBlock: React.FC<{ block: any; getDirectDriveUrl: (url: string) => 
         <button
           type="button"
           onClick={() => setIndex(prev => (prev === images.length - 1 ? 0 : prev + 1))}
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-[#2563eb] flex items-center justify-center transition-all cursor-pointer shadow-3xs hover:scale-105 active:scale-95 z-10"
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-neutral-800 flex items-center justify-center transition-all cursor-pointer shadow-3xs hover:scale-105 active:scale-95 z-10"
         >
           <span className="material-symbols-outlined text-sm font-bold">chevron_right</span>
         </button>
@@ -292,10 +300,10 @@ function CaseStudyCard({ project, idx, onOpen }: CaseStudyCardProps) {
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.8, delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
       onClick={onOpen}
-      className="group relative custom-glass border border-neutral-150/80 rounded-2xl p-6 sm:p-8 flex flex-col gap-6 transition-all duration-500 ease-out shadow-xs hover:shadow-[0_24px_48px_rgba(37,99,235,0.06),0_1px_3px_rgba(37,99,235,0.02)] hover:border-blue-200/80 hover:bg-white/95 hover:-translate-y-1.5 cursor-pointer select-none overflow-hidden"
+      className="group relative custom-glass border border-neutral-150/80 rounded-2xl p-6 sm:p-8 flex flex-col gap-6 transition-all duration-500 ease-out shadow-xs hover:shadow-[0_24px_48px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.01)] hover:border-neutral-300/80 hover:bg-white cursor-pointer select-none overflow-hidden"
     >
-      {/* Subtle background glow inspired by Pomelli */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+      {/* Subtle background glow inspired by Lia Brand Base */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-neutral-500/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
       {/* Top Bar Indicators */}
       <div className="flex items-center justify-between gap-3">
@@ -303,13 +311,13 @@ function CaseStudyCard({ project, idx, onOpen }: CaseStudyCardProps) {
           {project.tags?.map((tag: string) => (
             <span
               key={tag}
-              className="inline-flex items-center px-2.5 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase font-mono border bg-neutral-100/70 border-neutral-200/40 text-neutral-500 shadow-3xs group-hover:bg-blue-50 group-hover:text-[#2563eb] group-hover:border-blue-100 transition-all duration-500"
+              className="inline-flex items-center px-2.5 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase font-mono border bg-neutral-100/70 border-neutral-200/40 text-neutral-500 shadow-3xs group-hover:bg-neutral-100 group-hover:text-black group-hover:border-neutral-200 transition-all duration-500"
             >
               {tag}
             </span>
           ))}
         </div>
-        <span className="material-symbols-outlined text-neutral-400 group-hover:text-[#2563eb] group-hover:scale-110 transition-all duration-500 text-lg shrink-0">
+        <span className="material-symbols-outlined text-neutral-400 group-hover:text-black group-hover:scale-110 transition-all duration-500 text-lg shrink-0">
           {project.icon}
         </span>
       </div>
@@ -318,7 +326,7 @@ function CaseStudyCard({ project, idx, onOpen }: CaseStudyCardProps) {
       <div className="space-y-2">
         <h3 className="font-headline text-lg sm:text-2xl font-bold text-neutral-900 tracking-tight leading-snug group-hover:text-black transition-colors duration-300">
           {project.title}
-          <span className="inline-block text-[#2563eb] opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-500 ml-2 font-sans font-normal text-lg sm:text-xl">
+          <span className="inline-block text-black opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-500 ml-2 font-sans font-normal text-lg sm:text-xl">
             →
           </span>
         </h3>
@@ -428,21 +436,17 @@ function CaseStudyCard({ project, idx, onOpen }: CaseStudyCardProps) {
 
       {/* Decorative Bottom / Empirical Metrics Block (Key Results) */}
       <div className="flex flex-col gap-3.5 border-t border-neutral-100/80 pt-4 mt-2 select-none">
-        <div className="p-3.5 bg-neutral-50/60 rounded-xl border border-neutral-200/30 italic text-[11px] sm:text-xs text-neutral-600 leading-relaxed group-hover:bg-blue-50/15 group-hover:border-blue-100/40 transition-all duration-500">
-          <strong className="text-neutral-800 font-bold not-italic block mb-0.5 group-hover:text-[#2563eb] transition-colors">Key Result Integration:</strong> 
+        <div className="p-3.5 bg-neutral-50/60 rounded-xl border border-neutral-200/30 italic text-[11px] sm:text-xs text-neutral-600 leading-relaxed group-hover:bg-neutral-100/50 group-hover:border-neutral-200/50 transition-all duration-500">
+          <strong className="text-neutral-800 font-bold not-italic block mb-0.5 group-hover:text-black transition-colors">Key Result Integration:</strong> 
           {project.impact}
         </div>
         
-        <div className="w-full">
-          <button
-            type="button"
-            className="w-full py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-200/50 text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-3xs group-hover:bg-neutral-950 group-hover:text-white group-hover:border-neutral-950 group-hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
-          >
+        <div className="flex items-center justify-between text-[10px] font-mono font-bold uppercase tracking-wider select-none">
+          <span className="text-neutral-400 group-hover:text-neutral-600 transition-colors max-w-[65%] truncate font-mono">{project.footerBadge}</span>
+          <span className="flex items-center gap-1 text-black font-sans group-hover:translate-x-1.5 transition-all duration-300 ease-out shrink-0">
             Explore Case Study
-            <span className="material-symbols-outlined text-xs font-bold group-hover:translate-x-0.5 transition-transform duration-300">
-              arrow_forward
-            </span>
-          </button>
+            <span className="material-symbols-outlined text-xs font-bold leading-none">arrow_forward</span>
+          </span>
         </div>
       </div>
     </motion.article>
@@ -2086,11 +2090,11 @@ export default function App() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           <div className="lg:col-span-7 space-y-6">
             <div className="space-y-3 animate-fade-in">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#2563eb] bg-blue-50 border border-blue-200/50 shadow-3xs w-fit">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-neutral-700 bg-neutral-100 border border-neutral-200/40 shadow-3xs w-fit">
                 Sr. Product Designer UX / UI Lead
               </span>
               <h2 className="font-headline text-4xl sm:text-6xl lg:text-7xl font-light text-neutral-900 tracking-[-0.03em] leading-[1.05]">
-                Strategy &amp; <span className="font-cursive italic font-normal text-[#2563eb] pr-1">Design</span> <br />
+                Strategy &amp; <span className="font-cursive italic font-normal text-neutral-400 pr-1">Design</span> <br />
                 as a Growth Engine
               </h2>
             </div>
@@ -2104,7 +2108,7 @@ export default function App() {
         </div>
 
         {/* Featured Case Studies Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto w-full mb-10">
           {filteredCases.map((project, idx) => {
             return (
               <CaseStudyCard 
@@ -2117,68 +2121,74 @@ export default function App() {
           })}
         </div>
 
-        {/* Flagship Technical Showcase Element: Papelito Game AI Co-creation */}
-        <div className="bg-[#111113] border border-neutral-800 rounded-2xl p-4 sm:p-5 shadow-sm transition-all duration-300 hover:border-neutral-700 max-w-6xl mx-auto w-full select-none">
-          <div className="flex flex-col sm:flex-row gap-5 items-stretch">
-            {/* Left Hand: Smaller, low-height Preview Image */}
-            <div className="w-full sm:w-40 md:w-48 shrink-0 flex flex-col justify-center space-y-1.5">
-              <div className="overflow-hidden rounded-xl border border-neutral-800 relative bg-neutral-900 aspect-video shadow-3xs">
-                <img 
-                  src="./src/assets/images/papelito_preview_1781827745352.jpg" 
-                  alt="Papelito game interface preview" 
-                  className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-                  referrerPolicy="no-referrer"
-                />
+        {/* Co-Creation Game Card positioned inline with Case Studies */}
+        <div className="max-w-6xl mx-auto w-full">
+          {renderPapelitoCoCreationPanel()}
+        </div>
+      </div>
+    );
+  };
+
+  const renderPapelitoCoCreationPanel = () => {
+    return (
+      <div className="bg-[#111113] border border-neutral-800 rounded-2xl p-4 sm:p-5 shadow-sm transition-all duration-300 hover:border-neutral-700 max-w-4xl mx-auto w-full select-none text-left">
+        <div className="flex flex-col sm:flex-row gap-5 items-stretch">
+          {/* Left Hand: Smaller, low-height Preview Image */}
+          <div className="w-full sm:w-40 md:w-48 shrink-0 flex flex-col justify-center space-y-1.5">
+            <div className="overflow-hidden rounded-xl border border-neutral-800 relative bg-neutral-900 aspect-video shadow-3xs">
+              <img 
+                src={getDirectDriveUrl("https://drive.google.com/file/d/1xN0fZzNMSZKh5252z38-m09XZokC0_Qf/view?usp=share_link")} 
+                alt="Papelito game interface preview" 
+                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <p className="font-sans text-[9px] text-neutral-400 italic pl-0.5 leading-normal select-text">
+              Preview: Real-time Papelito Multi-agent Engine
+            </p>
+          </div>
+
+          {/* Right Hand: Description & Horizontal Steps Bar */}
+          <div className="flex-1 flex flex-col justify-between space-y-3 sm:space-y-4 text-left">
+            {/* Header Details */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest font-mono text-blue-300 bg-blue-950/20 border border-blue-900/40">
+                  AI x UX Co-Creation
+                </span>
+                <span className="text-[10px] text-neutral-400 font-body italic">
+                  From raw prompt to live lobby
+                </span>
               </div>
-              <p className="font-sans text-[9px] text-neutral-450 italic pl-0.5 leading-normal select-text">
-                Preview: Real-time Papelito Multi-agent Engine
+              <h3 className="font-headline text-sm sm:text-base font-bold text-white tracking-tight">
+                Co-Creating Papelito Lobby Engine
+              </h3>
+              <p className="font-sans text-[11px] sm:text-xs text-neutral-400 leading-relaxed mb-0.5">
+                Designing a multiplayer party game requires granular event management. Using structured prompt sequencing, we co-designed and deployed the entire party flow featuring custom Web Audio synthesizers and low-latency Firestore subscriptions. The resulting framework translates responsive gameplay into frictionless user events, bringing interactive state models to life directly on this staging stage.
               </p>
             </div>
 
-            {/* Right Hand: Description & Horizontal Steps Bar & Play Trigger */}
-            <div className="flex-1 flex flex-col justify-between space-y-3 sm:space-y-4 text-left">
-              {/* Header Details */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between gap-3 flex-wrap">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest font-mono text-blue-300 bg-blue-950/20 border border-blue-900/40">
-                    AI x UX Co-Creation
-                  </span>
-                  <span className="text-[10px] text-neutral-400 font-body italic">
-                    From raw prompt to live lobby
-                  </span>
-                </div>
-                <h3 className="font-headline text-sm sm:text-base font-bold text-white tracking-tight">
-                  Co-Creating Papelito Lobby Engine
-                </h3>
-                <p className="font-sans text-[11px] sm:text-xs text-neutral-400 leading-relaxed">
-                  Designing a multiplayer party game requires granular event management. Using structured prompt sequencing, we co-designed and deployed the entire party flow featuring custom Web Audio synthesizers and low-latency Firestore subscriptions.
-                </p>
+            {/* Bottom Row / Flat horizontal layout */}
+            <div className="pt-2 border-t border-neutral-900 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex gap-x-3 gap-y-1 flex-wrap text-[10px] text-neutral-400 select-text">
+                <span className="text-blue-500 font-bold uppercase text-[8px] tracking-widest">Pipeline:</span>
+                <span className="font-mono text-[9px] text-neutral-300 font-bold">01 Prompt Blueprint</span>
+                <span className="text-neutral-700">•</span>
+                <span className="font-mono text-[9px] text-neutral-300 font-bold">02 State Machine</span>
+                <span className="text-neutral-700">•</span>
+                <span className="font-mono text-[9px] text-neutral-300 font-bold">03 Web Synth</span>
               </div>
-
-              {/* Bottom Row / Flat horizontal layout */}
-              <div className="pt-2 border-t border-neutral-900 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex gap-x-3 gap-y-1 flex-wrap text-[10px] text-neutral-400 select-text">
-                  <span className="text-blue-500 font-bold uppercase text-[8px] tracking-widest">Pipeline:</span>
-                  <span className="font-mono text-[9px] text-neutral-300">01 Direct Prompt</span>
-                  <span className="text-neutral-700">•</span>
-                  <span className="font-mono text-[9px] text-neutral-300">02 State Machine</span>
-                  <span className="text-neutral-700">•</span>
-                  <span className="font-mono text-[9px] text-neutral-300">03 Web Synth</span>
-                  <span className="text-neutral-700">•</span>
-                  <span className="font-mono text-[9px] text-neutral-300">04 Subscriptions</span>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setActiveTab('GAMES');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className="shrink-0 py-1.5 px-3 bg-white hover:bg-neutral-200 text-[#111113] font-sans text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 cursor-pointer hover:scale-[1.01] active:scale-[0.99] shadow-xs"
-                >
-                  Launch engine
-                  <span className="material-symbols-outlined text-[12px] font-bold">sports_esports</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('GAMES');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="shrink-0 py-1.5 px-3.5 bg-blue-600 hover:bg-blue-500 text-white font-mono text-[9px] font-bold uppercase tracking-widest rounded-lg transition-all flex items-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-[0.98] shadow-xs"
+              >
+                Launch Game (Live Dev Stage)
+                <span className="material-symbols-outlined text-[11px] font-bold leading-none">sports_esports</span>
+              </button>
             </div>
           </div>
         </div>
@@ -2223,11 +2233,11 @@ export default function App() {
         {/* Header Block */}
         <div className="max-w-3xl space-y-6">
           <div className="space-y-3 animate-fade-in">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#2563eb] bg-blue-50 border border-blue-200/50 shadow-3xs w-fit">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-neutral-700 bg-neutral-100 border border-neutral-200/40 shadow-3xs w-fit">
               Core Vision
             </span>
             <h2 className="font-headline text-4xl sm:text-6xl lg:text-7xl font-light text-neutral-900 tracking-[-0.03em] leading-[1.05]">
-              Empirical <span className="font-cursive italic font-normal text-[#2563eb] pr-1">Architecture</span>
+              Empirical <span className="font-cursive italic font-normal text-neutral-400 pr-1">Architecture</span>
             </h2>
           </div>
           <p className="font-sans text-sm sm:text-base text-neutral-500 max-w-2xl leading-relaxed">
@@ -2239,11 +2249,11 @@ export default function App() {
         <div className="space-y-8 border-t border-neutral-100 pt-10">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="space-y-3">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#2563eb] bg-blue-50 border border-blue-200/50 shadow-3xs w-fit">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-neutral-700 bg-neutral-100 border border-neutral-200/40 shadow-3xs w-fit">
                 Methodology in Action
               </span>
               <h3 className="font-headline text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">
-                The <span className="font-cursive italic font-normal text-[#2563eb]">Double-Diamond</span> Cycle
+                The <span className="font-cursive italic font-normal text-neutral-400">Double-Diamond</span> Cycle
               </h3>
             </div>
             <p className="font-sans text-xs sm:text-sm text-neutral-500 max-w-sm leading-relaxed">
@@ -2260,20 +2270,20 @@ export default function App() {
                   {/* Gradients */}
                   <defs>
                     <linearGradient id="grad-active-discover" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#818cf8" stopOpacity="0.4" />
-                      <stop offset="100%" stopColor="#fca5a5" stopOpacity="0.1" />
+                      <stop offset="0%" stopColor="#c8c5be" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="#edeae3" stopOpacity="0.1" />
                     </linearGradient>
                     <linearGradient id="grad-active-define" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#fca5a5" stopOpacity="0.1" />
-                      <stop offset="100%" stopColor="#2563eb" stopOpacity="0.3" />
+                      <stop offset="0%" stopColor="#edeae3" stopOpacity="0.1" />
+                      <stop offset="100%" stopColor="#111110" stopOpacity="0.25" />
                     </linearGradient>
                     <linearGradient id="grad-active-design" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#2563eb" stopOpacity="0.3" />
-                      <stop offset="100%" stopColor="#fda4af" stopOpacity="0.1" />
+                      <stop offset="0%" stopColor="#111110" stopOpacity="0.25" />
+                      <stop offset="100%" stopColor="#edeae3" stopOpacity="0.1" />
                     </linearGradient>
                     <linearGradient id="grad-active-deliver" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#fda4af" stopOpacity="0.1" />
-                      <stop offset="100%" stopColor="#e11d48" stopOpacity="0.4" />
+                      <stop offset="0%" stopColor="#edeae3" stopOpacity="0.1" />
+                      <stop offset="100%" stopColor="#111110" stopOpacity="0.4" />
                     </linearGradient>
                   </defs>
 
@@ -2289,8 +2299,8 @@ export default function App() {
                   {/* Particle Flow path along diamond margins */}
                   <motion.circle
                      r="4"
-                     fill="#2563eb"
-                     filter="drop-shadow(0 0 4px #2563eb)"
+                     fill="#111110"
+                     filter="drop-shadow(0 0 4px rgba(0,0,0,0.15))"
                      animate={{
                        cx: [40, 200, 360, 440, 600, 760],
                        cy: [110, 30, 110, 110, 30, 110],
@@ -2310,7 +2320,7 @@ export default function App() {
                       onClick={() => setSelectedProcessStep(0)}
                       d="M 40,110 L 200,30 L 200,190 Z"
                       fill={selectedProcessStep === 0 ? "url(#grad-active-discover)" : "transparent"}
-                      stroke={selectedProcessStep === 0 ? "#818cf8" : "#e5e5e5"}
+                      stroke={selectedProcessStep === 0 ? "#111110" : "#e4e1d9"}
                       strokeWidth={selectedProcessStep === 0 ? "2.5" : "1.5"}
                       strokeDasharray={selectedProcessStep === 0 ? "0" : "5 5"}
                       whileHover={{ scale: 1.01 }}
@@ -2323,7 +2333,7 @@ export default function App() {
                       onClick={() => setSelectedProcessStep(1)}
                       d="M 200,30 L 360,110 L 200,190 Z"
                       fill={selectedProcessStep === 1 ? "url(#grad-active-define)" : "transparent"}
-                      stroke={selectedProcessStep === 1 ? "#2563eb" : "#e5e5e5"}
+                      stroke={selectedProcessStep === 1 ? "#111110" : "#e4e1d9"}
                       strokeWidth={selectedProcessStep === 1 ? "2.5" : "1.5"}
                       strokeDasharray={selectedProcessStep === 1 ? "0" : "5 5"}
                       whileHover={{ scale: 1.01 }}
@@ -2339,7 +2349,7 @@ export default function App() {
                       onClick={() => setSelectedProcessStep(2)}
                       d="M 440,110 L 600,30 L 600,190 Z"
                       fill={selectedProcessStep === 2 ? "url(#grad-active-design)" : "transparent"}
-                      stroke={selectedProcessStep === 2 ? "#2563eb" : "#e5e5e5"}
+                      stroke={selectedProcessStep === 2 ? "#111110" : "#e4e1d9"}
                       strokeWidth={selectedProcessStep === 2 ? "2.5" : "1.5"}
                       strokeDasharray={selectedProcessStep === 2 ? "0" : "5 5"}
                       whileHover={{ scale: 1.01 }}
@@ -2352,7 +2362,7 @@ export default function App() {
                       onClick={() => setSelectedProcessStep(3)}
                       d="M 600,30 L 760,110 L 600,190 Z"
                       fill={selectedProcessStep === 3 ? "url(#grad-active-deliver)" : "transparent"}
-                      stroke={selectedProcessStep === 3 ? "#e11d48" : "#e5e5e5"}
+                      stroke={selectedProcessStep === 3 ? "#111110" : "#e4e1d9"}
                       strokeWidth={selectedProcessStep === 3 ? "2.5" : "1.5"}
                       strokeDasharray={selectedProcessStep === 3 ? "0" : "5 5"}
                       whileHover={{ scale: 1.01 }}
@@ -2362,12 +2372,12 @@ export default function App() {
                   </g>
 
                   {/* Hotspot Circles / Anchor Vertices */}
-                  <circle cx="40" cy="110" r="5" fill="#fff" stroke="#818cf8" strokeWidth="2" />
-                  <circle cx="200" cy="110" r="5" fill="#fff" stroke="#2563eb" strokeWidth="2" />
-                  <circle cx="360" cy="110" r="5" fill="#fff" stroke="#2563eb" strokeWidth="2" />
-                  <circle cx="440" cy="110" r="5" fill="#fff" stroke="#2563eb" strokeWidth="2" />
-                  <circle cx="600" cy="110" r="5" fill="#fff" stroke="#2563eb" strokeWidth="2" />
-                  <circle cx="760" cy="110" r="5" fill="#fff" stroke="#e11d48" strokeWidth="2" />
+                  <circle cx="40" cy="110" r="5" fill="#fff" stroke="#c8c5be" strokeWidth="2" />
+                  <circle cx="200" cy="110" r="5" fill="#fff" stroke="#111110" strokeWidth="2" />
+                  <circle cx="360" cy="110" r="5" fill="#fff" stroke="#111110" strokeWidth="2" />
+                  <circle cx="440" cy="110" r="5" fill="#fff" stroke="#111110" strokeWidth="2" />
+                  <circle cx="600" cy="110" r="5" fill="#fff" stroke="#111110" strokeWidth="2" />
+                  <circle cx="760" cy="110" r="5" fill="#fff" stroke="#c8c5be" strokeWidth="2" />
 
                   {/* Phase Titles & Direction Labels */}
                   <text x="120" y="114" fill="#a3a3a3" fontSize="8" fontFamily="sans-serif" fontWeight="bold" letterSpacing="0.1em" textAnchor="middle">DIVERGE</text>
@@ -2384,22 +2394,22 @@ export default function App() {
 
                   {/* Dynamic Floating Labels on Top of diamonds */}
                   <g onClick={() => setSelectedProcessStep(0)} className="cursor-pointer">
-                    <rect x="70" y="55" width="60" height="18" rx="4" fill={selectedProcessStep === 0 ? "#818cf8" : "transparent"} />
+                    <rect x="70" y="55" width="60" height="18" rx="4" fill={selectedProcessStep === 0 ? "#111110" : "transparent"} />
                     <text x="100" y="67" fill={selectedProcessStep === 0 ? "#fff" : "rgba(38,38,38,0.7)"} fontSize="9" fontFamily="sans-serif" fontWeight="black" textAnchor="middle">01. DISCOVER</text>
                   </g>
 
                   <g onClick={() => setSelectedProcessStep(1)} className="cursor-pointer">
-                    <rect x="270" y="55" width="50" height="18" rx="4" fill={selectedProcessStep === 1 ? "#2563eb" : "transparent"} />
+                    <rect x="270" y="55" width="50" height="18" rx="4" fill={selectedProcessStep === 1 ? "#111110" : "transparent"} />
                     <text x="295" y="67" fill={selectedProcessStep === 1 ? "#fff" : "rgba(38,38,38,0.7)"} fontSize="9" fontFamily="sans-serif" fontWeight="black" textAnchor="middle">02. DEFINE</text>
                   </g>
 
                   <g onClick={() => setSelectedProcessStep(2)} className="cursor-pointer">
-                    <rect x="470" y="55" width="50" height="18" rx="4" fill={selectedProcessStep === 2 ? "#2563eb" : "transparent"} />
+                    <rect x="470" y="55" width="50" height="18" rx="4" fill={selectedProcessStep === 2 ? "#111110" : "transparent"} />
                     <text x="495" y="67" fill={selectedProcessStep === 2 ? "#fff" : "rgba(38,38,38,0.7)"} fontSize="9" fontFamily="sans-serif" fontWeight="black" textAnchor="middle">03. DESIGN</text>
                   </g>
 
                   <g onClick={() => setSelectedProcessStep(3)} className="cursor-pointer">
-                    <rect x="670" y="55" width="50" height="18" rx="4" fill={selectedProcessStep === 3 ? "#e11d48" : "transparent"} />
+                    <rect x="670" y="55" width="50" height="18" rx="4" fill={selectedProcessStep === 3 ? "#111110" : "transparent"} />
                     <text x="695" y="67" fill={selectedProcessStep === 3 ? "#fff" : "rgba(38,38,38,0.7)"} fontSize="9" fontFamily="sans-serif" fontWeight="black" textAnchor="middle">04. DELIVER</text>
                   </g>
                 </svg>
@@ -2414,7 +2424,7 @@ export default function App() {
                   onClick={() => setSelectedProcessStep(idx)}
                   className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border cursor-pointer transition-all ${
                     selectedProcessStep === idx
-                      ? 'bg-[#2563eb] text-white border-[#2563eb]'
+                      ? 'bg-neutral-900 text-white border-neutral-900'
                       : 'bg-white text-neutral-500 border-neutral-200'
                   }`}
                 >
@@ -2432,7 +2442,7 @@ export default function App() {
             className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start bg-white border border-neutral-200/40 p-6 sm:p-8 rounded-2xl shadow-2xs hover:shadow-xs transition-shadow text-left"
           >
             <div className="md:col-span-12 lg:col-span-7 space-y-4">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-[9px] xs:text-[10px] font-bold uppercase tracking-widest font-mono text-[#2563eb] bg-blue-50 border border-blue-200/50 shadow-3xs w-fit block">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-[9px] xs:text-[10px] font-bold uppercase tracking-widest font-mono text-neutral-700 bg-neutral-100 border border-neutral-200/40 shadow-3xs w-fit block">
                 Stage 0{selectedProcessStep + 1} • {steps[selectedProcessStep].sub}
               </span>
               <h4 className="font-headline text-xl sm:text-2xl font-black text-neutral-900 tracking-tight leading-tight">
@@ -2452,7 +2462,7 @@ export default function App() {
               <div className="space-y-2">
                 {steps[selectedProcessStep].deliverables.map((item, id) => (
                   <div key={id} className="flex items-center gap-2 text-xs font-semibold text-neutral-700">
-                    <span className="material-symbols-outlined text-[#2563eb] text-base">verified</span>
+                    <span className="material-symbols-outlined text-neutral-800 text-base">verified</span>
                     <span>{item}</span>
                   </div>
                 ))}
@@ -2464,19 +2474,19 @@ export default function App() {
         {/* 2. Design Philosophy Infographic Row */}
         <div className="space-y-8 border-t border-neutral-100 pt-10">
           <div className="space-y-3">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#2563eb] bg-blue-50 border border-blue-200/50 shadow-3xs w-fit">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-neutral-700 bg-neutral-100 border border-neutral-200/40 shadow-3xs w-fit">
               02 • Aesthetics & Performance Infographic
             </span>
             <h3 className="font-headline text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">
-              Design Pillars as <span className="font-cursive italic font-normal text-[#2563eb]">Operational Metrics</span>
+              Design Pillars as <span className="font-cursive italic font-normal text-neutral-400">Operational Metrics</span>
             </h3>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
             {/* Infographic card 1: Functional Brutalism */}
-            <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-blue-200 hover:bg-white/60 transition-all duration-300">
+            <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-neutral-300 hover:bg-white/60 transition-all duration-300">
               <div className="space-y-4 text-left">
-                <span className="inline-flex items-center justify-center p-2 bg-blue-50 border border-blue-200/50 text-[#2563eb] rounded-xl text-lg w-fit shadow-3xs">
+                <span className="inline-flex items-center justify-center p-2 bg-neutral-100 border border-neutral-200/40 text-black rounded-xl text-lg w-fit shadow-3xs">
                   <span className="material-symbols-outlined leading-none">architecture</span>
                 </span>
                 <div className="space-y-1.5">
@@ -2493,7 +2503,7 @@ export default function App() {
               <div className="bg-neutral-50 rounded-xl p-4 space-y-3 border border-neutral-100">
                 <div className="flex justify-between items-center text-[9px] font-bold text-neutral-500 uppercase tracking-widest">
                   <span>UX Interaction Hierarchy</span>
-                  <span className="text-[#2563eb]">92% Core Focus</span>
+                  <span className="text-black">92% Core Focus</span>
                 </div>
                 
                 {/* Horizontal Stack Bar Diagram */}
@@ -2501,10 +2511,10 @@ export default function App() {
                   <div className="space-y-1">
                     <div className="flex justify-between text-[10px]">
                       <span className="text-neutral-700 font-bold">Utility Blocks</span>
-                      <span className="text-[#2563eb] font-bold">92%</span>
+                      <span className="text-black font-bold">92%</span>
                     </div>
                     <div className="w-full h-1.5 bg-neutral-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-[#818cf8] to-[#2563eb] rounded-full" style={{ width: '92%' }} />
+                      <div className="h-full bg-gradient-to-r from-neutral-400 to-black rounded-full" style={{ width: '92%' }} />
                     </div>
                   </div>
 
@@ -2522,9 +2532,9 @@ export default function App() {
             </div>
 
             {/* Infographic card 2: Tactile Sensory Audio */}
-            <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-blue-200 hover:bg-white/60 transition-all duration-300">
+            <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-neutral-300 hover:bg-white/60 transition-all duration-300">
               <div className="space-y-4 text-left">
-                <span className="inline-flex items-center justify-center p-2 bg-blue-50 border border-blue-200/50 text-[#2563eb] rounded-xl text-lg w-fit shadow-3xs">
+                <span className="inline-flex items-center justify-center p-2 bg-neutral-100 border border-neutral-200/40 text-black rounded-xl text-lg w-fit shadow-3xs">
                   <span className="material-symbols-outlined leading-none">volume_up</span>
                 </span>
                 <div className="space-y-1.5">
@@ -2551,7 +2561,7 @@ export default function App() {
                     <motion.path 
                       id="synth-wave"
                       d="M0,20 Q15,4 30,20 T60,20 T90,20 T120,20 T150,20 T160,20" 
-                      stroke="#818cf8" 
+                      stroke="#111110" 
                       strokeWidth="2" 
                       animate={{
                         d: [
@@ -2567,20 +2577,20 @@ export default function App() {
                       }}
                     />
                   </svg>
-                  <div className="w-1.5 bg-[#2563eb] h-3 animate-bounce" style={{ animationDelay: '0.1s' }} />
-                  <div className="w-1.5 bg-[#818cf8] h-6 animate-bounce" style={{ animationDelay: '0.3s' }} />
-                  <div className="w-1.5 bg-[#2563eb] h-4 animate-bounce" style={{ animationDelay: '0.5s' }} />
+                  <div className="w-1.5 bg-black h-3 animate-bounce" style={{ animationDelay: '0.1s' }} />
+                  <div className="w-1.5 bg-neutral-400 h-6 animate-bounce" style={{ animationDelay: '0.3s' }} />
+                  <div className="w-1.5 bg-black h-4 animate-bounce" style={{ animationDelay: '0.5s' }} />
                   <div className="w-1.5 bg-neutral-300 h-2 animate-bounce" style={{ animationDelay: '0.2s' }} />
-                  <div className="w-1.5 bg-[#2563eb] h-5 animate-bounce" style={{ animationDelay: '0.4s' }} />
-                  <div className="w-1.5 bg-[#818cf8] h-3 animate-bounce" style={{ animationDelay: '0.6s' }} />
+                  <div className="w-1.5 bg-black h-5 animate-bounce" style={{ animationDelay: '0.4s' }} />
+                  <div className="w-1.5 bg-neutral-400 h-3 animate-bounce" style={{ animationDelay: '0.6s' }} />
                 </div>
               </div>
             </div>
 
             {/* Infographic card 3: Target Velocity Gauge */}
-            <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-blue-200 hover:bg-white/60 transition-all duration-300">
+            <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-neutral-300 hover:bg-white/60 transition-all duration-300">
               <div className="space-y-4 text-left">
-                <span className="inline-flex items-center justify-center p-2 bg-blue-50 border border-blue-200/50 text-[#2563eb] rounded-xl text-lg w-fit shadow-3xs">
+                <span className="inline-flex items-center justify-center p-2 bg-neutral-100 border border-neutral-200/40 text-black rounded-xl text-lg w-fit shadow-3xs">
                   <span className="material-symbols-outlined leading-none">speed</span>
                 </span>
                 <div className="space-y-1.5">
@@ -2602,7 +2612,7 @@ export default function App() {
                     <span className="text-[10px] text-neutral-500 font-bold">ms Engine lag</span>
                   </div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-headline font-black text-[#2563eb]">120</span>
+                    <span className="text-xl font-headline font-black text-black">120</span>
                     <span className="text-[10px] text-neutral-500 font-bold">FPS Active target</span>
                   </div>
                 </div>
@@ -2615,7 +2625,7 @@ export default function App() {
                       cx="28" 
                       cy="28" 
                       r="24" 
-                      stroke="#2563eb" 
+                      stroke="#111110" 
                       strokeWidth="4" 
                       fill="transparent" 
                       strokeDasharray="150"
@@ -2638,11 +2648,11 @@ export default function App() {
       <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 py-10 sm:py-16 space-y-16 md:space-y-24 text-left select-none">
         <div className="space-y-6">
           <div className="space-y-3 animate-fade-in">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-[#2563eb] bg-blue-50 border border-blue-200/50 shadow-3xs w-fit">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-neutral-700 bg-neutral-100 border border-neutral-200/40 shadow-3xs w-fit">
               Partner with Lia
             </span>
             <h2 className="font-headline text-4xl sm:text-6xl lg:text-7xl font-light text-neutral-900 tracking-[-0.03em] leading-[1.05]">
-              Consultancy &amp; <span className="font-cursive italic font-normal text-[#2563eb] pr-1">Action</span>
+              Consultancy &amp; <span className="font-cursive italic font-normal text-neutral-400 pr-1">Action</span>
             </h2>
           </div>
           <p className="font-sans text-sm sm:text-base text-neutral-500 max-w-2xl leading-relaxed">
@@ -2652,7 +2662,7 @@ export default function App() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10">
           {/* Information block */}
-          <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-blue-200 hover:bg-white/60 space-y-8">
+          <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-neutral-300 hover:bg-white/60 space-y-8">
             <div className="space-y-6">
               <h3 className="font-headline text-2xl font-black text-neutral-900 tracking-tight">Lia Parra</h3>
               <p className="font-sans text-sm text-neutral-500 leading-relaxed">
@@ -2661,11 +2671,11 @@ export default function App() {
               <div className="space-y-4 pt-6 border-t border-neutral-150 text-sm font-sans">
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-[#45474b]">mail</span>
-                  <a href="mailto:liangelyp@gmail.com" className="text-neutral-700 select-all font-medium hover:text-[#2563eb] transition-all">liangelyp@gmail.com</a>
+                  <a href="mailto:liangelyp@gmail.com" className="text-neutral-700 select-all font-medium hover:text-black hover:underline transition-all">liangelyp@gmail.com</a>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-[#45474b]">chat</span>
-                  <a href="https://wa.me/5491156424162?text=Hello%20Lia!%20I%20saw%20your%20portfolio%20and%20would%20love%20to%20connect%20with%20you." target="_blank" rel="noreferrer" className="text-neutral-700 font-medium hover:text-[#2563eb] transition-all">+54 9 11 5642-4162 (WhatsApp)</a>
+                  <a href="https://wa.me/5491156424162?text=Hello%20Lia!%20I%20saw%20your%20portfolio%20and%20would%20love%20to%20connect%20with%20you." target="_blank" rel="noreferrer" className="text-neutral-700 font-medium hover:text-black hover:underline transition-all">+54 9 11 5642-4162 (WhatsApp)</a>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-[#45474b]">location_on</span>
@@ -2679,7 +2689,7 @@ export default function App() {
                 href="https://linkedin.com/in/liangely-diseno-grafico"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 font-sans text-xs font-bold uppercase tracking-widest text-[#2563eb] hover:text-[#1d4ed8] transition-colors"
+                className="inline-flex items-center gap-1.5 font-sans text-xs font-bold uppercase tracking-widest text-black hover:underline transition-colors"
                 id="contact-linkedin-link"
               >
                 <Linkedin className="w-3.5 h-3.5 shrink-0" />
@@ -2689,7 +2699,7 @@ export default function App() {
           </div>
 
           {/* Contact form block */}
-          <div className="lg:col-span-2 custom-glass border border-neutral-200/50 bg-white/45 p-6 sm:p-8 rounded-2xl transition-all duration-300 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-blue-200 hover:bg-white/60">
+          <div className="lg:col-span-2 custom-glass border border-neutral-200/50 bg-white/45 p-6 sm:p-8 rounded-2xl transition-all duration-300 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-neutral-300 hover:bg-white/60">
             {contactSubmitted ? (
               <div className="text-center py-6 space-y-6 animate-fade-in">
                 <div className="w-16 h-16 bg-emerald-100/80 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
@@ -2731,7 +2741,7 @@ export default function App() {
                       setContactEmail('');
                       setContactMessage('');
                     }}
-                    className="text-[10px] font-sans font-black uppercase tracking-widest text-[#2563eb] hover:text-[#1d4ed8] transition-colors cursor-pointer"
+                    className="text-[10px] font-sans font-black uppercase tracking-widest text-black hover:underline transition-all cursor-pointer"
                   >
                     ← Send another message
                   </button>
@@ -2741,7 +2751,7 @@ export default function App() {
               <form onSubmit={handleContactSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label htmlFor="contact-name" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-[#2563eb] font-mono">
+                    <label htmlFor="contact-name" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500 font-mono">
                       Your Name *
                     </label>
                     <input
@@ -2751,11 +2761,11 @@ export default function App() {
                       value={contactName}
                       onChange={(e) => setContactName(e.target.value)}
                       placeholder="e.g. Alex Smith"
-                      className="w-full bg-white/40 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-xs sm:text-sm font-sans focus:bg-white focus:border-[#2563eb] outline-none transition-all text-neutral-900 shadow-3xs focus:ring-1 focus:ring-[#2563eb]/10"
+                      className="w-full bg-white/40 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-xs sm:text-sm font-sans focus:bg-white focus:border-black outline-none transition-all text-neutral-900 shadow-3xs focus:ring-1 focus:ring-black/10"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="contact-email" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-[#2563eb] font-mono">
+                    <label htmlFor="contact-email" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500 font-mono">
                       Email Address *
                     </label>
                     <input
@@ -2765,13 +2775,13 @@ export default function App() {
                       value={contactEmail}
                       onChange={(e) => setContactEmail(e.target.value)}
                       placeholder="e.g. alex@company.com"
-                      className="w-full bg-white/40 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-xs sm:text-sm font-sans focus:bg-white focus:border-[#2563eb] outline-none transition-all text-neutral-900 shadow-3xs focus:ring-1 focus:ring-[#2563eb]/10"
+                      className="w-full bg-white/40 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-xs sm:text-sm font-sans focus:bg-white focus:border-black outline-none transition-all text-neutral-900 shadow-3xs focus:ring-1 focus:ring-black/10"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-sans font-bold uppercase tracking-widest text-[#2563eb] font-mono">
+                  <label className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500 font-mono">
                     Area of Collaboration
                   </label>
                   <div className="grid grid-cols-3 gap-2">
@@ -2786,7 +2796,7 @@ export default function App() {
                           className={`py-2 px-2 sm:px-3 rounded-xl text-[9px] sm:text-[10px] font-mono font-bold uppercase border tracking-widest transition-all cursor-pointer ${
                             isSelected
                               ? 'bg-neutral-950 text-white border-neutral-950 shadow-2xs scale-[1.01]'
-                              : 'bg-white/40 border-neutral-200/50 text-neutral-500 hover:border-blue-200 hover:text-[#2563eb] hover:bg-blue-50/25 shadow-3xs'
+                              : 'bg-white/40 border-neutral-200/50 text-neutral-500 hover:border-neutral-400 hover:text-black hover:bg-neutral-50 shadow-3xs'
                           }`}
                         >
                           {sub}
@@ -2797,7 +2807,7 @@ export default function App() {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="contact-message" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-[#2563eb] font-mono">
+                  <label htmlFor="contact-message" className="block text-[10px] font-sans font-bold uppercase tracking-widest text-neutral-500 font-mono">
                     Tell me about your product challenge *
                   </label>
                   <textarea
@@ -2807,7 +2817,7 @@ export default function App() {
                     value={contactMessage}
                     onChange={(e) => setContactMessage(e.target.value)}
                     placeholder="Describe your design objectives, timelines or parameters..."
-                    className="w-full bg-white/40 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-xs sm:text-sm font-sans focus:bg-white focus:border-[#2563eb] outline-none transition-all text-neutral-900 shadow-3xs focus:ring-1 focus:ring-[#2563eb]/10"
+                    className="w-full bg-white/40 backdrop-blur-md border border-neutral-200/50 rounded-xl p-3 text-xs sm:text-sm font-sans focus:bg-white focus:border-black outline-none transition-all text-neutral-900 shadow-3xs focus:ring-1 focus:ring-black/10"
                   />
                 </div>
 
@@ -2903,87 +2913,112 @@ export default function App() {
             />
           </>
         ) : (
-          <div className="absolute inset-0 bg-[#fafaf9]">
-            {/* Soft Warm Tone Editorial Theme Abstract Shapes */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#e0f2fe]/50 via-[#f0f9ff]/60 to-[#f7f5f0]">
+            {/* Elegant Puffy Clouds in the Sky — Smooth drifting and morphing */}
+            
+            {/* Cloud 1: Fluffy Main Cumulus in top-left */}
             <motion.div 
               animate={{
-                x: [0, 80, -40, 0],
-                y: [0, -60, 50, 0],
-                scale: [1, 1.15, 0.9, 1],
+                x: [0, 60, -30, 0],
+                y: [0, -20, 15, 0],
+                scale: [1, 1.08, 0.95, 1],
                 borderRadius: [
-                  "30% 70% 70% 30% / 30% 30% 70% 70%",
-                  "50% 50% 20% 80% / 20% 80% 20% 80%",
-                  "80% 20% 50% 50% / 50% 30% 70% 70%",
-                  "30% 70% 70% 30% / 30% 30% 70% 70%"
+                  "65% 55% 60% 45% / 50% 55% 45% 50%",
+                  "75% 45% 65% 40% / 60% 45% 55% 40%",
+                  "55% 65% 45% 55% / 45% 55% 45% 55%",
+                  "65% 55% 60% 45% / 50% 55% 45% 50%"
                 ],
-                rotate: [0, 120, 240, 360]
               }}
               transition={{
-                duration: 25,
+                duration: 35,
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
-              className="absolute top-0 right-1/4 w-[450px] h-[450px] bg-[#fecdd3]/35 blur-[100px] mix-blend-multiply"
+              className="absolute top-[8%] left-[8%] w-[500px] h-[300px] bg-white/70 blur-[90px] mix-blend-normal"
             />
+
+            {/* Cloud 2: Soft Sunset Highlight Cloud in middle-right (with light pink/peach edges) */}
             <motion.div 
               animate={{
-                x: [0, -90, 50, 0],
-                y: [0, 70, -60, 0],
-                scale: [1, 0.9, 1.2, 1],
+                x: [0, -70, 40, 0],
+                y: [0, 30, -25, 0],
+                scale: [1, 0.95, 1.12, 1],
                 borderRadius: [
-                  "50% 50% 20% 80% / 20% 80% 20% 80%",
-                  "80% 20% 50% 50% / 50% 30% 70% 70%",
-                  "30% 70% 70% 30% / 30% 30% 70% 70%",
-                  "50% 50% 20% 80% / 20% 80% 20% 80%"
+                  "55% 65% 50% 60% / 45% 55% 40% 60%",
+                  "70% 50% 60% 45% / 55% 40% 60% 45%",
+                  "45% 70% 55% 50% / 35% 65% 50% 55%",
+                  "55% 65% 50% 60% / 45% 55% 40% 60%"
                 ],
-                rotate: [360, 240, 120, 0]
               }}
               transition={{
-                duration: 32,
+                duration: 42,
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
-              className="absolute bottom-1/4 left-1/4 w-[500px] h-[500px] bg-[#ffedd5]/35 blur-[120px] mix-blend-multiply"
+              className="absolute top-[25%] right-[5%] w-[550px] h-[320px] bg-rose-100/40 blur-[110px] mix-blend-multiply"
             />
+
+            {/* Cloud 3: Warm Morning Sunshine Reflection Cloud (Golden peach tint) */}
             <motion.div 
               animate={{
-                x: [0, 50, -60, 0],
-                y: [0, 80, -40, 0],
-                scale: [1, 1.1, 0.85, 1],
+                x: [0, 40, -50, 0],
+                y: [0, 25, -35, 0],
+                scale: [1, 1.1, 0.9, 1],
                 borderRadius: [
-                  "80% 20% 50% 50% / 50% 30% 70% 70%",
-                  "30% 70% 70% 30% / 30% 30% 70% 70%",
-                  "50% 50% 20% 80% / 20% 80% 20% 80%",
-                  "80% 20% 50% 50% / 50% 30% 70% 70%"
+                  "60% 60% 50% 50% / 50% 50% 50% 50%",
+                  "50% 70% 40% 60% / 40% 60% 40% 60%",
+                  "70% 55% 55% 45% / 55% 45% 55% 45%",
+                  "60% 60% 50% 50% / 50% 50% 50% 50%"
                 ],
-                rotate: [0, 180, 360]
               }}
               transition={{
-                duration: 28,
+                duration: 38,
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
-              className="absolute top-1/3 left-1/3 w-[350px] h-[350px] bg-[#fef9c3]/35 blur-[90px] mix-blend-multiply"
+              className="absolute top-[45%] left-[20%] w-[450px] h-[280px] bg-[#fef9c3]/35 blur-[100px] mix-blend-multiply"
             />
+
+            {/* Cloud 4: Deep Sky Lavender/Blue Cloud in bottom-right */}
             <motion.div 
               animate={{
-                x: [0, 30, -30, 0],
-                y: [0, -50, 40, 0],
+                x: [0, -30, 50, 0],
+                y: [0, -40, 30, 0],
                 scale: [1, 1.05, 0.95, 1],
                 borderRadius: [
-                  "30% 70% 70% 30% / 30% 30% 70% 70%",
-                  "50% 50% 20% 80% / 20% 80% 20% 80%",
-                  "80% 20% 50% 50% / 50% 30% 70% 70%",
-                  "30% 70% 70% 30% / 30% 30% 70% 70%"
+                  "50% 70% 60% 50% / 40% 60% 50% 60%",
+                  "65% 50% 70% 45% / 55% 45% 60% 45%",
+                  "45% 65% 50% 60% / 35% 55% 45% 65%",
+                  "50% 70% 60% 50% / 40% 60% 50% 60%"
                 ],
-                rotate: [360, 0]
               }}
               transition={{
-                duration: 20,
+                duration: 45,
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
-              className="absolute bottom-10 right-1/3 w-[450px] h-[450px] bg-blue-100/25 blur-[110px] mix-blend-multiply"
+              className="absolute bottom-[20%] right-[15%] w-[600px] h-[350px] bg-sky-200/35 blur-[120px] mix-blend-multiply"
+            />
+
+            {/* Cloud 5: Low Alt Horizon Mist (puffy, soft, sweeping white cloud at the bottom) */}
+            <motion.div 
+              animate={{
+                x: [0, 80, -80, 0],
+                y: [0, 15, -15, 0],
+                scale: [1, 1.15, 0.9, 1],
+                borderRadius: [
+                  "80% 40% 75% 45% / 50% 40% 60% 50%",
+                  "70% 50% 65% 55% / 45% 50% 55% 50%",
+                  "85% 35% 80% 40% / 55% 35% 65% 45%",
+                  "80% 40% 75% 45% / 50% 40% 60% 50%"
+                ],
+              }}
+              transition={{
+                duration: 50,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="absolute bottom-[5%] left-[5%] w-[650px] h-[320px] bg-white/75 blur-[130px] mix-blend-normal"
             />
           </div>
         )}
@@ -3030,10 +3065,10 @@ export default function App() {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <span className="font-sans text-sm font-black uppercase tracking-widest text-neutral-900">
+              <span className="font-sans text-sm font-black uppercase tracking-widest text-[#111110]">
                 Lia Parra
               </span>
-              <span className="w-1.5 h-1.5 bg-[#2563eb] rounded-full animate-pulse shrink-0" />
+              <span className="w-1.5 h-1.5 bg-[#111110] rounded-full animate-pulse shrink-0" />
               <span className="font-mono text-[9px] font-bold text-neutral-400 uppercase tracking-widest bg-neutral-100 border border-neutral-200/50 px-1.5 py-0.5 rounded leading-none">
                 Lab Sandbox
               </span>
@@ -3045,7 +3080,7 @@ export default function App() {
         {activeTab !== 'GAMES' && (
           <nav className="hidden md:flex items-center gap-8 font-headline text-xs font-bold uppercase tracking-widest">
             {[
-              { id: 'IMPACT', label: 'Experience' },
+              { id: 'IMPACT', label: 'Portfolio' },
               { id: 'VISION', label: 'My Vision' },
               { id: 'GAMES', label: 'Game' },
               { id: 'CONTACT', label: 'About' }
@@ -3060,8 +3095,8 @@ export default function App() {
                   }}
                   className={`py-1 transition-all duration-300 cursor-pointer ${
                     isTabActive 
-                      ? 'text-[#2563eb] font-black scale-105' 
-                      : 'text-neutral-500 hover:text-[#2563eb]'
+                      ? 'text-[#111110] font-black scale-105' 
+                      : 'text-neutral-500 hover:text-[#111110]'
                   }`}
                 >
                   {tab.label}
@@ -3177,7 +3212,7 @@ export default function App() {
             }`}
           >
             {[
-              { id: 'IMPACT', label: 'Experience' },
+              { id: 'IMPACT', label: 'Portfolio' },
               { id: 'VISION', label: 'My Vision' },
               { id: 'GAMES', label: 'Game' },
               { id: 'CONTACT', label: 'About' }
@@ -3194,7 +3229,7 @@ export default function App() {
                   className={`py-3 text-xl font-headline font-bold uppercase tracking-widest text-center transition-all duration-300 ${
                     activeTab === 'GAMES' 
                       ? isTabActive ? 'text-[#818cf8] scale-105' : 'text-neutral-400 hover:text-white'
-                      : isTabActive ? 'text-[#2563eb] scale-105' : 'text-on-surface-variant'
+                      : isTabActive ? 'text-[#111110] scale-105' : 'text-on-surface-variant'
                   }`}
                 >
                   {tab.label}
@@ -3218,52 +3253,63 @@ export default function App() {
               exit={{ opacity: 0, scale: 0.95, y: 25 }}
               transition={{ type: 'spring', damping: 26, stiffness: 210 }}
               onClick={(e) => e.stopPropagation()}
-              className={`bg-white/95 backdrop-blur-2xl border border-neutral-200/80 rounded-3xl w-full max-h-[88vh] sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden text-neutral-900 ${selectedProjectForModal.id === 'illow_case1' ? 'max-w-5xl' : 'max-w-4xl'}`}
+              className="bg-white/95 backdrop-blur-2xl border border-neutral-200/80 rounded-3xl w-full max-h-[88vh] sm:max-h-[90vh] shadow-2xl flex flex-col overflow-hidden text-neutral-900 max-w-4xl"
             >
               {/* Modal Top Bar */}
-              {selectedProjectForModal.id !== 'illow_case1' && (
-                <div className="flex justify-between items-center px-6 sm:px-8 py-4 border-b border-neutral-100 bg-neutral-50/70">
-                  <div className="flex items-center gap-3">
-                    {selectedProjectForModal.tags?.map((tag: string) => (
-                      <span 
-                        key={tag} 
-                        className="inline-flex items-center px-2.5 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase font-mono border bg-neutral-150/50 border-neutral-200/50 text-neutral-600 shadow-3xs"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                    <span className="material-symbols-outlined text-[#2563eb] text-lg leading-none shrink-0" aria-hidden="true">
-                      {selectedProjectForModal.icon}
+              <div className="flex justify-between items-center px-6 sm:px-8 py-4 border-b border-neutral-100 bg-neutral-50/70">
+                <div className="flex items-center gap-3">
+                  {selectedProjectForModal.tags?.map((tag: string) => (
+                    <span 
+                      key={tag} 
+                      className="inline-flex items-center px-2.5 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase font-mono border bg-neutral-150/50 border-neutral-200/50 text-neutral-600 shadow-3xs"
+                    >
+                      {tag}
                     </span>
-                  </div>
-                  
-                  <button
-                    type="button"
-                    onClick={() => setSelectedProjectForModal(null)}
-                    className="w-10 h-10 rounded-full border border-neutral-200 bg-white hover:bg-neutral-50 hover:text-black hover:border-neutral-300 flex items-center justify-center text-neutral-500 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer shadow-3xs"
-                  >
-                    <span className="material-symbols-outlined text-base font-bold leading-none">close</span>
-                  </button>
+                  ))}
+                  <span className="material-symbols-outlined text-black text-lg leading-none shrink-0" aria-hidden="true">
+                    {selectedProjectForModal.icon}
+                  </span>
                 </div>
-              )}
+                
+                <button
+                  type="button"
+                  onClick={() => setSelectedProjectForModal(null)}
+                  className="w-10 h-10 rounded-full border border-neutral-200 bg-white hover:bg-neutral-50 hover:text-black hover:border-neutral-300 flex items-center justify-center text-neutral-500 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer shadow-3xs"
+                >
+                  <span className="material-symbols-outlined text-base font-bold leading-none">close</span>
+                </button>
+              </div>
 
               {/* Scrollable Modal Content */}
-              <div className={`flex-1 overflow-y-auto style-scrollbar text-left ${selectedProjectForModal.id === 'illow_case1' ? 'p-0 bg-[#F7F7FB]' : 'p-6 sm:p-8 md:p-10 space-y-8'}`}>
-                {selectedProjectForModal.id === 'illow_case1' ? (
-                  <IllowCaseStudy onClose={() => setSelectedProjectForModal(null)} />
-                ) : (
-                  <>
-                    <div className="space-y-4">
-                      <h2 className="font-headline text-2xl sm:text-4xl font-black text-neutral-900 tracking-tight leading-tight">
-                        {selectedProjectForModal.title}
-                      </h2>
-                      <div className="p-5 bg-neutral-50/80 rounded-2xl border border-neutral-200/50 select-text">
-                        <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
-                          <strong className="text-neutral-800 font-semibold uppercase font-mono text-[9px] tracking-widest block mb-2 text-[#2563eb]">The Challenge</strong>
-                          {selectedProjectForModal.challenge}
-                        </p>
-                      </div>
+              <div className="flex-1 overflow-y-auto style-scrollbar text-left p-6 sm:p-8 md:p-10 space-y-8 bg-white">
+                <div className="space-y-4">
+                  <h2 className="font-headline text-2xl sm:text-4xl font-bold text-neutral-900 tracking-tight leading-tight">
+                    {selectedProjectForModal.title}
+                  </h2>
+
+                  {/* Empirical Key Metrics inside Modal for clean data presentation */}
+                  {selectedProjectForModal.metrics && selectedProjectForModal.metrics.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-4 border-t border-b border-neutral-100">
+                      {selectedProjectForModal.metrics.map((metric: any, mIdx: number) => (
+                        <div key={mIdx} className="space-y-1">
+                          <div className="font-headline text-2xl sm:text-3xl font-black text-black tracking-tight">
+                            {metric.value}
+                          </div>
+                          <p className="text-[9px] text-neutral-500 uppercase tracking-widest font-mono">
+                            {metric.label}
+                          </p>
+                        </div>
+                      ))}
                     </div>
+                  )}
+
+                  <div className="p-5 bg-neutral-50/80 rounded-2xl border border-neutral-200/50 select-text">
+                    <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed">
+                      <strong className="text-neutral-800 font-semibold uppercase font-mono text-[9px] tracking-widest block mb-1">The Challenge</strong>
+                      {selectedProjectForModal.challenge}
+                    </p>
+                  </div>
+                </div>
 
                     {/* Dynamic Block-Based Narrative Case Study Flow */}
                     {selectedProjectForModal.blocks && selectedProjectForModal.blocks.length > 0 ? (
@@ -3290,16 +3336,16 @@ export default function App() {
                                   )}
 
                                   {block.bulletPoints && block.bulletPoints.length > 0 && (
-                                    <div className="space-y-4 bg-blue-50/25 p-5 sm:p-6 rounded-2xl border border-blue-100/60 mt-4 text-left">
+                                    <div className="space-y-4 bg-neutral-50 p-5 sm:p-6 rounded-2xl border border-neutral-200/50 mt-4 text-left">
                                       {block.title && (
-                                        <h5 className="font-headline text-xs font-bold text-[#2563eb] uppercase tracking-wider font-mono mb-2">
+                                        <h5 className="font-headline text-xs font-bold text-black uppercase tracking-wider font-mono mb-2">
                                           {block.title} Key Action Points
                                         </h5>
                                       )}
                                       <ul className="space-y-3 font-sans text-xs sm:text-sm text-neutral-600 leading-relaxed">
                                         {block.bulletPoints.map((bullet: string, bIdx: number) => (
                                           <li key={bIdx} className="flex items-start gap-2.5">
-                                            <span className="text-[#2563eb] font-black text-sm select-none leading-none mt-0.5">•</span>
+                                            <span className="text-black font-black text-sm select-none leading-none mt-0.5">•</span>
                                             <span>{bullet}</span>
                                           </li>
                                         ))}
@@ -3383,7 +3429,7 @@ export default function App() {
                                     href={block.pdfUrl} 
                                     target="_blank" 
                                     rel="noopener noreferrer" 
-                                    className="font-mono text-[9px] text-[#2563eb] bg-white hover:bg-[#2563eb] hover:text-white border border-neutral-200 hover:border-[#2563eb] px-2.5 py-1 rounded-full font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs"
+                                    className="font-mono text-[9px] text-black bg-white hover:bg-black hover:text-white border border-neutral-200 hover:border-black px-2.5 py-1 rounded-full font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs"
                                   >
                                     Open PDF
                                     <span className="material-symbols-outlined text-[10px] font-bold">open_in_new</span>
@@ -3407,7 +3453,7 @@ export default function App() {
                     {/* Styled Footer Badge at the end of deep-dive blocks flow */}
                     {selectedProjectForModal.footerBadge && (
                       <div className="pt-4 border-t border-neutral-150 select-none">
-                        <div className="bg-blue-600 text-white border border-blue-700 p-3.5 rounded-2xl font-mono font-bold text-[10px] tracking-widest text-center uppercase shadow-sm">
+                        <div className="bg-neutral-50/90 text-neutral-600 border border-neutral-200/80 p-3.5 rounded-2xl font-mono font-bold text-[10px] tracking-widest text-center uppercase shadow-3xs">
                           {selectedProjectForModal.footerBadge}
                         </div>
                       </div>
@@ -3418,22 +3464,18 @@ export default function App() {
                     No modules or narrative blocks found.
                   </div>
                 )}
-                  </>
-                )}
               </div>
 
               {/* Modal Bottom Footer */}
-              {selectedProjectForModal.id !== 'illow_case1' && (
-                <div className="px-6 sm:px-8 py-4 border-t border-neutral-100 bg-neutral-50/50 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedProjectForModal(null)}
-                    className="px-5 py-2.5 bg-neutral-950 hover:bg-neutral-800 text-white font-mono text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer shadow-3xs"
-                  >
-                    Close Case Study
-                  </button>
-                </div>
-              )}
+              <div className="px-6 sm:px-8 py-4 border-t border-neutral-100 bg-neutral-50/50 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setSelectedProjectForModal(null)}
+                  className="px-5 py-2.5 bg-neutral-950 hover:bg-neutral-800 text-white font-mono text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer shadow-3xs"
+                >
+                  Close Case Study
+                </button>
+              </div>
             </motion.div>
           </div>
         )}
@@ -3483,16 +3525,16 @@ export default function App() {
             {activeTab === 'CONTACT' && renderContact()}
             
             {activeTab === 'GAMES' && (
-              <div className="game-theme text-on-surface bg-background select-none min-h-[55vh] relative w-full flex items-center justify-center p-0">
-                <div className="w-full max-w-4xl py-6 px-4">
+              <div className="game-theme text-on-surface bg-[#0a0a0c] select-none min-h-[60vh] relative w-full flex flex-col items-center justify-center py-10 px-4">
+                <div className="w-full max-w-4xl space-y-10 flex flex-col items-center">
                   {!selectedNickname || gameState.status === 'HOME' ? (
                     renderHome()
                   ) : (
-                    <>
+                    <div className="w-full">
                       {gameState.status === 'LOBBY' && renderLobby()}
                       {gameState.status === 'GAME' && renderGame()}
                       {gameState.status === 'RESULTS' && renderResults()}
-                    </>
+                    </div>
                   )}
                 </div>
               </div>
@@ -3519,7 +3561,7 @@ export default function App() {
             </p>
           </div>
           <div className="sm:text-right space-y-0.5">
-            <p className="text-[10px] uppercase tracking-widest font-black text-[#2563eb]">
+            <p className="text-[10px] uppercase tracking-widest font-black text-black">
               B2B SAAS, AI & ENTERPRISE SYSTEMS
             </p>
             <a 

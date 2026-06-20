@@ -1,47 +1,47 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital,wght@0,400;1,400&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&family=Instrument+Serif:ital,wght@0,400;1,400&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  /* Premium Labs.Google Inspired Theme Variables (Delicate, Airy, Hyper-Professional, Luxe Off-White UI) */
-  --color-background: #fafafa;
+  /* Lia Brand Base (Minimal, warm, editorial off-white palette) */
+  --color-background: #f7f5f0;
   --color-surface: #ffffff;
   --color-surface-bright: #ffffff;
-  --color-surface-dim: #f3f4f6;
+  --color-surface-dim: #edeae3;
   --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f8f9fa;
-  --color-surface-container: #f1f3f4;
-  --color-surface-container-high: #e8eaed;
-  --color-surface-container-highest: #dadce0;
-  --color-surface-variant: #f1f3f4;
+  --color-surface-container-low: #edeae3;
+  --color-surface-container: #e4e1d9;
+  --color-surface-container-high: #e4e1d9;
+  --color-surface-container-highest: #edeae3;
+  --color-surface-variant: #edeae3;
   
-  --color-on-surface: #111111;
-  --color-on-surface-variant: #5f6368;
+  --color-on-surface: #111110;
+  --color-on-surface-variant: #5c5a56;
   
-  --color-primary: #1a73e8; /* Google Labs Blue */
-  --color-primary-dim: #1557b0;
-  --color-on-primary: #ffffff;
-  --color-on-primary-fixed: #1a73e8;
+  --color-primary: #111110; /* Achromatic Lia Black */
+  --color-primary-dim: #2e2c29;
+  --color-on-primary: #f7f5f0;
+  --color-on-primary-fixed: #111110;
   
-  --color-secondary: #202124;
-  --color-secondary-dim: #3c4043;
+  --color-secondary: #5c5a56;
+  --color-secondary-dim: #9b9891;
   --color-on-secondary: #ffffff;
   
-  --color-tertiary: #10b981;
-  --color-tertiary-dim: #059669;
+  --color-tertiary: #5c5a56;
+  --color-tertiary-dim: #2e2c29;
   --color-on-tertiary: #ffffff;
   
-  --color-error: #d93025;
-  --color-outline: #80868b;
-  --color-outline-variant: #dadce0;
+  --color-error: #dc5050;
+  --color-outline: rgba(0, 0, 0, 0.09);
+  --color-outline-variant: rgba(0, 0, 0, 0.05);
 
-  --font-headline: "Plus Jakarta Sans", "Space Grotesk", sans-serif;
-  --font-body: "Plus Jakarta Sans", sans-serif;
-  --font-label: "Space Grotesk", sans-serif;
+  --font-headline: "Syne", "Inter", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Inter", sans-serif;
   --font-cursive: "Instrument Serif", serif;
 
   @keyframes pulse-border {
-    0%, 100% { border-color: var(--color-primary); box-shadow: 0 0 20px rgba(26, 115, 232, 0.1); }
-    50% { border-color: #dadce0; box-shadow: 0 0 30px rgba(26, 115, 232, 0.15); }
+    0%, 100% { border-color: var(--color-primary); box-shadow: 0 0 20px rgba(17, 17, 16, 0.1); }
+    50% { border-color: rgba(0, 0, 0, 0.09); box-shadow: 0 0 30px rgba(17, 17, 16, 0.05); }
   }
 }
 
