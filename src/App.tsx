@@ -150,6 +150,61 @@ function getDirectDriveUrl(url: string | undefined): string {
   return url;
 }
 
+function getEmbedUrl(url: string | undefined): string {
+  if (!url) return '';
+
+  // 1. Google Drive Links (PDF, Video, Docs, etc.)
+  if (url.includes('drive.google.com')) {
+    const fileDMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (fileDMatch && fileDMatch[1]) {
+      return `https://drive.google.com/file/d/${fileDMatch[1]}/preview`;
+    }
+    const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (idMatch && idMatch[1]) {
+      return `https://drive.google.com/file/d/${idMatch[1]}/preview`;
+    }
+  }
+
+  // 2. YouTube Links
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    let videoId = '';
+    if (url.includes('youtu.be/')) {
+      const parts = url.split('youtu.be/');
+      if (parts[1]) {
+        videoId = parts[1].split(/[?#]/)[0];
+      }
+    } else if (url.includes('watch?v=')) {
+      const match = url.match(/[?&]v=([^&#]+)/);
+      if (match && match[1]) {
+        videoId = match[1];
+      }
+    } else if (url.includes('/shorts/')) {
+      const parts = url.split('/shorts/');
+      if (parts[1]) {
+        videoId = parts[1].split(/[?#]/)[0];
+      }
+    } else if (url.includes('/embed/')) {
+      const parts = url.split('/embed/');
+      if (parts[1]) {
+        videoId = parts[1].split(/[?#]/)[0];
+      }
+    }
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+  }
+
+  // 3. Vimeo Links
+  if (url.includes('vimeo.com')) {
+    const match = url.match(/vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|album\/(\d+)\/video\/|video\/|)(\d+)(?:$|\/|\?)/);
+    if (match && match[3]) {
+      return `https://player.vimeo.com/video/${match[3]}`;
+    }
+  }
+
+  return url;
+}
+
 const getFirstMediaBlock = (project: any) => {
   if (project.blocks && project.blocks.length > 0) {
     return project.blocks.find((b: any) => ['image', 'carousel', 'video', 'pdf'].includes(b.type));
@@ -342,12 +397,12 @@ function CaseStudyCard({ project, idx, onOpen }: CaseStudyCardProps) {
           const firstMediaBlock = getFirstMediaBlock(project);
           if (!firstMediaBlock) return null;
 
-          if (firstMediaBlock.type === 'image' && firstMediaBlock.imageUrl) {
+          if (firstMediaBlock.type === 'image' && (firstMediaBlock.imageUrl || firstMediaBlock.carouselImages?.[0])) {
             return (
               <div className="space-y-2.5 bg-neutral-50/40 border border-neutral-200/40 rounded-xl p-3 sm:p-4 group/media transition-all duration-500 hover:border-neutral-250">
                 <div className="overflow-hidden rounded-lg border border-neutral-200/50 relative bg-neutral-900 aspect-video shadow-3xs">
                   <img 
-                    src={getDirectDriveUrl(firstMediaBlock.imageUrl)} 
+                    src={getDirectDriveUrl(firstMediaBlock.imageUrl || firstMediaBlock.carouselImages?.[0])} 
                     alt={firstMediaBlock.imageCaption || "Image style preview"} 
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover group-hover/media:scale-[1.02] transition-transform duration-700 ease-out brightness-[0.98] group-hover/media:brightness-100"
@@ -381,13 +436,14 @@ function CaseStudyCard({ project, idx, onOpen }: CaseStudyCardProps) {
             const isVideoEmbed = firstMediaBlock.videoUrl.includes('youtube.com') || 
                                 firstMediaBlock.videoUrl.includes('youtu.be') || 
                                 firstMediaBlock.videoUrl.includes('vimeo.com') ||
+                                firstMediaBlock.videoUrl.includes('drive.google.com') ||
                                 firstMediaBlock.videoUrl.includes('embed');
             return (
               <div className="space-y-2.5 bg-neutral-50/40 border border-neutral-200/40 rounded-xl p-3 sm:p-4 group/media transition-all duration-500 hover:border-neutral-250">
                 <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-neutral-200/50 bg-neutral-950 shadow-3xs">
                   {isVideoEmbed ? (
                     <iframe 
-                      src={firstMediaBlock.videoUrl} 
+                      src={getEmbedUrl(firstMediaBlock.videoUrl)} 
                       title="Dynamic collapsed video presentation"
                       className="absolute inset-0 w-full h-full border-0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -417,7 +473,7 @@ function CaseStudyCard({ project, idx, onOpen }: CaseStudyCardProps) {
               <div className="space-y-2.5 bg-neutral-50/40 border border-neutral-200/40 rounded-xl p-3 sm:p-4 group/media transition-all duration-500 hover:border-neutral-250">
                 <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-neutral-200/50 bg-neutral-950 shadow-3xs">
                   <iframe 
-                    src={firstMediaBlock.pdfUrl}
+                    src={getEmbedUrl(firstMediaBlock.pdfUrl)}
                     className="w-full h-full border-0"
                     title="PDF collapsed stream frame preview"
                   />
@@ -463,6 +519,7 @@ export default function App() {
   const [contactSubmitting, setContactSubmitting] = useState(false);
   const [contactSubmitted, setContactSubmitted] = useState(false);
   const [availableMenuOpen, setAvailableMenuOpen] = useState(false);
+  const [floatingMenuOpen, setFloatingMenuOpen] = useState(false);
   const [useCaseFilter, setUseCaseFilter] = useState<'All' | 'UX Strategy' | 'Design Systems' | 'Information Architecture' | 'Branding'>('All');
   
   // Player state synchronized from the modular GameSection
@@ -1540,7 +1597,7 @@ export default function App() {
       </div>
 
       {/* Top Custom Navigation Bar */}
-      <header className={`fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 sm:px-12 h-20 transition-all border-b ${
+      <header className={`fixed top-0 left-0 w-full z-50 flex justify-between items-center px-[16px] sm:px-[24px] md:px-[24px] lg:px-[32px] xl:px-[120px] py-[23px] transition-all border-b ${
         activeTab === 'GAMES' 
           ? 'bg-[#0e0e0e]/90 text-white border-outline-variant/10 backdrop-blur-md' 
           : 'bg-[#fafafa]/90 text-on-surface border-outline-variant/30 backdrop-blur-md'
@@ -1571,7 +1628,7 @@ export default function App() {
                 Lia Parra
               </span>
               <span className="w-1.5 h-1.5 bg-[#111110] rounded-full animate-pulse shrink-0" />
-              <span className="font-mono text-[9px] font-bold text-neutral-400 uppercase tracking-widest bg-neutral-100 border border-neutral-200/50 px-1.5 py-0.5 rounded leading-none">
+              <span className="font-mono text-[9px] font-bold text-neutral-400 uppercase tracking-widest bg-neutral-100 border border-neutral-200/50 px-1.5 py-0.5 rounded leading-none sm:hidden md:block">
                 Lab Sandbox
               </span>
             </div>
@@ -1580,7 +1637,7 @@ export default function App() {
 
         {/* Desktop Navigation Link Tabs (Always Visible for portfolio, hidden for GAMES which uses Burger) */}
         {activeTab !== 'GAMES' && (
-          <nav className="hidden md:flex items-center gap-8 font-headline text-xs font-bold uppercase tracking-widest">
+          <nav className="hidden lg:flex items-center gap-8 font-headline text-xs font-bold uppercase tracking-widest">
             {[
               { id: 'IMPACT', label: 'Portfolio' },
               { id: 'VISION', label: 'My Vision' },
@@ -1610,7 +1667,7 @@ export default function App() {
 
         {/* Top Right Actions */}
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="relative">
+          <div className="relative hidden sm:block">
             <button 
               onClick={() => setAvailableMenuOpen(!availableMenuOpen)}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-full shadow-xs border transition-all cursor-pointer ${
@@ -1690,7 +1747,7 @@ export default function App() {
           <button 
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className={`block p-2 rounded-lg hover:bg-surface-container-high/50 transition-colors z-[100] ${
-              activeTab === 'GAMES' ? '' : 'md:hidden'
+              activeTab === 'GAMES' ? '' : 'lg:hidden'
             }`}
           >
             <span className={`material-symbols-outlined text-2xl ${activeTab === 'GAMES' ? 'text-[#3C48C3]' : 'text-primary'}`}>
@@ -1710,7 +1767,7 @@ export default function App() {
             className={`fixed inset-0 z-40 p-6 pt-24 flex flex-col justify-center items-center gap-6 shadow-lg backdrop-blur-2xl ${
               activeTab === 'GAMES' 
                 ? 'bg-[#0e0e0e]/98 text-white' 
-                : 'bg-[#fafafa]/95 text-on-surface md:hidden'
+                : 'bg-[#fafafa]/95 text-on-surface lg:hidden'
             }`}
           >
             {[
@@ -1862,7 +1919,7 @@ export default function App() {
                             <div key={idx} className="space-y-2 select-none">
                               <div className="overflow-hidden rounded-xl border border-neutral-250 group/img relative bg-neutral-900 aspect-video sm:aspect-[21/9] shadow-3xs">
                                 <img 
-                                  src={getDirectDriveUrl(block.imageUrl)} 
+                                  src={getDirectDriveUrl(block.imageUrl || block.carouselImages?.[0])} 
                                   alt={block.imageCaption || "Case study graphics block"} 
                                   referrerPolicy="no-referrer"
                                   className="w-full h-full object-cover group-hover/img:scale-101 transition-transform duration-700 ease-out brightness-[0.98] group-hover/img:brightness-100"
@@ -1885,13 +1942,14 @@ export default function App() {
                           const isEmbed = block.videoUrl?.includes('youtube.com') || 
                                           block.videoUrl?.includes('youtu.be') || 
                                           block.videoUrl?.includes('vimeo.com') ||
+                                          block.videoUrl?.includes('drive.google.com') ||
                                           block.videoUrl?.includes('embed');
                           return (
                             <div key={idx} className="space-y-2 select-none">
                               <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-neutral-250 bg-neutral-950 shadow-3xs">
                                 {isEmbed ? (
                                   <iframe 
-                                    src={block.videoUrl} 
+                                    src={getEmbedUrl(block.videoUrl)} 
                                     title="Video presentation player"
                                     className="absolute inset-0 w-full h-full border-0"
                                     style={{ border: 0 }}
@@ -1922,7 +1980,7 @@ export default function App() {
                             <div key={idx} className="space-y-2 select-none">
                               <div className="relative bg-neutral-150 rounded-xl overflow-hidden border border-neutral-250 aspect-video sm:aspect-[21/9] flex flex-col shadow-3xs group">
                                 <iframe 
-                                  src={block.pdfUrl}
+                                  src={getEmbedUrl(block.pdfUrl)}
                                   className="w-full h-full border-0 rounded-xl bg-neutral-100"
                                   title="Case study PDF document"
                                 />
@@ -2006,6 +2064,76 @@ export default function App() {
           </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* Floating Available Indicator for Mobile Portrait */}
+      <div className="fixed bottom-6 right-6 z-50 block sm:hidden">
+        <div className="relative">
+          <button 
+            onClick={() => setFloatingMenuOpen(!floatingMenuOpen)}
+            className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-full shadow-lg border transition-all cursor-pointer ${
+              activeTab === 'GAMES'
+                ? 'bg-green-500/90 border-green-500/40 text-green-100 backdrop-blur-md'
+                : 'bg-white/95 border-neutral-250 text-emerald-800 font-sans font-bold shadow-md'
+            }`}
+          >
+            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.7)]" />
+            <span className="text-[10px] font-bold uppercase tracking-widest leading-none">
+              i'm available
+            </span>
+            <span className="material-symbols-outlined text-[12px] opacity-70">expand_more</span>
+          </button>
+
+          <AnimatePresence>
+            {floatingMenuOpen && (
+              <>
+                {/* Invisible backdrop to close menu when clicking outside */}
+                <div 
+                  className="fixed inset-0 z-[19]" 
+                  onClick={() => setFloatingMenuOpen(false)}
+                />
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className={`absolute right-0 bottom-full mb-3 w-52 rounded-2xl p-2 shadow-xl border z-20 backdrop-blur-xl ${
+                    activeTab === 'GAMES'
+                      ? 'bg-[#121212]/95 border-neutral-800 text-white shadow-black/80 shadow-2xl'
+                      : 'bg-white/95 border-neutral-200/50 text-neutral-800 shadow-neutral-900/5 shadow-2xl'
+                  }`}
+                >
+                  <a
+                    href="mailto:liangelyp@gmail.com"
+                    onClick={() => setFloatingMenuOpen(false)}
+                    className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-bold transition-colors ${
+                      activeTab === 'GAMES'
+                        ? 'hover:bg-neutral-800 text-neutral-200'
+                        : 'hover:bg-neutral-50 text-neutral-800 font-sans'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-sm">mail</span>
+                    Contact by Mail
+                  </a>
+                  <a
+                    href="https://wa.me/5491156424162?text=Hello%20Lia!%20I%20saw%20your%20portfolio%20and%20would%20love%20to%20connect%20with%20you."
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => setFloatingMenuOpen(false)}
+                    className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-bold transition-colors ${
+                      activeTab === 'GAMES'
+                        ? 'hover:bg-neutral-800 text-neutral-200'
+                        : 'hover:bg-neutral-50 text-neutral-800 font-sans'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-sm">chat</span>
+                    Contact by WhatsApp
+                  </a>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
 
       {/* Global Interactive Portfolio Footer */}
       <footer className={`relative z-10 w-full border-t py-8 font-sans text-xs transition-colors duration-300 ${

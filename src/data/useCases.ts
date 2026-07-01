@@ -66,13 +66,13 @@ export const useCases: UseCase[] = [
         ]
       },
       {
-        type: "carousel",
+        type: "image",
         carouselImages: [
-          "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80",
-          "https://images.unsplash.com/photo-1581291518655-9523c932bfcf?auto=format&fit=crop&w=800&q=80",
-          "https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?auto=format&fit=crop&w=800&q=80"
+         
+          "https://drive.google.com/file/d/1knrRCKiUMyjzhXRbiCc3PPvwJUtp9qfk/view?usp=share_link",
+         
         ],
-        carouselCaption: "Brand Architecture Guidelines & Cookie Banner Consent Flow blueprints ready for audit reviews."
+        imageCaption: "From Regulation to Roadmap"
       },
       {
         type: "text",
