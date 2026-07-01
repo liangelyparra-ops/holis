@@ -1614,12 +1614,13 @@ export default function App() {
           }`}
         >
           {activeTab === 'GAMES' ? (
-            <div className="flex items-center gap-1.5">
-              <span className="font-sans text-xs font-black tracking-widest text-[#3C48C3] uppercase">
+            <div className="flex items-center gap-2">
+              <span className="font-sans text-sm font-black uppercase tracking-widest text-white">
                 Lia Parra
               </span>
-              <span className="font-mono text-[9px] font-bold tracking-widest text-[#3C48C3] bg-[#3C48C3]/10 px-1.5 py-0.5 rounded uppercase">
-                Labs Game
+              <span className="w-2.5 h-2.5 bg-[#3C48C3] rounded-full shrink-0" />
+              <span className="font-mono text-[9px] font-bold text-[#3C48C3] uppercase tracking-widest bg-[#3C48C3]/10 border-[1.5px] border-[#3C48C3] rounded-[4px] px-2.5 py-1 leading-none sm:hidden md:block">
+                Lab Game
               </span>
             </div>
           ) : (
@@ -1627,8 +1628,19 @@ export default function App() {
               <span className="font-sans text-sm font-black uppercase tracking-widest text-[#111110]">
                 Lia Parra
               </span>
-              <span className="w-1.5 h-1.5 bg-[#111110] rounded-full animate-pulse shrink-0" />
-              <span className="font-mono text-[9px] font-bold text-neutral-400 uppercase tracking-widest bg-neutral-100 border border-neutral-200/50 px-1.5 py-0.5 rounded leading-none sm:hidden md:block">
+              <span 
+                className="w-2.5 h-2.5 rounded-full shrink-0" 
+                style={{
+                  background: 'linear-gradient(135deg, #3C48C3 0%, #DA58CA 50%, #ECF054 100%)'
+                }}
+              />
+              <span 
+                className="font-mono text-[9px] font-bold text-neutral-950 uppercase tracking-widest rounded-[4px] px-2.5 py-1 leading-none sm:hidden md:block"
+                style={{
+                  border: '1.5px solid transparent',
+                  background: 'linear-gradient(#FAF5FF, #FAF5FF) padding-box, linear-gradient(135deg, #3C48C3 0%, #DA58CA 50%, #ECF054 100%) border-box',
+                }}
+              >
                 Lab Sandbox
               </span>
             </div>
@@ -1670,17 +1682,23 @@ export default function App() {
           <div className="relative hidden sm:block">
             <button 
               onClick={() => setAvailableMenuOpen(!availableMenuOpen)}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-full shadow-xs border transition-all cursor-pointer ${
+              className={`flex items-center gap-[10px] px-[18px] py-[8.5px] rounded-full shadow-xs border transition-all cursor-pointer ${
                 activeTab === 'GAMES'
-                  ? 'bg-green-500/15 border-green-500/30 text-green-400 hover:bg-green-500/25'
-                  : 'bg-[#89ffab]/10 border-[#89ffab]/30 hover:bg-[#89ffab]/20 text-emerald-800 font-sans font-bold shadow-xs'
+                  ? 'bg-[#1a1b13] border-[#5a6224] hover:bg-[#25271b] hover:border-[#717b2e] shadow-xs'
+                  : 'bg-lime-50/70 border-lime-200/80 hover:bg-lime-100/70 shadow-xs'
               }`}
             >
-              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.7)]" />
-              <span className="text-[9px] font-bold uppercase tracking-widest leading-none">
+              <span className="w-2 h-2 rounded-full shrink-0 shadow-xs bg-[#D9E93E]" />
+              <span className={`text-[10px] font-bold uppercase tracking-widest leading-none ${
+                activeTab === 'GAMES' ? 'text-white' : 'text-neutral-700'
+              }`}>
                 i'm available
               </span>
-              <span className="material-symbols-outlined text-[12px] opacity-70">expand_more</span>
+              <span className={`material-symbols-outlined text-[12px] opacity-70 transition-transform duration-200 ${
+                activeTab === 'GAMES' ? 'text-white/80' : 'text-neutral-500'
+              }`}>
+                {availableMenuOpen ? 'expand_less' : 'expand_more'}
+              </span>
             </button>
 
             <AnimatePresence>
@@ -1696,7 +1714,7 @@ export default function App() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className={`absolute right-0 mt-2 w-52 rounded-2xl p-2 shadow-xl border z-20 backdrop-blur-xl ${
+                    className={`absolute right-0 mt-2 w-52 rounded-2xl p-1.5 shadow-xl border z-20 backdrop-blur-xl ${
                       activeTab === 'GAMES'
                         ? 'bg-[#121212]/95 border-neutral-800 text-white shadow-black/80 shadow-2xl'
                         : 'bg-white/95 border-neutral-200/50 text-neutral-800 shadow-neutral-900/5 shadow-2xl'
@@ -1707,7 +1725,7 @@ export default function App() {
                       onClick={() => setAvailableMenuOpen(false)}
                       className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-bold transition-colors ${
                         activeTab === 'GAMES'
-                          ? 'hover:bg-neutral-800 text-neutral-200'
+                          ? 'hover:bg-[#222222] text-neutral-200'
                           : 'hover:bg-neutral-50 text-neutral-800 font-sans'
                       }`}
                     >
@@ -1721,7 +1739,7 @@ export default function App() {
                       onClick={() => setAvailableMenuOpen(false)}
                       className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-bold transition-colors ${
                         activeTab === 'GAMES'
-                          ? 'hover:bg-neutral-800 text-neutral-200'
+                          ? 'hover:bg-[#222222] text-neutral-200'
                           : 'hover:bg-neutral-50 text-neutral-800 font-sans'
                       }`}
                     >
@@ -1744,60 +1762,70 @@ export default function App() {
           )}
 
           {/* Mobile landscape & Burger menu toggle buttons (Always shown in game tab) */}
-          <button 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`block p-2 rounded-lg hover:bg-surface-container-high/50 transition-colors z-[100] ${
-              activeTab === 'GAMES' ? '' : 'lg:hidden'
-            }`}
-          >
-            <span className={`material-symbols-outlined text-2xl ${activeTab === 'GAMES' ? 'text-[#3C48C3]' : 'text-primary'}`}>
-              {mobileMenuOpen ? 'close' : 'menu'}
-            </span>
-          </button>
+          <div className={`relative ${activeTab === 'GAMES' ? '' : 'lg:hidden'} z-50`}>
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-200 cursor-pointer select-none ${
+                mobileMenuOpen 
+                  ? (activeTab === 'GAMES' ? 'bg-[#222222] text-[#3C48C3]' : 'bg-neutral-200/50 text-[#111110]')
+                  : (activeTab === 'GAMES' ? 'hover:bg-[#222222] text-[#3C48C3] text-white/90' : 'hover:bg-neutral-200/50 text-[#111110] text-neutral-600')
+              }`}
+            >
+              <span className="material-symbols-outlined text-[24px]">menu</span>
+            </button>
+
+            <AnimatePresence>
+              {mobileMenuOpen && (
+                <>
+                  {/* Backdrop click-to-close under the dropdown but above header */}
+                  <div 
+                    className="fixed inset-0 z-40 cursor-default" 
+                    onClick={() => setMobileMenuOpen(false)}
+                  />
+                  
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className={`absolute right-0 mt-2 w-56 rounded-2xl p-1.5 shadow-xl border z-50 backdrop-blur-md ${
+                      activeTab === 'GAMES'
+                        ? 'bg-[#121212]/95 border-neutral-800 text-white shadow-black/80'
+                        : 'bg-white/95 border-neutral-200/60 text-[#111110] shadow-[0_8px_30px_rgba(0,0,0,0.08)]'
+                    }`}
+                  >
+                    {[
+                      { id: 'IMPACT', label: 'Experience' },
+                      { id: 'VISION', label: 'Vision' },
+                      { id: 'GAMES', label: 'Game lab' },
+                      { id: 'CONTACT', label: 'About me' }
+                    ].map((tab) => {
+                      const isTabActive = activeTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => {
+                            setActiveTab(tab.id as any);
+                            setMobileMenuOpen(false);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          className={`w-full text-left px-4 py-3 text-sm font-sans font-medium rounded-xl transition-all duration-150 cursor-pointer block select-none ${
+                            isTabActive
+                              ? (activeTab === 'GAMES' ? 'bg-[#3C48C3]/15 text-[#3C48C3] font-bold' : 'bg-neutral-100/90 text-[#111110] font-semibold')
+                              : (activeTab === 'GAMES' ? 'hover:bg-[#222222] text-neutral-300' : 'hover:bg-neutral-100/60 text-neutral-600')
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </header>
-
-      {/* Mobile/Burger Drawer Overlay (Burger overlay covers desktop too when inside activeTab === 'GAMES') */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className={`fixed inset-0 z-40 p-6 pt-24 flex flex-col justify-center items-center gap-6 shadow-lg backdrop-blur-2xl ${
-              activeTab === 'GAMES' 
-                ? 'bg-[#0e0e0e]/98 text-white' 
-                : 'bg-[#fafafa]/95 text-on-surface lg:hidden'
-            }`}
-          >
-            {[
-              { id: 'IMPACT', label: 'Portfolio' },
-              { id: 'VISION', label: 'My Vision' },
-              { id: 'GAMES', label: 'Game' },
-              { id: 'CONTACT', label: 'About' }
-            ].map((tab) => {
-              const isTabActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id as any);
-                    setMobileMenuOpen(false);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className={`py-3 text-xl font-headline font-bold uppercase tracking-widest text-center transition-all duration-300 ${
-                    activeTab === 'GAMES' 
-                      ? isTabActive ? 'text-[#3C48C3] scale-105' : 'text-neutral-400 hover:text-white'
-                      : isTabActive ? 'text-[#111110] scale-105' : 'text-on-surface-variant'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Case Study Dialog Modal */}
       <AnimatePresence>
@@ -2070,17 +2098,23 @@ export default function App() {
         <div className="relative">
           <button 
             onClick={() => setFloatingMenuOpen(!floatingMenuOpen)}
-            className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-full shadow-lg border transition-all cursor-pointer ${
+            className={`flex items-center gap-[10px] px-[18px] py-[8.5px] rounded-full shadow-lg border transition-all cursor-pointer ${
               activeTab === 'GAMES'
-                ? 'bg-green-500/90 border-green-500/40 text-green-100 backdrop-blur-md'
-                : 'bg-white/95 border-neutral-250 text-emerald-800 font-sans font-bold shadow-md'
+                ? 'bg-[#1a1b13] border-[#5a6224] hover:bg-[#25271b] hover:border-[#717b2e] shadow-lg'
+                : 'bg-lime-50/90 border-lime-200/80 text-neutral-700 font-sans font-bold shadow-md'
             }`}
           >
-            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.7)]" />
-            <span className="text-[10px] font-bold uppercase tracking-widest leading-none">
+            <span className="w-2 h-2 rounded-full shrink-0 bg-[#D9E93E]" />
+            <span className={`text-[10px] font-bold uppercase tracking-widest leading-none ${
+              activeTab === 'GAMES' ? 'text-white' : 'text-neutral-700'
+            }`}>
               i'm available
             </span>
-            <span className="material-symbols-outlined text-[12px] opacity-70">expand_more</span>
+            <span className={`material-symbols-outlined text-[12px] opacity-70 transition-transform duration-200 ${
+              activeTab === 'GAMES' ? 'text-white/80' : 'text-neutral-500'
+            }`}>
+              {floatingMenuOpen ? 'expand_less' : 'expand_more'}
+            </span>
           </button>
 
           <AnimatePresence>
@@ -2096,7 +2130,7 @@ export default function App() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className={`absolute right-0 bottom-full mb-3 w-52 rounded-2xl p-2 shadow-xl border z-20 backdrop-blur-xl ${
+                  className={`absolute right-0 bottom-full mb-3 w-52 rounded-2xl p-1.5 shadow-xl border z-20 backdrop-blur-xl ${
                     activeTab === 'GAMES'
                       ? 'bg-[#121212]/95 border-neutral-800 text-white shadow-black/80 shadow-2xl'
                       : 'bg-white/95 border-neutral-200/50 text-neutral-800 shadow-neutral-900/5 shadow-2xl'
@@ -2107,7 +2141,7 @@ export default function App() {
                     onClick={() => setFloatingMenuOpen(false)}
                     className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-bold transition-colors ${
                       activeTab === 'GAMES'
-                        ? 'hover:bg-neutral-800 text-neutral-200'
+                        ? 'hover:bg-[#222222] text-neutral-200'
                         : 'hover:bg-neutral-50 text-neutral-800 font-sans'
                     }`}
                   >
@@ -2121,7 +2155,7 @@ export default function App() {
                     onClick={() => setFloatingMenuOpen(false)}
                     className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-bold transition-colors ${
                       activeTab === 'GAMES'
-                        ? 'hover:bg-neutral-800 text-neutral-200'
+                        ? 'hover:bg-[#222222] text-neutral-200'
                         : 'hover:bg-neutral-50 text-neutral-800 font-sans'
                     }`}
                   >
