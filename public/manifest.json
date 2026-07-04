@@ -1,0 +1,21 @@
+{
+  "short_name": "Lia Design",
+  "name": "Lia Parra — Portfolio & Brand System",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#131211",
+  "theme_color": "#131211",
+  "display": "standalone",
+  "orientation": "portrait"
+}

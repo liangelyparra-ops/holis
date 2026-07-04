@@ -232,3 +232,90 @@ export const DesignTokensMockup: React.FC = () => {
     </div>
   );
 };
+
+// ==========================================
+// MOCKUP TYPE 4: Enterprise Layered Hierarchy Configuration Model
+// ==========================================
+export const EnterpriseHierarchyMockup: React.FC = () => {
+  return (
+    <div className="w-full bg-[#1b1917] text-[#f2efea] rounded-2xl border border-neutral-850 p-5 font-sans space-y-4 shadow-xl overflow-hidden mt-4 text-left">
+      {/* Browser bar */}
+      <div className="flex items-center justify-between border-b border-neutral-850 pb-3 -mt-2 -mx-2">
+        <div className="flex gap-1.5 items-center pl-1 select-none">
+          <span className="w-2 h-2 rounded-full bg-[#cfc6b4]/40 block" />
+          <span className="w-2 h-2 rounded-full bg-[#cfc6b4]/60 block" />
+          <span className="w-2 h-2 rounded-full bg-[#cfc6b4] block" />
+        </div>
+        <div className="bg-[#211f1c] px-4 py-0.5 rounded-md text-[9px] text-neutral-400 font-mono tracking-wide w-[220px] text-center truncate border border-neutral-850 select-none">
+          admin.bigid.com/governance/layers
+        </div>
+        <div className="w-3" />
+      </div>
+
+      <div className="flex justify-between items-center">
+        <div>
+          <h4 className="text-[9px] font-bold uppercase tracking-widest text-[#cfc6b4] font-mono">Layered Rule Engine</h4>
+          <p className="text-xs font-semibold text-neutral-300">Multi-Tenant Consent Architecture</p>
+        </div>
+        <span className="inline-flex items-center gap-1 bg-[#211f1c] text-neutral-300 border border-neutral-800 text-[9px] font-mono px-2 py-0.5 rounded-full select-none">
+          Nest Depth: 3L <Sliders className="w-2.5 h-2.5 text-[#cfc6b4]" />
+        </span>
+      </div>
+
+      {/* Structured Layer Stack */}
+      <div className="space-y-2.5">
+        {/* Layer 1: Org Wide */}
+        <div className="border border-neutral-800 bg-[#211f1c] rounded-xl p-3 relative space-y-2">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <span className="w-4 h-4 rounded bg-[#cfc6b4]/20 border border-[#cfc6b4]/40 flex items-center justify-center text-[8px] font-bold font-mono text-[#cfc6b4] select-none">L1</span>
+              <div>
+                <p className="text-[11px] font-bold text-neutral-200">Global Org-Wide Policy</p>
+                <p className="text-[9px] text-neutral-400">Default baseline rules applied to 42 subsidiaries</p>
+              </div>
+            </div>
+            <span className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider select-none">Locked</span>
+          </div>
+          <div className="flex gap-1.5 flex-wrap">
+            <span className="text-[8px] font-mono px-1.5 py-0.5 bg-neutral-900 border border-neutral-800 text-[#9a948c] rounded select-none">GDPR Default</span>
+            <span className="text-[8px] font-mono px-1.5 py-0.5 bg-neutral-900 border border-neutral-800 text-[#9a948c] rounded select-none">CCPA Default</span>
+          </div>
+        </div>
+
+        {/* Layer 2: Business Unit Override */}
+        <div className="border border-neutral-800 bg-[#211f1c] rounded-xl p-3 relative space-y-2 ml-4 border-l-2 border-l-[#cfc6b4]">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <span className="w-4 h-4 rounded bg-[#cfc6b4]/40 border border-[#cfc6b4]/60 flex items-center justify-center text-[8px] font-bold font-mono text-[#131211] select-none">L2</span>
+              <div>
+                <p className="text-[11px] font-bold text-neutral-200">Retail BU Override</p>
+                <p className="text-[9px] text-neutral-400">Marketing & behavioral tracking permission tweaks</p>
+              </div>
+            </div>
+            <span className="text-[9px] font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-900/30 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold select-none">Active Override</span>
+          </div>
+          <div className="flex gap-1.5 flex-wrap">
+            <span className="text-[8px] font-mono px-1.5 py-0.5 bg-neutral-900 border border-neutral-800 text-[#cfc6b4] rounded select-none">Custom Pixel Consent</span>
+          </div>
+        </div>
+
+        {/* Layer 3: Regional Exception */}
+        <div className="border border-neutral-800 bg-[#211f1c] rounded-xl p-3 relative space-y-2 ml-8 border-l-2 border-l-neutral-700">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <span className="w-4 h-4 rounded bg-neutral-800 border border-neutral-700 flex items-center justify-center text-[8px] font-bold font-mono text-neutral-400 select-none">L3</span>
+              <div>
+                <p className="text-[11px] font-bold text-neutral-200">EU-Germany Exception</p>
+                <p className="text-[9px] text-neutral-400">Strict local logging & zero-cookie pre-consent state</p>
+              </div>
+            </div>
+            <span className="text-[9px] font-mono text-amber-400 bg-amber-950/45 border border-amber-900/30 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold select-none">Local Exception</span>
+          </div>
+          <div className="flex gap-1.5 flex-wrap">
+            <span className="text-[8px] font-mono px-1.5 py-0.5 bg-neutral-900 border border-neutral-800 text-neutral-400 rounded select-none">Schrems II Hard-Audit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
