@@ -19,15 +19,15 @@ import {
 // ==========================================
 export const AnalyticsMockup: React.FC = () => {
   return (
-    <div className="w-full bg-neutral-900 text-white rounded-2xl border border-neutral-800 p-5 font-sans space-y-4 shadow-xl overflow-hidden mt-4">
+    <div className="w-full bg-stone-50 text-stone-900 rounded-2xl border border-stone-200/80 p-5 font-sans space-y-4 shadow-xs overflow-hidden mt-4 text-left">
       {/* Browser bar */}
-      <div className="flex items-center justify-between border-b border-neutral-800 pb-3 -mt-2 -mx-2">
+      <div className="flex items-center justify-between border-b border-stone-200 pb-3 -mt-2 -mx-2">
         <div className="flex gap-1.5 items-center pl-1">
-          <span className="w-2.5 h-2.5 rounded-full bg-blue-600/70 block" />
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-500/70 block" />
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/70 block" />
+          <span className="w-2.5 h-2.5 rounded-full bg-stone-300 block" />
+          <span className="w-2.5 h-2.5 rounded-full bg-stone-300 block" />
+          <span className="w-2.5 h-2.5 rounded-full bg-stone-300 block" />
         </div>
-        <div className="bg-neutral-800 px-4 py-0.5 rounded-md text-[9px] text-neutral-400 font-mono tracking-wide w-[180px] text-center truncate">
+        <div className="bg-stone-100 px-4 py-0.5 rounded-md text-[9px] text-stone-600 font-mono tracking-wide w-[180px] text-center truncate border border-stone-200">
           admin.illow.co/analytics
         </div>
         <div className="w-3" />
@@ -35,62 +35,62 @@ export const AnalyticsMockup: React.FC = () => {
 
       <div className="flex justify-between items-center">
         <div>
-          <h4 className="text-xs font-bold uppercase tracking-widest text-neutral-400">Consent Analytics</h4>
-          <p className="text-sm font-semibold text-neutral-200">Opt-In Performance Suite</p>
+          <h4 className="text-xs font-bold uppercase tracking-widest text-stone-500 font-mono">Consent Analytics</h4>
+          <p className="text-sm font-semibold text-stone-900">Opt-In Performance Suite</p>
         </div>
-        <span className="inline-flex items-center gap-1 bg-emerald-950/45 text-emerald-400 border border-emerald-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full">
-          Live Syncing <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-200 text-[9px] font-bold px-2 py-0.5 rounded-full">
+          Live Syncing <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
         </span>
       </div>
 
       {/* Grid statistics */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-neutral-950/40 border border-neutral-800/80 p-3 rounded-xl space-y-1">
-          <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block">Opt-in Conversion Rate</span>
+        <div className="bg-white border border-stone-200 p-3 rounded-xl space-y-1 shadow-2xs">
+          <span className="text-[9px] font-bold text-stone-500 uppercase tracking-wider block">Opt-in Conversion Rate</span>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-xl font-bold tracking-tight text-white">94.8%</span>
-            <span className="text-emerald-500 text-[10px] font-semibold flex items-center">
+            <span className="text-xl font-bold tracking-tight text-stone-900">94.8%</span>
+            <span className="text-emerald-700 text-[10px] font-bold flex items-center">
               <TrendingUp className="w-2.5 h-2.5 mr-0.5" /> +12.4%
             </span>
           </div>
-          <div className="w-full bg-neutral-800 h-1.5 rounded-full overflow-hidden mt-1.5">
-            <div className="bg-blue-700 h-full rounded-full" style={{ width: '94.8%' }} />
+          <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-1.5">
+            <div className="bg-stone-900 h-full rounded-full" style={{ width: '94.8%' }} />
           </div>
         </div>
 
-        <div className="bg-neutral-950/40 border border-neutral-800/80 p-3 rounded-xl space-y-1">
-          <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block">Privacy Interaction Time</span>
+        <div className="bg-white border border-stone-200 p-3 rounded-xl space-y-1 shadow-2xs">
+          <span className="text-[9px] font-bold text-stone-500 uppercase tracking-wider block">Privacy Interaction Time</span>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-xl font-bold tracking-tight text-white">1.2s</span>
-            <span className="text-emerald-500 text-[10px] font-semibold flex items-center">
+            <span className="text-xl font-bold tracking-tight text-stone-900">1.2s</span>
+            <span className="text-emerald-700 text-[10px] font-bold flex items-center">
               Down 40%
             </span>
           </div>
-          <div className="w-full bg-neutral-800 h-1.5 rounded-full overflow-hidden mt-1.5">
+          <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mt-1.5">
             <div className="bg-emerald-600 h-full rounded-full" style={{ width: '30%' }} />
           </div>
         </div>
       </div>
 
       {/* Sparkline simulation area */}
-      <div className="bg-neutral-950/40 border border-neutral-800/80 p-3 rounded-xl space-y-3">
+      <div className="bg-white border border-stone-200 p-3 rounded-xl space-y-3 shadow-2xs">
         <div className="flex justify-between items-center text-[10px]">
-          <span className="font-semibold text-neutral-300">Audits & Compliances Over Time</span>
-          <span className="text-neutral-500 font-mono">Completed: 14.8k / 15k</span>
+          <span className="font-semibold text-stone-800">Audits &amp; Compliances Over Time</span>
+          <span className="text-stone-500 font-mono">Completed: 14.8k / 15k</span>
         </div>
         
         {/* Custom pure Tailwind micro-graph bars */}
         <div className="flex items-end justify-between h-14 pt-2 px-1">
           {[20, 35, 45, 30, 55, 65, 40, 75, 80, 95, 85, 98].map((height, idx) => (
-            <div key={idx} className="w-[6%] bg-neutral-800/80 hover:bg-neutral-700 rounded-sm relative group h-full">
+            <div key={idx} className="w-[6%] bg-stone-100 hover:bg-stone-200 rounded-sm relative group h-full">
               <div 
-                className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-900 to-blue-700 rounded-sm group-hover:from-blue-800 group-hover:to-blue-600 transition-all"
+                className="absolute bottom-0 left-0 right-0 bg-stone-900 rounded-sm transition-all"
                 style={{ height: `${height}%` }}
               />
             </div>
           ))}
         </div>
-        <div className="flex justify-between text-[8px] text-neutral-500 font-mono">
+        <div className="flex justify-between text-[8px] text-stone-500 font-mono">
           <span>00:00</span>
           <span>08:00</span>
           <span>16:00</span>
@@ -238,15 +238,15 @@ export const DesignTokensMockup: React.FC = () => {
 // ==========================================
 export const EnterpriseHierarchyMockup: React.FC = () => {
   return (
-    <div className="w-full bg-[#1b1917] text-[#f2efea] rounded-2xl border border-neutral-850 p-5 font-sans space-y-4 shadow-xl overflow-hidden mt-4 text-left">
+    <div className="w-full bg-stone-50 text-stone-900 rounded-2xl border border-stone-200/80 p-5 font-sans space-y-4 shadow-xs overflow-hidden mt-4 text-left">
       {/* Browser bar */}
-      <div className="flex items-center justify-between border-b border-neutral-850 pb-3 -mt-2 -mx-2">
+      <div className="flex items-center justify-between border-b border-stone-200 pb-3 -mt-2 -mx-2">
         <div className="flex gap-1.5 items-center pl-1 select-none">
-          <span className="w-2 h-2 rounded-full bg-[#cfc6b4]/40 block" />
-          <span className="w-2 h-2 rounded-full bg-[#cfc6b4]/60 block" />
-          <span className="w-2 h-2 rounded-full bg-[#cfc6b4] block" />
+          <span className="w-2 h-2 rounded-full bg-stone-300 block" />
+          <span className="w-2 h-2 rounded-full bg-stone-300 block" />
+          <span className="w-2 h-2 rounded-full bg-stone-300 block" />
         </div>
-        <div className="bg-[#211f1c] px-4 py-0.5 rounded-md text-[9px] text-neutral-400 font-mono tracking-wide w-[220px] text-center truncate border border-neutral-850 select-none">
+        <div className="bg-stone-100 px-4 py-0.5 rounded-md text-[9px] text-stone-600 font-mono tracking-wide w-[220px] text-center truncate border border-stone-200 select-none">
           admin.bigid.com/governance/layers
         </div>
         <div className="w-3" />
@@ -254,65 +254,65 @@ export const EnterpriseHierarchyMockup: React.FC = () => {
 
       <div className="flex justify-between items-center">
         <div>
-          <h4 className="text-[9px] font-bold uppercase tracking-widest text-[#cfc6b4] font-mono">Layered Rule Engine</h4>
-          <p className="text-xs font-semibold text-neutral-300">Multi-Tenant Consent Architecture</p>
+          <h4 className="text-[9px] font-bold uppercase tracking-widest text-stone-900 font-mono">Layered Rule Engine</h4>
+          <p className="text-xs font-semibold text-stone-700">Multi-Tenant Consent Architecture</p>
         </div>
-        <span className="inline-flex items-center gap-1 bg-[#211f1c] text-neutral-300 border border-neutral-800 text-[9px] font-mono px-2 py-0.5 rounded-full select-none">
-          Nest Depth: 3L <Sliders className="w-2.5 h-2.5 text-[#cfc6b4]" />
+        <span className="inline-flex items-center gap-1 bg-stone-100 text-stone-700 border border-stone-200 text-[9px] font-mono px-2 py-0.5 rounded-full select-none">
+          Nest Depth: 3L <Sliders className="w-2.5 h-2.5 text-stone-700" />
         </span>
       </div>
 
       {/* Structured Layer Stack */}
       <div className="space-y-2.5">
         {/* Layer 1: Org Wide */}
-        <div className="border border-neutral-800 bg-[#211f1c] rounded-xl p-3 relative space-y-2">
+        <div className="border border-stone-200 bg-white rounded-xl p-3 relative space-y-2 shadow-2xs">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <span className="w-4 h-4 rounded bg-[#cfc6b4]/20 border border-[#cfc6b4]/40 flex items-center justify-center text-[8px] font-bold font-mono text-[#cfc6b4] select-none">L1</span>
+              <span className="w-4 h-4 rounded bg-stone-100 border border-stone-300 flex items-center justify-center text-[8px] font-bold font-mono text-stone-900 select-none">L1</span>
               <div>
-                <p className="text-[11px] font-bold text-neutral-200">Global Org-Wide Policy</p>
-                <p className="text-[9px] text-neutral-400">Default baseline rules applied to 42 subsidiaries</p>
+                <p className="text-[11px] font-bold text-stone-900">Global Org-Wide Policy</p>
+                <p className="text-[9px] text-stone-500">Default baseline rules applied to 42 subsidiaries</p>
               </div>
             </div>
-            <span className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider select-none">Locked</span>
+            <span className="text-[9px] font-mono text-stone-500 uppercase tracking-wider select-none font-bold">Locked</span>
           </div>
           <div className="flex gap-1.5 flex-wrap">
-            <span className="text-[8px] font-mono px-1.5 py-0.5 bg-neutral-900 border border-neutral-800 text-[#9a948c] rounded select-none">GDPR Default</span>
-            <span className="text-[8px] font-mono px-1.5 py-0.5 bg-neutral-900 border border-neutral-800 text-[#9a948c] rounded select-none">CCPA Default</span>
+            <span className="text-[8px] font-mono px-1.5 py-0.5 bg-stone-100 border border-stone-200 text-stone-700 rounded select-none">GDPR Default</span>
+            <span className="text-[8px] font-mono px-1.5 py-0.5 bg-stone-100 border border-stone-200 text-stone-700 rounded select-none">CCPA Default</span>
           </div>
         </div>
 
         {/* Layer 2: Business Unit Override */}
-        <div className="border border-neutral-800 bg-[#211f1c] rounded-xl p-3 relative space-y-2 ml-4 border-l-2 border-l-[#cfc6b4]">
+        <div className="border border-stone-200 bg-white rounded-xl p-3 relative space-y-2 ml-4 border-l-2 border-l-stone-900 shadow-2xs">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <span className="w-4 h-4 rounded bg-[#cfc6b4]/40 border border-[#cfc6b4]/60 flex items-center justify-center text-[8px] font-bold font-mono text-[#131211] select-none">L2</span>
+              <span className="w-4 h-4 rounded bg-stone-900 text-white flex items-center justify-center text-[8px] font-bold font-mono select-none">L2</span>
               <div>
-                <p className="text-[11px] font-bold text-neutral-200">Retail BU Override</p>
-                <p className="text-[9px] text-neutral-400">Marketing & behavioral tracking permission tweaks</p>
+                <p className="text-[11px] font-bold text-stone-900">Retail BU Override</p>
+                <p className="text-[9px] text-stone-500">Marketing &amp; behavioral tracking permission tweaks</p>
               </div>
             </div>
-            <span className="text-[9px] font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-900/30 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold select-none">Active Override</span>
+            <span className="text-[9px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold select-none">Active Override</span>
           </div>
           <div className="flex gap-1.5 flex-wrap">
-            <span className="text-[8px] font-mono px-1.5 py-0.5 bg-neutral-900 border border-neutral-800 text-[#cfc6b4] rounded select-none">Custom Pixel Consent</span>
+            <span className="text-[8px] font-mono px-1.5 py-0.5 bg-stone-100 border border-stone-200 text-stone-800 font-bold rounded select-none">Custom Pixel Consent</span>
           </div>
         </div>
 
         {/* Layer 3: Regional Exception */}
-        <div className="border border-neutral-800 bg-[#211f1c] rounded-xl p-3 relative space-y-2 ml-8 border-l-2 border-l-neutral-700">
+        <div className="border border-stone-200 bg-white rounded-xl p-3 relative space-y-2 ml-8 border-l-2 border-l-amber-500 shadow-2xs">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <span className="w-4 h-4 rounded bg-neutral-800 border border-neutral-700 flex items-center justify-center text-[8px] font-bold font-mono text-neutral-400 select-none">L3</span>
+              <span className="w-4 h-4 rounded bg-amber-100 border border-amber-300 flex items-center justify-center text-[8px] font-bold font-mono text-amber-900 select-none">L3</span>
               <div>
-                <p className="text-[11px] font-bold text-neutral-200">EU-Germany Exception</p>
-                <p className="text-[9px] text-neutral-400">Strict local logging & zero-cookie pre-consent state</p>
+                <p className="text-[11px] font-bold text-stone-900">EU-Germany Exception</p>
+                <p className="text-[9px] text-stone-500">Strict local logging &amp; zero-cookie pre-consent state</p>
               </div>
             </div>
-            <span className="text-[9px] font-mono text-amber-400 bg-amber-950/45 border border-amber-900/30 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold select-none">Local Exception</span>
+            <span className="text-[9px] font-mono text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold select-none">Local Exception</span>
           </div>
           <div className="flex gap-1.5 flex-wrap">
-            <span className="text-[8px] font-mono px-1.5 py-0.5 bg-neutral-900 border border-neutral-800 text-neutral-400 rounded select-none">Schrems II Hard-Audit</span>
+            <span className="text-[8px] font-mono px-1.5 py-0.5 bg-stone-100 border border-stone-200 text-stone-700 rounded select-none">Schrems II Hard-Audit</span>
           </div>
         </div>
       </div>

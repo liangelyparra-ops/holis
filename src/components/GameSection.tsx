@@ -693,25 +693,25 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
 
   const renderHome = () => (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-4xl w-full p-8 text-center"
+      className="max-w-4xl w-full p-2 sm:p-4 text-center"
     >
-      <div className="max-w-md mx-auto space-y-6 sm:space-y-8 bg-[#111113] p-6 sm:p-8 rounded-3xl border border-neutral-800 shadow-2xl">
-        <div className="space-y-4">
-          <label className="block text-left text-[10px] font-black uppercase tracking-widest text-[#3C48C3] ml-4">Your Nickname / Name</label>
+      <div className="max-w-md mx-auto space-y-4 sm:space-y-5 bg-[#111113] p-5 sm:p-6 rounded-2xl border border-neutral-800 shadow-xl">
+        <div className="space-y-2">
+          <label className="block text-left text-[10px] font-black uppercase tracking-widest text-[#3C48C3] ml-2">Your Nickname / Name</label>
           <input 
             type="text" 
             value={tempNickname}
             onChange={(e) => setTempNickname(e.target.value)}
             placeholder="e.g. Party King"
-            className="w-full bg-neutral-900 border-2 border-neutral-800 rounded-2xl p-4 font-headline font-black uppercase text-white focus:border-[#3C48C3] outline-none transition-all"
+            className="w-full bg-neutral-900 border-2 border-neutral-800 rounded-xl p-3 font-headline font-black uppercase text-white focus:border-[#3C48C3] outline-none transition-all text-sm"
           />
         </div>
 
-        <div className="space-y-4">
-          <label className="block text-left text-[10px] font-black uppercase tracking-widest text-[#3C48C3] ml-4">Choose your Avatar</label>
-          <div className="grid grid-cols-5 gap-3 max-h-48 overflow-y-auto p-2 scrollbar-hide">
+        <div className="space-y-2">
+          <label className="block text-left text-[10px] font-black uppercase tracking-widest text-[#3C48C3] ml-2">Choose your Avatar</label>
+          <div className="grid grid-cols-5 gap-2 max-h-36 overflow-y-auto p-1 scrollbar-hide">
             {Array.from({ length: 20 }).map((_, i) => {
               const seed = `avatar-${i + 1}`;
               const isSelected = selectedAvatarSeed === seed;
@@ -719,8 +719,8 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
                 <button
                   key={seed}
                   onClick={() => setSelectedAvatarSeed(seed)}
-                  className={`relative aspect-square rounded-xl border-2 transition-all overflow-hidden ${
-                    isSelected ? 'border-[#3C48C3] scale-110 shadow-[0_0_15px_rgba(60,72,195,0.4)]' : 'border-neutral-800 grayscale hover:grayscale-0 hover:border-[#3C48C3]/50'
+                  className={`relative aspect-square rounded-lg border-2 transition-all overflow-hidden ${
+                    isSelected ? 'border-[#3C48C3] scale-105 shadow-[0_0_12px_rgba(60,72,195,0.4)]' : 'border-neutral-800 grayscale hover:grayscale-0 hover:border-[#3C48C3]/50'
                   }`}
                 >
                   <img 
@@ -730,7 +730,7 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
                   />
                   {isSelected && (
                     <div className="absolute inset-0 bg-[#3C48C3]/20 flex items-center justify-center">
-                      <Check size={20} className="text-white" />
+                      <Check size={16} className="text-white" />
                     </div>
                   )}
                 </button>
@@ -743,39 +743,39 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
           <button 
             onClick={joinGame}
             disabled={!tempNickname.trim() || !selectedAvatarSeed}
-            className={`w-full py-4 sm:py-6 rounded-2xl font-headline font-black text-lg sm:text-2xl uppercase tracking-tight shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3 px-4 ${
+            className={`w-full py-3.5 sm:py-4 rounded-xl font-headline font-black text-base sm:text-lg uppercase tracking-tight shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 px-4 ${
               !tempNickname.trim() || !selectedAvatarSeed
                 ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed' 
-                : 'bg-[#3C48C3] text-white hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(60,72,195,0.3)]'
+                : 'bg-[#3C48C3] text-white hover:scale-[1.01] hover:shadow-[0_0_15px_rgba(60,72,195,0.3)]'
             }`}
           >
             <span className="truncate">ENTER ROOM</span>
-            <ChevronRight className="shrink-0" />
+            <ChevronRight className="shrink-0" size={18} />
           </button>
         ) : (
           <button 
             onClick={createPrivateRoom}
-            className="w-full py-4 sm:py-6 bg-[#3C48C3] text-white font-headline font-black text-lg sm:text-2xl uppercase tracking-tight rounded-2xl shadow-lg hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(60,72,195,0.3)] active:scale-95 flex items-center justify-center gap-3 px-4 transition-all"
+            className="w-full py-3.5 sm:py-4 bg-[#3C48C3] text-white font-headline font-black text-base sm:text-lg uppercase tracking-tight rounded-xl shadow-md hover:scale-[1.01] hover:shadow-[0_0_15px_rgba(60,72,195,0.3)] active:scale-95 flex items-center justify-center gap-2 px-4 transition-all"
           >
-            <Users size={22} className="shrink-0" />
+            <Users size={18} className="shrink-0" />
             <span className="truncate">CREATE PRIVATE ROOM</span>
           </button>
         )}
 
-        <div className="pt-6 border-t border-neutral-800 space-y-4">
+        <div className="pt-4 border-t border-neutral-800 space-y-3">
           {GAME_ID !== 'global-party' && (
             <button 
               onClick={createPrivateRoom}
-              className="w-full bg-neutral-900 text-white font-headline font-bold py-3.5 sm:py-4 text-xs sm:text-base rounded-2xl flex items-center justify-center gap-2 border-2 border-neutral-800 hover:bg-neutral-850 transition-all px-4"
+              className="w-full bg-neutral-900 text-white font-headline font-bold py-2.5 sm:py-3 text-xs sm:text-sm rounded-xl flex items-center justify-center gap-2 border border-neutral-800 hover:bg-neutral-850 transition-all px-4"
             >
-              <Users size={18} className="shrink-0" />
+              <Users size={16} className="shrink-0" />
               <span className="truncate">CREATE ANOTHER ROOM</span>
             </button>
           )}
           
-          <div className="flex items-center justify-center gap-2 px-4 py-2 bg-neutral-900 rounded-full w-fit mx-auto">
+          <div className="flex items-center justify-center gap-2 px-3 py-1.5 bg-neutral-900 rounded-full w-fit mx-auto">
             <div className={`w-2 h-2 rounded-full ${GAME_ID === 'global-party' ? 'bg-amber-500' : 'bg-[#3C48C3] animate-pulse'}`}></div>
-            <span className="text-[10px] text-neutral-400 uppercase font-black tracking-widest">
+            <span className="text-[9px] text-neutral-400 uppercase font-black tracking-widest">
               {GAME_ID === 'global-party' ? 'NO ROOM SELECTED' : `ROOM: ${GAME_ID}`}
             </span>
           </div>
@@ -1094,16 +1094,16 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="max-w-2xl w-full p-4 flex flex-col gap-6 sm:gap-8 items-center justify-center relative select-none"
+        className="max-w-xl w-full p-2 sm:p-4 flex flex-col gap-3 sm:gap-4 items-center justify-center relative select-none"
       >
-        <div className="w-full flex items-center justify-between gap-4 bg-[#111113] p-4 rounded-3xl border border-neutral-800 shadow-xl">
-          <div className="flex items-center gap-3">
-            <Timer className="text-[#3C48C3]" size={20} />
-            <span className="font-headline font-black text-2xl text-white">{gameState.timer}s</span>
+        <div className="w-full flex items-center justify-between gap-3 bg-[#111113] p-3 sm:p-4 rounded-2xl border border-neutral-800 shadow-lg">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Timer className="text-[#3C48C3]" size={18} />
+            <span className="font-headline font-black text-xl sm:text-2xl text-white">{gameState.timer}s</span>
           </div>
 
           {gameState.mode === 'PAPELITO' && (
-            <div className="font-headline text-xs font-black uppercase bg-[#3C48C3]/10 border border-[#3C48C3]/20 text-[#3C48C3] px-3 py-1 rounded-full">
+            <div className="font-headline text-[10px] sm:text-xs font-black uppercase bg-[#3C48C3]/10 border border-[#3C48C3]/20 text-[#3C48C3] px-2.5 py-1 rounded-full">
               ROUND {gameState.currentRound || 1} • {
                 gameState.currentRound === 1 ? 'Free Description' : 
                 gameState.currentRound === 2 ? 'Single Word' : 
@@ -1114,17 +1114,17 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
 
           <div className="text-right">
             <span className="text-[8px] font-black uppercase tracking-widest text-neutral-400 block">Deck Progress</span>
-            <span className="font-headline font-black text-sm text-[#3C48C3]">{gameState.currentCardIndex + 1} / {gameState.cards.length}</span>
+            <span className="font-headline font-black text-xs sm:text-sm text-[#3C48C3]">{gameState.currentCardIndex + 1} / {gameState.cards.length}</span>
           </div>
         </div>
 
-        <div className="w-full text-center space-y-2 bg-[#111113]/60 p-4 rounded-2xl border border-neutral-850">
+        <div className="w-full text-center py-2 px-3 bg-[#111113]/60 rounded-xl border border-neutral-850">
           <span className="text-[8px] font-black uppercase tracking-widest text-neutral-400 block">Current Explainer Turn</span>
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center justify-center gap-2 mt-0.5">
             {activePlayer && (
               <>
-                <img src={activePlayer.avatar} alt={activePlayer.name} className="w-6 h-6 rounded-full border border-neutral-800" />
-                <span className="font-headline font-black text-base uppercase text-white tracking-tight">{activePlayer.name}</span>
+                <img src={activePlayer.avatar} alt={activePlayer.name} className="w-5 h-5 rounded-full border border-neutral-800" />
+                <span className="font-headline font-black text-xs sm:text-sm uppercase text-white tracking-tight">{activePlayer.name}</span>
               </>
             )}
             {isMyTurn && (
@@ -1139,40 +1139,40 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
           {!gameState.isShowingWinner ? (
             <motion.div 
               key={activeCard.id}
-              initial={{ scale: 0.9, y: 15, opacity: 0 }}
+              initial={{ scale: 0.95, y: 10, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.9, y: -15, opacity: 0 }}
-              className="w-full aspect-[4/5] sm:aspect-video rounded-[2.5rem] sm:rounded-[3.5rem] bg-[#141417] p-6 sm:p-10 border-4 border-neutral-800 flex flex-col justify-between items-center text-center shadow-2xl relative overflow-hidden"
-              style={{ boxShadow: isMyTurn ? '0 0 60px rgba(60, 72, 195, 0.15)' : 'none' }}
+              exit={{ scale: 0.95, y: -10, opacity: 0 }}
+              className="w-full min-h-[200px] sm:min-h-[250px] rounded-2xl sm:rounded-3xl bg-[#141417] py-8 sm:py-10 px-5 sm:px-8 border-2 sm:border-3 border-neutral-800 flex flex-col justify-between items-center text-center shadow-xl relative overflow-hidden"
+              style={{ boxShadow: isMyTurn ? '0 0 40px rgba(60, 72, 195, 0.15)' : 'none' }}
             >
-              <div className="absolute top-8 left-8 right-8 flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-neutral-500">
+              <div className="absolute top-3 left-4 right-4 flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-neutral-500">
                 <span>{activeCard.category || 'PARTY CARD'}</span>
-                <span className="text-2xl">{activeCard.emoji || '🔥'}</span>
+                <span className="text-xl">{activeCard.emoji || '🔥'}</span>
               </div>
 
-              <div className="flex-1 flex flex-col items-center justify-center space-y-4 max-w-md select-text">
+              <div className="flex-1 flex flex-col items-center justify-center space-y-3 max-w-md select-text my-4">
                 {isMyTurn ? (
                   <>
-                    <h2 className="font-headline text-3xl sm:text-5xl font-black uppercase tracking-tighter text-white leading-none">
+                    <h2 className="font-headline text-2xl sm:text-4xl font-black uppercase tracking-tight text-white leading-tight">
                       {activeCard.content}
                     </h2>
                     {activeCard.context && (
-                      <p className="font-sans text-xs sm:text-sm text-neutral-400 italic">
+                      <p className="font-sans text-xs text-neutral-400 italic">
                         {activeCard.context}
                       </p>
                     )}
                     {activeCard.answer && (
-                      <div className="bg-[#3C48C3]/10 border border-[#3C48C3]/20 px-4 py-1.5 rounded-xl">
+                      <div className="bg-[#3C48C3]/10 border border-[#3C48C3]/20 px-3 py-1 rounded-lg">
                         <span className="text-[8px] font-black uppercase tracking-widest text-neutral-400 block">Answer:</span>
-                        <p className="font-headline font-black text-sm uppercase text-white">{activeCard.answer}</p>
+                        <p className="font-headline font-black text-xs uppercase text-white">{activeCard.answer}</p>
                       </div>
                     )}
                     {activeCard.tabooWords && activeCard.tabooWords.length > 0 && (
-                      <div className="pt-4 space-y-2">
+                      <div className="pt-2 space-y-1">
                         <span className="text-[8px] font-black uppercase tracking-widest text-red-500 block">TABOO WORDS (Can't Say):</span>
-                        <div className="flex flex-wrap gap-2 justify-center">
+                        <div className="flex flex-wrap gap-1.5 justify-center">
                           {activeCard.tabooWords.map(w => (
-                            <span key={w} className="px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-full font-headline font-black text-[10px] text-red-400 uppercase">
+                            <span key={w} className="px-2.5 py-0.5 bg-red-500/10 border border-red-500/20 rounded-full font-headline font-black text-[9px] text-red-400 uppercase">
                               {w}
                             </span>
                           ))}
@@ -1181,31 +1181,31 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
                     )}
                   </>
                 ) : (
-                  <div className="space-y-4">
-                    <span className="material-symbols-outlined text-6xl text-neutral-600 animate-pulse">lock</span>
-                    <p className="font-sans text-sm sm:text-base text-neutral-400 leading-relaxed">
+                  <div className="space-y-2">
+                    <span className="material-symbols-outlined text-4xl text-neutral-600 animate-pulse">lock</span>
+                    <p className="font-sans text-xs sm:text-sm text-neutral-400 leading-relaxed">
                       Only the explainer can see this card. Listen carefully and try to guess first!
                     </p>
                   </div>
                 )}
               </div>
 
-              <div className="w-full text-center pt-4">
-                <span className="text-[8px] font-black uppercase tracking-widest text-neutral-500">HOLIS PARTY ENGINE</span>
+              <div className="w-full text-center pt-1 border-t border-neutral-900/60">
+                <span className="text-[8px] font-black uppercase tracking-widest text-neutral-600">HOLIS PARTY ENGINE</span>
               </div>
             </motion.div>
           ) : (
             <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="w-full aspect-video rounded-[3rem] bg-[#111113] p-10 border-4 border-emerald-500/30 flex flex-col justify-center items-center text-center shadow-2xl space-y-6"
+              className="w-full min-h-[180px] sm:min-h-[220px] rounded-2xl bg-[#111113] p-6 border-2 border-emerald-500/30 flex flex-col justify-center items-center text-center shadow-xl space-y-4"
             >
-              <Trophy size={64} className="text-[#3C48C3] drop-shadow-[0_0_20px_rgba(60,72,195,0.4)]" />
-              <div className="space-y-2">
-                <h3 className="font-headline text-3xl sm:text-4xl font-black uppercase tracking-tight text-white">
+              <Trophy size={48} className="text-[#3C48C3] drop-shadow-[0_0_15px_rgba(60,72,195,0.4)]" />
+              <div className="space-y-1">
+                <h3 className="font-headline text-2xl sm:text-3xl font-black uppercase tracking-tight text-white">
                   {gameState.lastWinnerId === 'none' ? 'Nobody Guessed!' : 'Point Scored!'}
                 </h3>
-                <p className="font-headline text-lg sm:text-xl text-neutral-400 uppercase">
+                <p className="font-headline text-sm sm:text-base text-neutral-400 uppercase">
                   {gameState.lastWinnerId === 'none' ? 'Better luck next card!' : `Point for ${gameState.lastWinnerName}!`}
                 </p>
               </div>
@@ -1311,7 +1311,7 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
 
   return (
     <div className="w-full flex flex-col items-center justify-center">
-      <div className="w-full max-w-4xl space-y-10 flex flex-col items-center select-none">
+      <div className="w-full max-w-4xl space-y-4 sm:space-y-5 flex flex-col items-center select-none">
         
         {/* Secondary Info Header */}
         <div className="flex justify-between items-center w-full max-w-md px-4 select-none">

@@ -23,7 +23,6 @@ import {
   Linkedin
 } from 'lucide-react';
 import { doc, onSnapshot, setDoc, updateDoc, getDoc } from 'firebase/firestore';
-import { GoogleGenAI, Type } from "@google/genai";
 import { Toaster, toast } from 'sonner';
 import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS, PRIMOS_CARDS, PAPELITO_RANDOM_THEMES, HOLIS_CARDS } from './types';
 import { db } from './firebase';
@@ -530,53 +529,51 @@ function CaseStudyCard({ project, idx, onOpen }: CaseStudyCardProps) {
       </div>
     </motion.article>
   );
-}
-
-const IllowDiagramBlock: React.FC = () => {
+}const IllowDiagramBlock: React.FC = () => {
   return (
-    <div className="bg-[#131211] text-[#f2efea] border border-neutral-850 p-6 sm:p-8 rounded-2xl space-y-4 select-none">
+    <div className="bg-stone-50 border border-neutral-200/80 p-6 sm:p-8 rounded-2xl space-y-4 select-none my-6">
       <div className="overflow-x-auto">
         <div className="min-w-[640px] max-w-full mx-auto">
           <svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg" width="100%" className="overflow-visible">
             <defs>
               <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                <path d="M0,0 L6,3 L0,6 Z" fill="#9a948c"/>
+                <path d="M0,0 L6,3 L0,6 Z" fill="#525252"/>
               </marker>
             </defs>
-            <g fontFamily="Inter, sans-serif" fontSize="12" fill="#f2efea">
-              <rect x="20" y="110" width="120" height="46" fill="#211f1c" stroke="#3a3631" rx="6" strokeWidth="1.5" />
-              <text x="80" y="136" textAnchor="middle" fill="#f2efea" className="font-semibold text-[11px]">Set permission</text>
+            <g fontFamily="Inter, sans-serif" fontSize="12" fill="#171717">
+              <rect x="20" y="110" width="120" height="46" fill="#ffffff" stroke="#d4d4d8" rx="6" strokeWidth="1.5" />
+              <text x="80" y="136" textAnchor="middle" fill="#171717" className="font-semibold text-[11px]">Set permission</text>
 
-              <rect x="190" y="110" width="140" height="46" fill="#211f1c" stroke="#cfc6b4" strokeWidth="2" rx="6" />
-              <text x="260" y="131" textAnchor="middle" fill="#cfc6b4" className="font-bold text-[11px]">Conflict</text>
-              <text x="260" y="145" textAnchor="middle" fill="#cfc6b4" className="text-[10px] opacity-90">detected inline</text>
+              <rect x="190" y="110" width="140" height="46" fill="#ffffff" stroke="#171717" strokeWidth="2" rx="6" />
+              <text x="260" y="131" textAnchor="middle" fill="#171717" className="font-bold text-[11px]">Conflict</text>
+              <text x="260" y="145" textAnchor="middle" fill="#525252" className="text-[10px] opacity-90">detected inline</text>
 
-              <rect x="380" y="30" width="150" height="46" fill="#211f1c" stroke="#3a3631" rx="6" strokeWidth="1.5" />
-              <text x="455" y="51" textAnchor="middle" fill="#f2efea" className="font-semibold text-[11px]">Explain clash</text>
-              <text x="455" y="65" textAnchor="middle" fill="#9a948c" className="text-[10px]">in plain language</text>
+              <rect x="380" y="30" width="150" height="46" fill="#ffffff" stroke="#d4d4d8" rx="6" strokeWidth="1.5" />
+              <text x="455" y="51" textAnchor="middle" fill="#171717" className="font-semibold text-[11px]">Explain clash</text>
+              <text x="455" y="65" textAnchor="middle" fill="#525252" className="text-[10px]">in plain language</text>
 
-              <rect x="380" y="190" width="150" height="46" fill="#211f1c" stroke="#3a3631" rx="6" strokeWidth="1.5" />
-              <text x="455" y="211" textAnchor="middle" fill="#f2efea" className="font-semibold text-[11px]">Offer 2 resolution</text>
-              <text x="455" y="225" textAnchor="middle" fill="#9a948c" className="text-[10px]">paths</text>
+              <rect x="380" y="190" width="150" height="46" fill="#ffffff" stroke="#d4d4d8" rx="6" strokeWidth="1.5" />
+              <text x="455" y="211" textAnchor="middle" fill="#171717" className="font-semibold text-[11px]">Offer 2 resolution</text>
+              <text x="455" y="225" textAnchor="middle" fill="#525252" className="text-[10px]">paths</text>
 
-              <rect x="580" y="110" width="150" height="46" fill="#211f1c" stroke="#3a3631" rx="6" strokeWidth="1.5" />
-              <text x="655" y="131" textAnchor="middle" fill="#f2efea" className="font-semibold text-[11px]">Resolved &amp;</text>
-              <text x="655" y="145" textAnchor="middle" fill="#9a948c" className="text-[10px]">saved</text>
+              <rect x="580" y="110" width="150" height="46" fill="#ffffff" stroke="#d4d4d8" rx="6" strokeWidth="1.5" />
+              <text x="655" y="131" textAnchor="middle" fill="#171717" className="font-semibold text-[11px]">Resolved &amp;</text>
+              <text x="655" y="145" textAnchor="middle" fill="#525252" className="text-[10px]">saved</text>
 
-              <rect x="580" y="0" width="150" height="46" fill="#1b1917" stroke="#3a3631" strokeDasharray="4 4" rx="6" strokeWidth="1.5" />
-              <text x="655" y="21" textAnchor="middle" fill="#9a948c" className="font-medium text-[11px]">Exit mid-flow</text>
-              <text x="655" y="35" textAnchor="middle" fill="#9a948c" className="text-[10px]">→ partial save</text>
+              <rect x="580" y="0" width="150" height="46" fill="#f5f5f4" stroke="#a1a1aa" strokeDasharray="4 4" rx="6" strokeWidth="1.5" />
+              <text x="655" y="21" textAnchor="middle" fill="#525252" className="font-medium text-[11px]">Exit mid-flow</text>
+              <text x="655" y="35" textAnchor="middle" fill="#71717a" className="text-[10px]">→ partial save</text>
             </g>
-            <path d="M140,133 L182,133" stroke="#9a948c" strokeWidth="1.5" markerEnd="url(#arrow)" fill="none" />
-            <path d="M330,120 L372,82" stroke="#9a948c" strokeWidth="1.5" markerEnd="url(#arrow)" fill="none" />
-            <path d="M330,146 L372,203" stroke="#9a948c" strokeWidth="1.5" markerEnd="url(#arrow)" fill="none" />
-            <path d="M530,60 L572,103" stroke="#9a948c" strokeWidth="1.5" markerEnd="url(#arrow)" fill="none" />
-            <path d="M530,210 L572,157" stroke="#9a948c" strokeWidth="1.5" markerEnd="url(#arrow)" fill="none" />
-            <path d="M655,76 L655,102" stroke="#9a948c" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#arrow)" fill="none" />
+            <path d="M140,133 L182,133" stroke="#71717a" strokeWidth="1.5" markerEnd="url(#arrow)" fill="none" />
+            <path d="M330,120 L372,82" stroke="#71717a" strokeWidth="1.5" markerEnd="url(#arrow)" fill="none" />
+            <path d="M330,146 L372,203" stroke="#71717a" strokeWidth="1.5" markerEnd="url(#arrow)" fill="none" />
+            <path d="M530,60 L572,103" stroke="#71717a" strokeWidth="1.5" markerEnd="url(#arrow)" fill="none" />
+            <path d="M530,210 L572,157" stroke="#71717a" strokeWidth="1.5" markerEnd="url(#arrow)" fill="none" />
+            <path d="M655,76 L655,102" stroke="#71717a" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#arrow)" fill="none" />
           </svg>
         </div>
       </div>
-      <p className="text-center font-sans text-xs text-[#9a948c] italic mt-2">
+      <p className="text-center font-sans text-xs text-neutral-500 italic mt-2">
         Inline conflict resolution flow — replacing a hard block with explanation, resolution paths, and partial save.
       </p>
     </div>
@@ -585,92 +582,106 @@ const IllowDiagramBlock: React.FC = () => {
 
 const BigIDDiagramBlock: React.FC = () => {
   return (
-    <div className="bg-[#131211] text-[#f2efea] border border-neutral-850 p-6 sm:p-8 rounded-2xl space-y-4 select-none">
+    <div className="bg-stone-50 border border-neutral-200/80 p-6 sm:p-8 rounded-2xl space-y-4 select-none my-6">
       <div className="overflow-x-auto">
         <div className="min-w-[640px] max-w-full mx-auto">
           <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" width="100%" className="overflow-visible">
             <defs>
               <marker id="arrow2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                <path d="M0,0 L6,3 L0,6 Z" fill="#9a948c"/>
+                <path d="M0,0 L6,3 L0,6 Z" fill="#525252"/>
               </marker>
             </defs>
-            <g fontFamily="Inter, sans-serif" fontSize="12" fill="#f2efea">
+            <g fontFamily="Inter, sans-serif" fontSize="12" fill="#171717">
               {/* before */}
-              <text x="120" y="24" textAnchor="middle" fill="#9a948c" className="text-[10px] font-bold tracking-widest font-mono">BEFORE — FLAT RULESET</text>
-              <rect x="30" y="40" width="180" height="46" fill="#211f1c" stroke="#3a3631" rx="6" strokeWidth="1.5" />
-              <text x="120" y="66" textAnchor="middle" fill="#9a948c" className="text-[11px]">One rule layer for all tenants</text>
+              <text x="120" y="24" textAnchor="middle" fill="#525252" className="text-[10px] font-bold tracking-widest font-mono">BEFORE — FLAT RULESET</text>
+              <rect x="30" y="40" width="180" height="46" fill="#ffffff" stroke="#d4d4d8" rx="6" strokeWidth="1.5" />
+              <text x="120" y="66" textAnchor="middle" fill="#525252" className="text-[11px]">One rule layer for all tenants</text>
 
               {/* after */}
-              <text x="580" y="24" textAnchor="middle" fill="#cfc6b4" className="text-[10px] font-bold tracking-widest font-mono">AFTER — LAYERED MODEL</text>
-              <rect x="470" y="40" width="220" height="40" fill="#211f1c" stroke="#cfc6b4" rx="6" strokeWidth="2" />
-              <text x="580" y="64" textAnchor="middle" fill="#cfc6b4" className="font-bold text-[11px]">Org-wide policy</text>
+              <text x="580" y="24" textAnchor="middle" fill="#171717" className="text-[10px] font-bold tracking-widest font-mono">AFTER — LAYERED MODEL</text>
+              <rect x="470" y="40" width="220" height="40" fill="#ffffff" stroke="#171717" rx="6" strokeWidth="2" />
+              <text x="580" y="64" textAnchor="middle" fill="#171717" className="font-bold text-[11px]">Org-wide policy</text>
 
-              <rect x="490" y="110" width="180" height="40" fill="#211f1c" stroke="#cfc6b4" rx="6" strokeWidth="1.5" />
-              <text x="580" y="134" textAnchor="middle" fill="#f2efea" className="font-semibold text-[11px]">Business unit override</text>
+              <rect x="490" y="110" width="180" height="40" fill="#ffffff" stroke="#d4d4d8" rx="6" strokeWidth="1.5" />
+              <text x="580" y="134" textAnchor="middle" fill="#171717" className="font-semibold text-[11px]">Business unit override</text>
 
-              <rect x="510" y="180" width="140" height="40" fill="#211f1c" stroke="#cfc6b4" rx="6" strokeWidth="1.5" />
-              <text x="580" y="204" textAnchor="middle" fill="#9a948c" className="text-[11px]">Regional exception</text>
+              <rect x="510" y="180" width="140" height="40" fill="#ffffff" stroke="#d4d4d8" rx="6" strokeWidth="1.5" />
+              <text x="580" y="204" textAnchor="middle" fill="#525252" className="text-[11px]">Regional exception</text>
 
-              <path d="M580,80 L580,102" stroke="#9a948c" strokeWidth="1.5" markerEnd="url(#arrow2)" fill="none"/>
-              <path d="M580,150 L580,172" stroke="#9a948c" strokeWidth="1.5" markerEnd="url(#arrow2)" fill="none"/>
+              <path d="M580,80 L580,102" stroke="#71717a" strokeWidth="1.5" markerEnd="url(#arrow2)" fill="none"/>
+              <path d="M580,150 L580,172" stroke="#71717a" strokeWidth="1.5" markerEnd="url(#arrow2)" fill="none"/>
 
-              <path d="M240,63 L462,55" stroke="#9a948c" strokeWidth="1.5" strokeDasharray="4 4" markerEnd="url(#arrow2)" fill="none"/>
-              <text x="350" y="46" textAnchor="middle" fill="#9a948c" className="text-[10px] italic">restructured, not rebuilt</text>
+              <path d="M240,63 L462,55" stroke="#71717a" strokeWidth="1.5" strokeDasharray="4 4" markerEnd="url(#arrow2)" fill="none"/>
+              <text x="350" y="46" textAnchor="middle" fill="#71717a" className="text-[10px] italic">restructured, not rebuilt</text>
 
-              <rect x="220" y="230" width="320" height="46" fill="#1b1917" stroke="#3a3631" strokeDasharray="4 4" rx="6" strokeWidth="1.5" />
-              <text x="380" y="250" textAnchor="middle" fill="#9a948c" className="text-[11px] font-medium">Same base components,</text>
-              <text x="380" y="264" textAnchor="middle" fill="#9a948c" className="text-[10px]">reused across all 3 layers</text>
+              <rect x="220" y="230" width="320" height="46" fill="#f5f5f4" stroke="#a1a1aa" strokeDasharray="4 4" rx="6" strokeWidth="1.5" />
+              <text x="380" y="250" textAnchor="middle" fill="#525252" className="text-[11px] font-medium">Same base components,</text>
+              <text x="380" y="264" textAnchor="middle" fill="#71717a" className="text-[10px]">reused across all 3 layers</text>
             </g>
           </svg>
         </div>
       </div>
-      <p className="text-center font-sans text-xs text-[#9a948c] italic mt-2">
+      <p className="text-center font-sans text-xs text-neutral-500 italic mt-2">
         Moving from a flat permission model to a layered one — reusing the same base components at every level instead of building three separate UIs.
       </p>
     </div>
   );
 };
 
+const CookieLivePrototypeBlock: React.FC = () => {
+  return (
+    <div className="my-6 relative w-full aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden border border-stone-200 bg-white shadow-xs">
+      <iframe
+        src="https://cookie-ai-assist.lovable.app"
+        title="Cookie AI Classification Interactive Prototype"
+        className="w-full h-full border-0"
+        loading="lazy"
+        allow="clipboard-write"
+      />
+    </div>
+  );
+};
+
 const BrandDiagramBlock: React.FC = () => {
   return (
-    <div className="bg-[#131211] text-[#f2efea] border border-neutral-850 p-6 sm:p-8 rounded-2xl space-y-4 select-none my-6">
+    <div className="bg-stone-50 border border-neutral-200/80 p-6 sm:p-8 rounded-2xl space-y-4 select-none my-6">
       <div className="overflow-x-auto">
         <div className="min-w-[640px] max-w-full mx-auto text-center">
-          <svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto text-[#f2efea] inline-block">
-            <g fontFamily="Inter, sans-serif" fontSize="12" fill="#f2efea">
+          <svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto text-stone-900 inline-block">
+            <g fontFamily="Inter, sans-serif" fontSize="12" fill="#171717">
               {/* Central Node: Brand system */}
-              <rect x="270" y="125" width="160" height="70" fill="#211f1c" stroke="#cfc6b4" strokeWidth="1.5" rx="8"/>
-              <text x="350" y="154" textAnchor="middle" fill="#cfc6b4" fontWeight="600" fontSize="13">Brand System</text>
-              <text x="350" y="172" textAnchor="middle" fill="#9a948c" fontSize="10">color · type · voice</text>
+              <rect x="270" y="125" width="160" height="70" fill="#ffffff" stroke="#171717" strokeWidth="1.5" rx="8"/>
+              <text x="350" y="154" textAnchor="middle" fill="#171717" fontWeight="600" fontSize="13">Brand System</text>
+              <text x="350" y="172" textAnchor="middle" fill="#525252" fontSize="10">color · type · voice</text>
 
               {/* Connection Paths */}
-              <path d="M270,145 L180,65" stroke="#9a948c" strokeWidth="1.2" fill="none" />
-              <path d="M430,145 L520,65" stroke="#9a948c" strokeWidth="1.2" fill="none" />
-              <path d="M270,175 L180,265" stroke="#9a948c" strokeWidth="1.2" fill="none" />
-              <path d="M430,175 L520,265" stroke="#9a948c" strokeWidth="1.2" fill="none" />
+              <path d="M270,145 L180,65" stroke="#71717a" strokeWidth="1.2" fill="none" />
+              <path d="M430,145 L520,65" stroke="#71717a" strokeWidth="1.2" fill="none" />
+              <path d="M270,175 L180,265" stroke="#71717a" strokeWidth="1.2" fill="none" />
+              <path d="M430,175 L520,265" stroke="#71717a" strokeWidth="1.2" fill="none" />
 
               {/* Channels */}
               {/* Website */}
-              <rect x="30" y="40" width="150" height="50" fill="#1b1917" stroke="#3a3631" strokeWidth="1" rx="6"/>
+              <rect x="30" y="40" width="150" height="50" fill="#ffffff" stroke="#d4d4d8" strokeWidth="1" rx="6"/>
               <text x="105" y="70" textAnchor="middle" fontWeight="500">Website</text>
 
               {/* Paid Ads */}
-              <rect x="520" y="40" width="150" height="50" fill="#1b1917" stroke="#3a3631" strokeWidth="1" rx="6"/>
+              <rect x="520" y="40" width="150" height="50" fill="#ffffff" stroke="#d4d4d8" strokeWidth="1" rx="6"/>
               <text x="595" y="70" textAnchor="middle" fontWeight="500">Paid Ads</text>
 
               {/* Social Content */}
-              <rect x="30" y="240" width="150" height="50" fill="#1b1917" stroke="#3a3631" strokeWidth="1" rx="6"/>
+              <rect x="30" y="240" width="150" height="50" fill="#ffffff" stroke="#d4d4d8" strokeWidth="1" rx="6"/>
               <text x="105" y="270" textAnchor="middle" fontWeight="500">Social Content</text>
 
               {/* Product UI */}
-              <rect x="520" y="240" width="150" height="50" fill="#1b1917" stroke="#3a3631" strokeWidth="1" rx="6"/>
+              <rect x="520" y="240" width="150" height="50" fill="#ffffff" stroke="#d4d4d8" strokeWidth="1" rx="6"/>
               <text x="595" y="265" textAnchor="middle" fontWeight="500">Product UI</text>
-              <text x="595" y="280" textAnchor="middle" fontSize="9" fill="#9a948c">(later, case study 02)</text>
+              <text x="595" y="280" textAnchor="middle" fontSize="9" fill="#71717a">(later, case study 02)</text>
             </g>
           </svg>
         </div>
       </div>
-      <p className="text-center font-sans text-xs text-[#9a948c] italic mt-2">
+      <p className="text-center font-sans text-xs text-neutral-500 italic mt-2">
         One shared system feeding every channel — not four separate visual languages.
       </p>
     </div>
@@ -682,112 +693,112 @@ const BrandGalleryBlock: React.FC = () => {
     <div className="space-y-6 select-none my-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Card 1: Identity — logo & color system */}
-        <div className="bg-neutral-950 text-[#f2efea] border border-neutral-800 rounded-2xl p-6 flex flex-col justify-between h-56 shadow-sm hover:border-[#cfc6b4]/50 transition-all duration-300">
+        <div className="bg-white text-stone-900 border border-stone-200 rounded-2xl p-6 flex flex-col justify-between h-56 shadow-xs hover:border-stone-400 transition-all duration-300">
           <div className="flex justify-between items-start">
-            <span className="font-mono text-[9px] uppercase tracking-widest text-[#9a948c]">01 • Identity</span>
-            <span className="w-1.5 h-1.5 bg-[#cfc6b4] rounded-full shrink-0" />
+            <span className="font-mono text-[9px] uppercase tracking-widest text-stone-500">01 • Identity</span>
+            <span className="w-1.5 h-1.5 bg-stone-900 rounded-full shrink-0" />
           </div>
           <div className="space-y-3">
             {/* Mock Logo Mark */}
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-[#cfc6b4] flex items-center justify-center font-bold text-[#131211] text-xs font-headline">i</div>
-              <span className="font-headline font-black text-lg tracking-tight text-[#f2efea]">illow</span>
+              <div className="w-6 h-6 rounded bg-stone-900 flex items-center justify-center font-bold text-white text-xs font-headline">i</div>
+              <span className="font-headline font-black text-lg tracking-tight text-stone-900">illow</span>
             </div>
             {/* Color Palette bar */}
             <div className="flex gap-1.5 pt-2">
-              <span className="w-5 h-5 rounded bg-[#131211] border border-neutral-800" title="#131211" />
-              <span className="w-5 h-5 rounded bg-[#1b1917] border border-neutral-800" title="#1b1917" />
-              <span className="w-5 h-5 rounded bg-[#f2efea]" title="#f2efea" />
-              <span className="w-5 h-5 rounded bg-[#cfc6b4]" title="#cfc6b4" />
+              <span className="w-5 h-5 rounded bg-stone-900 border border-stone-300" title="#171717" />
+              <span className="w-5 h-5 rounded bg-stone-700 border border-stone-300" title="#44403c" />
+              <span className="w-5 h-5 rounded bg-stone-100 border border-stone-300" title="#f5f5f4" />
+              <span className="w-5 h-5 rounded bg-[#cfc6b4] border border-stone-300" title="#cfc6b4" />
             </div>
           </div>
-          <p className="font-sans text-[11px] text-[#9a948c] leading-relaxed">Logo system, precise neutral tokens, and corporate typography rules.</p>
+          <p className="font-sans text-[11px] text-stone-600 leading-relaxed">Logo system, precise neutral tokens, and corporate typography rules.</p>
         </div>
 
         {/* Card 2: Website — landing page */}
-        <div className="bg-neutral-950 text-[#f2efea] border border-neutral-800 rounded-2xl p-6 flex flex-col justify-between h-56 shadow-sm hover:border-[#cfc6b4]/50 transition-all duration-300">
+        <div className="bg-white text-stone-900 border border-stone-200 rounded-2xl p-6 flex flex-col justify-between h-56 shadow-xs hover:border-stone-400 transition-all duration-300">
           <div className="flex justify-between items-start">
-            <span className="font-mono text-[9px] uppercase tracking-widest text-[#9a948c]">02 • Website</span>
-            <span className="w-1.5 h-1.5 bg-[#cfc6b4] rounded-full shrink-0 animate-pulse" />
+            <span className="font-mono text-[9px] uppercase tracking-widest text-stone-500">02 • Website</span>
+            <span className="w-1.5 h-1.5 bg-stone-900 rounded-full shrink-0 animate-pulse" />
           </div>
           {/* Mock Browser Hero Screen */}
-          <div className="bg-[#1b1917] border border-neutral-800 rounded-lg p-3 space-y-2 text-left">
+          <div className="bg-stone-50 border border-stone-200 rounded-lg p-3 space-y-2 text-left">
             <div className="flex gap-1">
-              <span className="w-1 h-1 rounded-full bg-neutral-700" />
-              <span className="w-1 h-1 rounded-full bg-neutral-700" />
-              <span className="w-1 h-1 rounded-full bg-neutral-700" />
+              <span className="w-1 h-1 rounded-full bg-stone-400" />
+              <span className="w-1 h-1 rounded-full bg-stone-400" />
+              <span className="w-1 h-1 rounded-full bg-stone-400" />
             </div>
             <div className="space-y-1">
-              <div className="h-1.5 bg-[#cfc6b4]/40 rounded w-16" />
-              <div className="h-2.5 bg-[#f2efea] rounded w-24" />
-              <div className="h-1 bg-neutral-700 rounded w-20" />
+              <div className="h-1.5 bg-stone-300 rounded w-16" />
+              <div className="h-2.5 bg-stone-800 rounded w-24" />
+              <div className="h-1 bg-stone-400 rounded w-20" />
             </div>
-            <div className="h-4 bg-[#cfc6b4] rounded flex items-center justify-center text-[7px] text-[#131211] font-bold uppercase tracking-widest">Sign Up</div>
+            <div className="h-4 bg-stone-900 rounded flex items-center justify-center text-[7px] text-white font-bold uppercase tracking-widest">Sign Up</div>
           </div>
-          <p className="font-sans text-[11px] text-[#9a948c] leading-relaxed">High-converting landing page optimized for funnel stage intent.</p>
+          <p className="font-sans text-[11px] text-stone-600 leading-relaxed">High-converting landing page optimized for funnel stage intent.</p>
         </div>
 
         {/* Card 3: Paid ad creative set */}
-        <div className="bg-neutral-950 text-[#f2efea] border border-neutral-800 rounded-2xl p-6 flex flex-col justify-between h-56 shadow-sm hover:border-[#cfc6b4]/50 transition-all duration-300">
+        <div className="bg-white text-stone-900 border border-stone-200 rounded-2xl p-6 flex flex-col justify-between h-56 shadow-xs hover:border-stone-400 transition-all duration-300">
           <div className="flex justify-between items-start">
-            <span className="font-mono text-[9px] uppercase tracking-widest text-[#9a948c]">03 • Paid Ads</span>
-            <span className="material-symbols-outlined text-xs text-[#cfc6b4]">ads_click</span>
+            <span className="font-mono text-[9px] uppercase tracking-widest text-stone-500">03 • Paid Ads</span>
+            <span className="material-symbols-outlined text-xs text-stone-900">ads_click</span>
           </div>
           {/* Mock display ad */}
-          <div className="bg-[#cfc6b4] text-[#131211] p-3 rounded-lg space-y-2 flex flex-col justify-between h-24">
+          <div className="bg-stone-100 text-stone-900 p-3 rounded-lg border border-stone-200 space-y-2 flex flex-col justify-between h-24">
             <div className="space-y-1">
-              <span className="font-mono text-[6px] uppercase tracking-wider bg-[#131211]/10 px-1 py-0.5 rounded font-black">B2B Privacy</span>
+              <span className="font-mono text-[6px] uppercase tracking-wider bg-stone-200 px-1 py-0.5 rounded font-black">B2B Privacy</span>
               <p className="font-headline font-black text-[9px] leading-tight">Privacy sells trust before it sells features.</p>
             </div>
             <div className="flex justify-between items-center text-[7px]">
-              <span className="font-mono text-[5px] text-neutral-600">✓ GDPR Compliant</span>
-              <span className="bg-[#131211] text-[#f2efea] px-1.5 py-0.5 rounded font-black">Learn More</span>
+              <span className="font-mono text-[5px] text-stone-600">✓ GDPR Compliant</span>
+              <span className="bg-stone-900 text-white px-1.5 py-0.5 rounded font-black">Learn More</span>
             </div>
           </div>
-          <p className="font-sans text-[11px] text-[#9a948c] leading-relaxed">Modular templates allowing campaign variants in hours.</p>
+          <p className="font-sans text-[11px] text-stone-600 leading-relaxed">Modular templates allowing campaign variants in hours.</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         {/* Card 4: Social content grid */}
-        <div className="bg-neutral-950 text-[#f2efea] border border-neutral-800 rounded-2xl p-6 flex flex-col justify-between h-56 shadow-sm hover:border-[#cfc6b4]/50 transition-all duration-300">
+        <div className="bg-white text-stone-900 border border-stone-200 rounded-2xl p-6 flex flex-col justify-between h-56 shadow-xs hover:border-stone-400 transition-all duration-300">
           <div className="flex justify-between items-start">
-            <span className="font-mono text-[9px] uppercase tracking-widest text-[#9a948c]">04 • Social Content Grid</span>
-            <span className="material-symbols-outlined text-xs text-[#cfc6b4]">grid_view</span>
+            <span className="font-mono text-[9px] uppercase tracking-widest text-stone-500">04 • Social Content Grid</span>
+            <span className="material-symbols-outlined text-xs text-stone-900">grid_view</span>
           </div>
           {/* Mock social post layout previews */}
           <div className="grid grid-cols-3 gap-2">
             {[1, 2, 3].map((item) => (
-              <div key={item} className="bg-[#1b1917] border border-neutral-800 rounded-lg p-2 aspect-square flex flex-col justify-between">
-                <span className="text-[6px] font-mono text-[#cfc6b4] font-bold">POST 0{item}</span>
+              <div key={item} className="bg-stone-50 border border-stone-200 rounded-lg p-2 aspect-square flex flex-col justify-between">
+                <span className="text-[6px] font-mono text-stone-700 font-bold">POST 0{item}</span>
                 <div className="space-y-0.5">
-                  <div className="h-1 bg-[#f2efea] rounded w-full" />
-                  <div className="h-1 bg-neutral-700 rounded w-2/3" />
+                  <div className="h-1 bg-stone-800 rounded w-full" />
+                  <div className="h-1 bg-stone-400 rounded w-2/3" />
                 </div>
               </div>
             ))}
           </div>
-          <p className="font-sans text-[11px] text-[#9a948c] leading-relaxed">Defined repeatable template guidelines designed to scale without handcrafting.</p>
+          <p className="font-sans text-[11px] text-stone-600 leading-relaxed">Defined repeatable template guidelines designed to scale without handcrafting.</p>
         </div>
 
         {/* Card 5: Brand guidelines excerpt */}
-        <div className="bg-neutral-950 text-[#f2efea] border border-neutral-800 rounded-2xl p-6 flex flex-col justify-between h-56 shadow-sm hover:border-[#cfc6b4]/50 transition-all duration-300">
+        <div className="bg-white text-stone-900 border border-stone-200 rounded-2xl p-6 flex flex-col justify-between h-56 shadow-xs hover:border-stone-400 transition-all duration-300">
           <div className="flex justify-between items-start">
-            <span className="font-mono text-[9px] uppercase tracking-widest text-[#9a948c]">05 • Brandbook Guidelines</span>
-            <span className="material-symbols-outlined text-xs text-[#cfc6b4]">auto_stories</span>
+            <span className="font-mono text-[9px] uppercase tracking-widest text-stone-500">05 • Brandbook Guidelines</span>
+            <span className="material-symbols-outlined text-xs text-stone-900">auto_stories</span>
           </div>
           {/* Mock guideline specs */}
-          <div className="bg-[#1b1917] border border-neutral-800 rounded-lg p-3 space-y-2">
-            <div className="flex justify-between items-center border-b border-neutral-800 pb-1.5 text-[8px] font-mono text-[#9a948c]">
+          <div className="bg-stone-50 border border-stone-200 rounded-lg p-3 space-y-2">
+            <div className="flex justify-between items-center border-b border-stone-200 pb-1.5 text-[8px] font-mono text-stone-500">
               <span>Typography Pairing</span>
-              <span className="text-emerald-500 font-bold">Active Specification</span>
+              <span className="text-emerald-700 font-bold">Active Specification</span>
             </div>
             <div className="space-y-1">
-              <span className="font-headline font-bold text-[10px] text-[#cfc6b4] block">Syne Heavy (Display)</span>
-              <span className="font-sans text-[8px] text-[#f2efea] block">Inter Regular (Paragraph / Meta)</span>
+              <span className="font-headline font-bold text-[10px] text-stone-900 block">Syne Heavy (Display)</span>
+              <span className="font-sans text-[8px] text-stone-700 block">Inter Regular (Paragraph / Meta)</span>
             </div>
           </div>
-          <p className="font-sans text-[11px] text-[#9a948c] leading-relaxed">Unified tokens across typography pairings and UI layouts.</p>
+          <p className="font-sans text-[11px] text-stone-600 leading-relaxed">Unified tokens across typography pairings and UI layouts.</p>
         </div>
       </div>
     </div>
@@ -945,12 +956,58 @@ export default function App() {
                 as a Growth Engine
               </h2>
             </div>
-            <p className="font-sans text-sm sm:text-base text-neutral-500 max-w-2xl leading-relaxed">
-              Connecting premium visual narratives with empirical business outcomes. Every design decision serves to translate complex engineering workflows into frictionless user experiences and lasting brand value.
+            <p className="font-sans text-sm sm:text-base text-stone-700 max-w-2xl leading-relaxed">
+              I simplify extreme technical complexity into clean, intuitive, and high-performing B2B SaaS products. Former Lead Product Designer at illow (acquired by BigID). Specialized in multi-tenant architecture, global regulatory compliance, scalable design systems, and AI-powered interfaces.
             </p>
           </div>
           <div className="lg:col-span-5 w-full">
             <DifferentialMockup />
+          </div>
+        </div>
+
+        {/* Proof Bar / Key Highlights */}
+        <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-6 sm:p-8 shadow-xs my-6 text-left">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-stone-900 font-mono mb-4 flex items-center gap-2">
+            <span className="material-symbols-outlined text-stone-900 text-sm">verified_user</span>
+            Proof Bar / Key Highlights
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="space-y-1.5">
+              <h4 className="font-headline text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-stone-700 text-sm">handshake</span>
+                Corporate Acquisition
+              </h4>
+              <p className="font-sans text-xs text-stone-600 leading-relaxed">
+                Led illow’s product strategy from 0-to-1 through its acquisition by BigID and global relaunch as BigID CMP Express.
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              <h4 className="font-headline text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-stone-700 text-sm">workspace_premium</span>
+                12+ G2 Badges
+              </h4>
+              <p className="font-sans text-xs text-stone-600 leading-relaxed">
+                Earned top recognitions for usability and implementation excellence (including Easiest Setup and High Performer) with a 4.8/5 average user rating.
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              <h4 className="font-headline text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-stone-700 text-sm">public</span>
+                Global Scale
+              </h4>
+              <p className="font-sans text-xs text-stone-600 leading-relaxed">
+                Architected systems supporting 250+ localized languages and processing millions of monthly visitors per account.
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              <h4 className="font-headline text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-stone-700 text-sm">auto_awesome</span>
+                AI Innovation
+              </h4>
+              <p className="font-sans text-xs text-stone-600 leading-relaxed">
+                Automated a database of 50,000+ cookies using AI and accelerated design workflows with the Figma MCP server.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -978,11 +1035,11 @@ export default function App() {
 
   const renderPapelitoCoCreationPanel = () => {
     return (
-      <div className="bg-[#111113] border border-neutral-800 rounded-2xl p-4 sm:p-5 shadow-sm transition-all duration-300 hover:border-neutral-700 max-w-4xl mx-auto w-full select-none text-left">
+      <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 sm:p-5 shadow-xs transition-all duration-300 hover:border-stone-400 max-w-4xl mx-auto w-full select-none text-left">
         <div className="flex flex-col sm:flex-row gap-5 items-stretch">
           {/* Left Hand: Smaller, low-height Preview Image */}
           <div className="w-full sm:w-40 md:w-48 shrink-0 flex flex-col justify-center space-y-1.5">
-            <div className="overflow-hidden rounded-xl border border-neutral-800 relative bg-neutral-900 aspect-video shadow-3xs">
+            <div className="overflow-hidden rounded-xl border border-stone-200 relative bg-stone-100 aspect-video shadow-3xs">
               <img 
                 src={getDirectDriveUrl("https://drive.google.com/file/d/1xN0fZzNMSZKh5252z38-m09XZokC0_Qf/view?usp=share_link")} 
                 alt="Papelito game interface preview" 
@@ -990,7 +1047,7 @@ export default function App() {
                 referrerPolicy="no-referrer"
               />
             </div>
-            <p className="font-sans text-[9px] text-neutral-400 italic pl-0.5 leading-normal select-text">
+            <p className="font-sans text-[9px] text-stone-500 italic pl-0.5 leading-normal select-text">
               Preview: Real-time Papelito Multi-agent Engine
             </p>
           </div>
@@ -1003,27 +1060,27 @@ export default function App() {
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest font-mono text-[#3C48C3] bg-[#3C48C3]/10 border border-[#3C48C3]/30">
                   AI x UX Co-Creation
                 </span>
-                <span className="text-[10px] text-neutral-400 font-body italic">
+                <span className="text-[10px] text-stone-500 font-body italic">
                   From raw prompt to live lobby
                 </span>
               </div>
-              <h3 className="font-headline text-sm sm:text-base font-bold text-white tracking-tight">
+              <h3 className="font-headline text-sm sm:text-base font-bold text-stone-900 tracking-tight">
                 Co-Creating Papelito Lobby Engine
               </h3>
-              <p className="font-sans text-[11px] sm:text-xs text-neutral-400 leading-relaxed mb-0.5">
+              <p className="font-sans text-[11px] sm:text-xs text-stone-600 leading-relaxed mb-0.5">
                 Designing a multiplayer party game requires granular event management. Using structured prompt sequencing, we co-designed and deployed the entire party flow featuring custom Web Audio synthesizers and low-latency Firestore subscriptions. The resulting framework translates responsive gameplay into frictionless user events, bringing interactive state models to life directly on this staging stage.
               </p>
             </div>
 
             {/* Bottom Row / Flat horizontal layout */}
-            <div className="pt-2 border-t border-neutral-900 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex gap-x-3 gap-y-1 flex-wrap text-[10px] text-neutral-400 select-text">
+            <div className="pt-2 border-t border-stone-200 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex gap-x-3 gap-y-1 flex-wrap text-[10px] text-stone-600 select-text">
                 <span className="text-[#3C48C3] font-bold uppercase text-[8px] tracking-widest">Pipeline:</span>
-                <span className="font-mono text-[9px] text-neutral-300 font-bold">01 Prompt Blueprint</span>
-                <span className="text-neutral-700">•</span>
-                <span className="font-mono text-[9px] text-neutral-300 font-bold">02 State Machine</span>
-                <span className="text-neutral-700">•</span>
-                <span className="font-mono text-[9px] text-neutral-300 font-bold">03 Web Synth</span>
+                <span className="font-mono text-[9px] text-stone-900 font-bold">01 Prompt Blueprint</span>
+                <span className="text-stone-300">•</span>
+                <span className="font-mono text-[9px] text-stone-900 font-bold">02 State Machine</span>
+                <span className="text-stone-300">•</span>
+                <span className="font-mono text-[9px] text-stone-900 font-bold">03 Web Synth</span>
               </div>
               <button
                 type="button"
@@ -1031,7 +1088,7 @@ export default function App() {
                   setActiveTab('GAMES');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="shrink-0 py-1.5 px-3.5 bg-[#3C48C3] hover:brightness-110 text-white font-mono text-[9px] font-bold uppercase tracking-widest rounded-lg transition-all flex items-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-[0.98] shadow-xs"
+                className="shrink-0 py-1.5 px-3.5 bg-stone-900 hover:bg-stone-800 text-white font-mono text-[9px] font-bold uppercase tracking-widest rounded-lg transition-all flex items-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-[0.98] shadow-xs"
               >
                 Launch Game (Live Dev Stage)
                 <span className="material-symbols-outlined text-[11px] font-bold leading-none">sports_esports</span>
@@ -2318,6 +2375,22 @@ export default function App() {
                           );
 
                         case 'custom':
+                          if (block.customType === 'cookie_live_prototype') {
+                            return <CookieLivePrototypeBlock key={idx} />;
+                          }
+                          if (block.customType === 'cookie_trust_callout') {
+                            return (
+                              <div key={idx} className="bg-stone-50 border-l-2 border-stone-900 p-5 sm:p-6 rounded-r-2xl border border-stone-200/80 my-6 text-left">
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-stone-900 mb-2 font-mono flex items-center gap-1.5">
+                                  <span className="material-symbols-outlined text-sm text-stone-900">verified_user</span>
+                                  {block.title || "The Trust Mechanic — Core Design Decision"}
+                                </div>
+                                <p className="text-stone-700 font-sans text-xs sm:text-sm leading-relaxed">
+                                  {block.content}
+                                </p>
+                              </div>
+                            );
+                          }
                           if (block.customType === 'illow_diagram') {
                             return <IllowDiagramBlock key={idx} />;
                           }
@@ -2332,11 +2405,11 @@ export default function App() {
                           }
                           if (block.customType === 'illow_callout') {
                             return (
-                              <div key={idx} className="bg-neutral-900 border-l-2 border-[#cfc6b4] p-5 sm:p-6 rounded-r-2xl border border-neutral-800/50 my-6 text-left">
-                                <div className="text-[10px] font-bold uppercase tracking-widest text-[#cfc6b4] mb-2 font-mono">
+                              <div key={idx} className="bg-stone-50 border-l-2 border-stone-900 p-5 sm:p-6 rounded-r-2xl border border-stone-200/80 my-6 text-left">
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-stone-900 mb-2 font-mono">
                                   {block.title || "Edge Case — The Core of the Redesign"}
                                 </div>
-                                <p className="text-neutral-300 font-sans text-xs sm:text-sm leading-relaxed">
+                                <p className="text-stone-700 font-sans text-xs sm:text-sm leading-relaxed">
                                   {block.content}
                                 </p>
                               </div>
@@ -2344,11 +2417,11 @@ export default function App() {
                           }
                           if (block.customType === 'bigid_callout') {
                             return (
-                              <div key={idx} className="bg-neutral-900 border-l-2 border-[#cfc6b4] p-5 sm:p-6 rounded-r-2xl border border-neutral-800/50 my-6 text-left">
-                                <div className="text-[10px] font-bold uppercase tracking-widest text-[#cfc6b4] mb-2 font-mono">
+                              <div key={idx} className="bg-stone-50 border-l-2 border-stone-900 p-5 sm:p-6 rounded-r-2xl border border-stone-200/80 my-6 text-left">
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-stone-900 mb-2 font-mono">
                                   {block.title || "Key Decision"}
                                 </div>
-                                <p className="text-neutral-300 font-sans text-xs sm:text-sm leading-relaxed">
+                                <p className="text-stone-700 font-sans text-xs sm:text-sm leading-relaxed">
                                   {block.content}
                                 </p>
                               </div>
@@ -2356,11 +2429,11 @@ export default function App() {
                           }
                           if (block.customType === 'brand_callout') {
                             return (
-                              <div key={idx} className="bg-neutral-900 border-l-2 border-[#cfc6b4] p-5 sm:p-6 rounded-r-2xl border border-neutral-800/50 my-6 text-left">
-                                <div className="text-[10px] font-bold uppercase tracking-widest text-[#cfc6b4] mb-2 font-mono">
+                              <div key={idx} className="bg-stone-50 border-l-2 border-stone-900 p-5 sm:p-6 rounded-r-2xl border border-stone-200/80 my-6 text-left">
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-stone-900 mb-2 font-mono">
                                   {block.title || "Alternative Considered & Rejected"}
                                 </div>
-                                <p className="text-neutral-300 font-sans text-xs sm:text-sm leading-relaxed">
+                                <p className="text-stone-700 font-sans text-xs sm:text-sm leading-relaxed">
                                   {block.content}
                                 </p>
                               </div>
@@ -2379,13 +2452,13 @@ export default function App() {
                                     { t: "Paid ads", d: "Display & social ad creative, funnel-stage variants", icon: "ads_click" },
                                     { t: "Social", d: "Ongoing organic content system across platforms", icon: "share" }
                                   ].map((item, cidx) => (
-                                    <div key={cidx} className="bg-neutral-900 text-[#f2efea] border border-neutral-800 p-5 rounded-2xl flex flex-col justify-between space-y-4 shadow-sm hover:border-[#cfc6b4]/50 transition-all duration-300">
-                                      <span className="material-symbols-outlined text-[#cfc6b4] text-xl w-fit">
+                                    <div key={cidx} className="bg-white text-stone-900 border border-stone-200 p-5 rounded-2xl flex flex-col justify-between space-y-4 shadow-xs hover:border-stone-400 transition-all duration-300">
+                                      <span className="material-symbols-outlined text-stone-900 text-xl w-fit">
                                         {item.icon}
                                       </span>
                                       <div className="space-y-1.5 text-left">
-                                        <h5 className="font-headline text-sm font-bold tracking-tight text-[#cfc6b4]">{item.t}</h5>
-                                        <p className="font-sans text-xs text-[#9a948c] leading-relaxed">{item.d}</p>
+                                        <h5 className="font-headline text-sm font-bold tracking-tight text-stone-900">{item.t}</h5>
+                                        <p className="font-sans text-xs text-stone-600 leading-relaxed">{item.d}</p>
                                       </div>
                                     </div>
                                   ))}
@@ -2401,105 +2474,18 @@ export default function App() {
                                 </h5>
                                 <ul className="space-y-3 font-sans text-xs sm:text-sm text-neutral-600 leading-relaxed">
                                   <li className="flex items-start gap-2.5">
-                                    <span className="material-symbols-outlined text-[#cfc6b4] text-base leading-none select-none mt-0.5">check_box_outline_blank</span>
+                                    <span className="material-symbols-outlined text-stone-700 text-base leading-none select-none mt-0.5">check_box_outline_blank</span>
                                     <span>Replace the 5 showcase visual specs with live assets cleared under NDA terms.</span>
                                   </li>
                                   <li className="flex items-start gap-2.5">
-                                    <span className="material-symbols-outlined text-[#cfc6b4] text-base leading-none select-none mt-0.5">check_box_outline_blank</span>
+                                    <span className="material-symbols-outlined text-stone-700 text-base leading-none select-none mt-0.5">check_box_outline_blank</span>
                                     <span>Verify the 25–35% production-speed efficiency metric matches the initial campaign reports.</span>
                                   </li>
                                   <li className="flex items-start gap-2.5">
-                                    <span className="material-symbols-outlined text-[#cfc6b4] text-base leading-none select-none mt-0.5">check_box_outline_blank</span>
+                                    <span className="material-symbols-outlined text-stone-700 text-base leading-none select-none mt-0.5">check_box_outline_blank</span>
                                     <span>Obtain side-by-side snapshots of pre-acquisition ad channels and website iterations if available.</span>
                                   </li>
                                 </ul>
-                              </div>
-                            );
-                          }
-                          if (block.customType === 'illow_adapt') {
-                            return (
-                              <div key={idx} className="bg-neutral-50/70 border border-neutral-200/50 p-6 rounded-2xl space-y-4">
-                                <h4 className="font-headline text-xs font-bold text-black uppercase tracking-wider font-mono">
-                                  Adapting this case by role
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                  <div className="space-y-1.5 p-3.5 bg-white/60 border border-neutral-200/50 rounded-xl">
-                                    <span className="inline-block px-2 py-0.5 text-[9px] font-bold uppercase font-mono tracking-wider bg-[#cfc6b4]/50 text-[#131211] rounded">Product / UX</span>
-                                    <p className="text-neutral-600 font-sans text-xs leading-relaxed">
-                                      Lead with the research section and the component system that later scaled to enterprise standards at BigID.
-                                    </p>
-                                  </div>
-                                  <div className="space-y-1.5 p-3.5 bg-white/60 border border-neutral-200/50 rounded-xl">
-                                    <span className="inline-block px-2 py-0.5 text-[9px] font-bold uppercase font-mono tracking-wider bg-[#cfc6b4]/50 text-[#131211] rounded">Visual / Brand-to-Product</span>
-                                    <p className="text-neutral-600 font-sans text-xs leading-relaxed">
-                                      Lead with the opening — spotting the gap between brand and product and driving my own transition without being asked.
-                                    </p>
-                                  </div>
-                                  <div className="space-y-1.5 p-3.5 bg-white/60 border border-neutral-200/50 rounded-xl">
-                                    <span className="inline-block px-2 py-0.5 text-[9px] font-bold uppercase font-mono tracking-wider bg-[#cfc6b4]/50 text-[#131211] rounded">UI Design Engineer</span>
-                                    <p className="text-neutral-600 font-sans text-xs leading-relaxed">
-                                      Lead with the prototype-fidelity decision and the reusable component documentation handed to engineering.
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          }
-                          if (block.customType === 'bigid_adapt') {
-                            return (
-                              <div key={idx} className="bg-neutral-50/70 border border-neutral-200/50 p-6 rounded-2xl space-y-4">
-                                <h4 className="font-headline text-xs font-bold text-black uppercase tracking-wider font-mono">
-                                  Adapting this case by role
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                  <div className="space-y-1.5 p-3.5 bg-white/60 border border-neutral-200/50 rounded-xl">
-                                    <span className="inline-block px-2 py-0.5 text-[9px] font-bold uppercase font-mono tracking-wider bg-[#cfc6b4]/50 text-[#131211] rounded">Product / UX</span>
-                                    <p className="text-neutral-600 font-sans text-xs leading-relaxed">
-                                      Lead with the research insight (flat vs. layered mental model) and the systems-thinking decision to nest components instead of rebuilding.
-                                    </p>
-                                  </div>
-                                  <div className="space-y-1.5 p-3.5 bg-white/60 border border-neutral-200/50 rounded-xl">
-                                    <span className="inline-block px-2 py-0.5 text-[9px] font-bold uppercase font-mono tracking-wider bg-[#cfc6b4]/50 text-[#131211] rounded">Senior / Staff Design</span>
-                                    <p className="text-neutral-600 font-sans text-xs leading-relaxed">
-                                      Lead with owning problem definition without a PM, and the cross-functional framework that shipped 20% faster.
-                                    </p>
-                                  </div>
-                                  <div className="space-y-1.5 p-3.5 bg-white/60 border border-neutral-200/50 rounded-xl">
-                                    <span className="inline-block px-2 py-0.5 text-[9px] font-bold uppercase font-mono tracking-wider bg-[#cfc6b4]/50 text-[#131211] rounded">AI / AIX-focused roles</span>
-                                    <p className="text-neutral-600 font-sans text-xs leading-relaxed">
-                                      Lead with the agentic workflow and explainability signal design.
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          }
-                          if (block.customType === 'brand_adapt') {
-                            return (
-                              <div key={idx} className="bg-neutral-50/70 border border-neutral-200/50 p-6 rounded-2xl space-y-4">
-                                <h4 className="font-headline text-xs font-bold text-black uppercase tracking-wider font-mono">
-                                  Adapting this case by role
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                  <div className="space-y-1.5 p-3.5 bg-white/60 border border-neutral-200/50 rounded-xl">
-                                    <span className="inline-block px-2 py-0.5 text-[9px] font-bold uppercase font-mono tracking-wider bg-[#cfc6b4]/50 text-[#131211] rounded">Visual / Brand Design</span>
-                                    <p className="text-neutral-600 font-sans text-xs leading-relaxed">
-                                      This is your strongest lead case — put it first and go deep on the token system and the ad/social templates.
-                                    </p>
-                                  </div>
-                                  <div className="space-y-1.5 p-3.5 bg-white/60 border border-neutral-200/50 rounded-xl">
-                                    <span className="inline-block px-2 py-0.5 text-[9px] font-bold uppercase font-mono tracking-wider bg-[#cfc6b4]/50 text-[#131211] rounded">Brand-to-Product transition</span>
-                                    <p className="text-neutral-600 font-sans text-xs leading-relaxed">
-                                      Pair this with Case Study 02 (Illow product) as "before → after" — same brand system, extended into the product.
-                                    </p>
-                                  </div>
-                                  <div className="space-y-1.5 p-3.5 bg-white/60 border border-neutral-200/50 rounded-xl">
-                                    <span className="inline-block px-2 py-0.5 text-[9px] font-bold uppercase font-mono tracking-wider bg-[#cfc6b4]/50 text-[#131211] rounded">Startup / early-stage roles</span>
-                                    <p className="text-neutral-600 font-sans text-xs leading-relaxed">
-                                      Lead with "one designer, four channels" — it directly answers a founder's real fear of hiring someone who can only do one thing.
-                                    </p>
-                                  </div>
-                                </div>
                               </div>
                             );
                           }
@@ -2542,7 +2528,9 @@ export default function App() {
       </AnimatePresence>
 
       {/* Main Content Content Container */}
-      <main className="relative z-10 w-full min-h-[calc(100vh-140px)] flex flex-col pt-20 pb-6">
+      <main className={`relative z-10 w-full min-h-[calc(100vh-140px)] flex flex-col pb-6 ${
+        activeTab === 'GAMES' ? 'pt-28 sm:pt-32 px-3 sm:px-6' : 'pt-20'
+      }`}>
         <AnimatePresence mode="wait">
 
 
