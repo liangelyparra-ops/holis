@@ -949,7 +949,7 @@ export default function App() {
           <div className="lg:col-span-7 space-y-6">
             <div className="space-y-3 animate-fade-in">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-neutral-700 bg-neutral-100 border border-neutral-200/40 shadow-3xs w-fit">
-                Sr. Product Designer UX / UI Lead
+                Senior Product &amp; UX Designer
               </span>
               <h2 className="font-headline text-4xl sm:text-6xl lg:text-7xl font-light text-neutral-900 tracking-[-0.03em] leading-[1.05]">
                 Strategy &amp; <span className="font-cursive italic font-normal text-neutral-400 pr-1">Design</span> <br />
@@ -1570,7 +1570,7 @@ export default function App() {
             <div className="space-y-6">
               <h3 className="font-headline text-2xl font-black text-neutral-900 tracking-tight">Lia Parra</h3>
               <p className="font-sans text-sm text-neutral-500 leading-relaxed">
-                Sr. Product Designer UX / UI Lead and experience strategist driving conversion, interactive interfaces, and cross-platform UX structures.
+                Senior Product &amp; UX Designer and experience strategist driving conversion, interactive interfaces, and cross-platform UX structures.
               </p>
               <div className="space-y-4 pt-6 border-t border-neutral-150 text-sm font-sans">
                 <div className="flex items-center gap-3">
@@ -2643,7 +2643,7 @@ export default function App() {
               Lia Parra. © 2026
             </p>
             <p className="text-[10px] uppercase tracking-wider font-bold">
-              Sr. Product Designer UX / UI Lead
+              Senior Product &amp; UX Designer
             </p>
           </div>
           <div className="sm:text-right space-y-0.5">
