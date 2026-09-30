@@ -1,3 +1,25 @@
+# Current case-study architecture (2026-09-30)
+
+The guide below describes an older implementation. For selected work, use:
+
+- `/Users/liangely/holis/src/data/useCases.ts`: typed narrative and `visualType`.
+- `/Users/liangely/holis/src/components/portfolio/CustomCaseBlocks.tsx`: shared local
+  explanatory visuals, compact card summaries and optional external prototype.
+- `/Users/liangely/holis/src/data/caseStudyDemos.ts`: pure, testable local demo logic.
+- `/Users/liangely/holis/src/components/portfolio/CaseStudyCard.tsx` and
+  `/Users/liangely/holis/src/components/portfolio/CaseStudyModal.tsx`: presentation.
+
+Selected cases no longer use `mockupType`, fabricated metrics or historical-looking
+brand templates. Label generated material as illustrative. Keep unverified source
+assets as separate optional references, not asserted production screenshots.
+
+Validation: `npm run lint`, `npm run build`, `npm run test:portfolio` (the HTTP smoke
+test requires the compiled output).
+The portfolio tests cover data, local demo logic and server-rendered markup; they
+do not replace visual and interaction checks in a real browser.
+
+---
+
 # Modification and Case Addition Guide (Mockups) 📝🚀
 
 This guide explains in detail the architecture implemented in the repository so that you can edit, duplicate, and add new study cases ("cards" or experiences) and customize their respective interactive mockup areas directly in code.

@@ -1,8 +1,9 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Download, Linkedin } from 'lucide-react';
 import { Toaster } from 'sonner';
 import { useCases } from './data/useCases';
+import type { UseCase } from './data/useCases';
 import { portfolioContent } from './data/portfolioContent';
 import { DifferentialMockup } from './components/DifferentialMockup';
 import { HeaderNav } from './components/portfolio/HeaderNav';
@@ -16,7 +17,8 @@ const GameSection = lazy(() => import('./components/GameSection'));
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'IMPACT' | 'CONTACT' | 'GAMES'>('IMPACT');
-  const [selectedProjectForModal, setSelectedProjectForModal] = useState<any | null>(null);
+  const [selectedProjectForModal, setSelectedProjectForModal] = useState<UseCase | null>(null);
+  const closeCaseStudy = useCallback(() => setSelectedProjectForModal(null), []);
 
   // Sync tab with URL hash for deep linking & back/forward navigation support
   useEffect(() => {
@@ -177,7 +179,7 @@ export default function App() {
       {/* Case Study Modal */}
       <CaseStudyModal 
         project={selectedProjectForModal} 
-        onClose={() => setSelectedProjectForModal(null)} 
+        onClose={closeCaseStudy}
       />
 
       {/* Main View Transition */}

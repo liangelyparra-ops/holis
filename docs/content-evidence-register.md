@@ -57,3 +57,34 @@ Last reviewed: 2026-09-30
 - A documented illow flow before and after the redesign.
 - Examples of reusable components in context.
 - Permission and sources for any metric Lia wants to restore.
+
+## Phases 2 + 3 — treatment of existing case material
+
+The cases were consolidated without requesting new evidence. Missing materials
+remain missing; explanatory visuals do not close an evidence gap.
+
+| Case / material | Available source | Public treatment | Verification limit |
+| --- | --- | --- | --- |
+| Cookie Classification review flow | Existing narrative and linked Lovable prototype | Explain review and field-level origin; new local demo uses preset sample data | No production release, model accuracy, timing or persistent audit claim |
+| Enterprise layered configuration | Existing enterprise narrative and diagrams | Local organization / business unit / region model with example rules | Narrative is not independently verified; not Entity Experience or production captures |
+| illow conflict resolution | Existing narrative and diagram | Explicitly illustrative local reconstruction with two resolution paths | No historical before/after, research, deployment or measured outcome claim |
+| Brand system | CV role context and existing brand narrative | Neutral channel / shared-rule map; no invented historical identity | Original logo, colors, fonts, brandbook and efficiency are not asserted |
+| Marketing asset Drive reference | Existing `illow_case1` / brand case URL, file `1RaXo5PfAY3AWsNuaJ9BVLhl1UVl-RN9p` | Retain only as an external reference | Availability, contents and permission not independently verified; not embedded |
+| “From Regulation to Roadmap” Drive reference | Existing `illow_case1` URL, file `1knrRCKiUMyjzhXRbiCc3PPvwJUtp9qfk` | Retain only as an external reference | Same limitation; caption inherited from source, not a verified description |
+| General illow case | Existing `illow_case1` narrative | Integrate professional transition into brand / product cases and remove duplicate card | No new outcomes or acquisition causality added |
+
+### Material generated for explanation
+
+- Local visuals are labeled in both cards and detailed cases.
+- Cookie inputs use a preset example; no AI service is called or data persisted.
+- Conflict actions change demo state only; no real policy is evaluated or saved.
+- The brand map uses neutral portfolio styling, not alleged original brand tokens.
+- Future validation questions are proposals, not completed studies.
+- External embeds load only on visitor request; the case is understandable without them.
+
+### Non-blocking evidence backlog
+
+G2 historical evidence, approved original screens, delivery status, metrics and
+publication permissions remain unverified as noted above. They are not prerequisites
+for explanatory diagrams, but are prerequisites for restoring the corresponding
+historical or quantitative claims. Phase 1 professional positioning is unchanged.
