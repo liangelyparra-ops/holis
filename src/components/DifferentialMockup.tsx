@@ -90,7 +90,7 @@ export const DifferentialMockup: React.FC = () => {
               <Heart className="w-2 h-2 fill-current absolute -top-1 -right-1.5 text-[#818cf8] animate-pulse" />
             </div>
           </motion.div>
-          <span className="font-headline text-[9px] font-bold uppercase tracking-widest mt-2 text-neutral-600">
+          <span className="font-mono text-[9px] font-semibold uppercase tracking-wider mt-2 text-neutral-600">
             brand ♡
           </span>
         </div>
@@ -114,7 +114,7 @@ export const DifferentialMockup: React.FC = () => {
               <Star className="w-2 h-2 fill-current absolute -top-1 -right-1 text-blue-400" />
             </div>
           </motion.div>
-          <span className="font-headline text-[9px] font-bold uppercase tracking-widest mt-2 text-neutral-600">
+          <span className="font-mono text-[9px] font-semibold uppercase tracking-wider mt-2 text-neutral-600">
             product ✨
           </span>
         </div>
@@ -138,7 +138,7 @@ export const DifferentialMockup: React.FC = () => {
               <span className="absolute -top-1 -right-1.5 text-[8px] font-bold text-[#2563eb]">↗</span>
             </div>
           </motion.div>
-          <span className="font-headline text-[9px] font-bold uppercase tracking-widest mt-2 text-neutral-600">
+          <span className="font-mono text-[9px] font-semibold uppercase tracking-wider mt-2 text-neutral-600">
             business ⚡︎
           </span>
         </div>

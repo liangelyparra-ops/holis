@@ -173,7 +173,7 @@ export const BrandGalleryBlock: React.FC = () => {
             {/* Mock Logo Mark */}
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded bg-stone-900 flex items-center justify-center font-bold text-white text-xs font-headline">i</div>
-              <span className="font-headline font-black text-lg tracking-tight text-stone-900">illow</span>
+              <span className="font-headline font-bold text-lg tracking-tight text-stone-900">illow</span>
             </div>
             {/* Color Palette bar */}
             <div className="flex gap-1.5 pt-2">
@@ -218,12 +218,12 @@ export const BrandGalleryBlock: React.FC = () => {
           {/* Mock display ad */}
           <div className="bg-stone-100 text-stone-900 p-3 rounded-lg border border-stone-200 space-y-2 flex flex-col justify-between h-24">
             <div className="space-y-1">
-              <span className="font-mono text-[6px] uppercase tracking-wider bg-stone-200 px-1 py-0.5 rounded font-black">B2B Privacy</span>
-              <p className="font-headline font-black text-[9px] leading-tight">Privacy sells trust before it sells features.</p>
+              <span className="font-mono text-[6px] uppercase tracking-wider bg-stone-200 px-1 py-0.5 rounded font-bold">B2B Privacy</span>
+              <p className="font-headline font-semibold text-[9px] leading-tight">Privacy sells trust before it sells features.</p>
             </div>
             <div className="flex justify-between items-center text-[7px]">
               <span className="font-mono text-[5px] text-stone-600">✓ GDPR Compliant</span>
-              <span className="bg-stone-900 text-white px-1.5 py-0.5 rounded font-black">Learn More</span>
+              <span className="bg-stone-900 text-white px-1.5 py-0.5 rounded font-bold">Learn More</span>
             </div>
           </div>
           <p className="font-sans text-[11px] text-stone-600 leading-relaxed">Modular templates allowing campaign variants in hours.</p>

@@ -68,7 +68,7 @@ export const CaseStudyModal: React.FC<CaseStudyModalProps> = ({ project, onClose
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-4 border-t border-b border-neutral-100">
                     {project.metrics.map((metric: any, mIdx: number) => (
                       <div key={mIdx} className="space-y-1">
-                        <div className="font-headline text-2xl sm:text-3xl font-black text-black tracking-tight">
+                        <div className="font-headline text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">
                           {metric.value}
                         </div>
                         <p className="text-[9px] text-neutral-500 uppercase tracking-widest font-mono">

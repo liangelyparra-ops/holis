@@ -78,7 +78,7 @@ export const ContactSection: React.FC = () => {
         {/* Information block */}
         <div className="custom-glass border border-neutral-200/50 rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 shadow-2xs hover:shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:border-neutral-300 hover:bg-white/60 space-y-8">
           <div className="space-y-6">
-            <h3 className="font-headline text-2xl font-black text-neutral-900 tracking-tight">Lia Parra</h3>
+            <h3 className="font-headline text-2xl font-semibold text-neutral-900 tracking-tight">Lia Parra</h3>
             <p className="font-sans text-sm text-neutral-500 leading-relaxed">
               Sr. Product Designer UX / UI Lead and experience strategist driving conversion, interactive interfaces, and cross-platform UX structures.
             </p>
@@ -120,7 +120,7 @@ export const ContactSection: React.FC = () => {
                 <span className="material-symbols-outlined text-3xl font-bold">check_circle</span>
               </div>
               <div className="space-y-2">
-                <h3 className="font-headline text-2xl font-black text-neutral-900 tracking-tight">
+                <h3 className="font-headline text-2xl font-semibold text-neutral-900 tracking-tight">
                   Inquiry Received Successfully!
                 </h3>
                 <p className="font-sans text-sm text-neutral-500 max-w-sm mx-auto leading-relaxed">
@@ -133,14 +133,14 @@ export const ContactSection: React.FC = () => {
                   href={`https://wa.me/5491156424162?text=${encodeURIComponent(`Hello Lia! This is ${contactName} (${contactEmail}).\n\n*Collaboration Area*: ${contactSubject}\n\n*Project Context*:\n${contactMessage}`)}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center justify-center gap-2 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-sans text-xs font-black uppercase tracking-widest rounded-xl shadow-md hover:shadow-lg transition-all scale-100 hover:scale-[1.02] active:scale-95 animate-fade-in"
+                  className="flex items-center justify-center gap-2 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-sans text-xs font-semibold uppercase tracking-wider rounded-xl shadow-md hover:shadow-lg transition-all scale-100 hover:scale-[1.02] active:scale-95 animate-fade-in"
                 >
                   <span className="material-symbols-outlined text-lg">chat</span>
                   Send via WhatsApp
                 </a>
                 <a
                   href={`mailto:liangelyp@gmail.com?subject=${encodeURIComponent(`Portfolio Contact: ${contactSubject}`)}&body=${encodeURIComponent(`Hi Lia,\n\nMy name is ${contactName} (${contactEmail}).\n\nArea of Interaction: ${contactSubject}\n\nMessage Detail:\n${contactMessage}`)}`}
-                  className="flex items-center justify-center gap-2 py-3 px-4 bg-neutral-950 hover:bg-black text-white font-sans text-xs font-black uppercase tracking-widest rounded-xl shadow-md hover:shadow-lg transition-all scale-100 hover:scale-[1.02] active:scale-95 animate-fade-in"
+                  className="flex items-center justify-center gap-2 py-3 px-4 bg-neutral-950 hover:bg-black text-white font-sans text-xs font-semibold uppercase tracking-wider rounded-xl shadow-md hover:shadow-lg transition-all scale-100 hover:scale-[1.02] active:scale-95 animate-fade-in"
                 >
                   <span className="material-symbols-outlined text-lg">mail</span>
                   Send via Email Client
@@ -156,7 +156,7 @@ export const ContactSection: React.FC = () => {
                     setContactEmail('');
                     setContactMessage('');
                   }}
-                  className="text-[10px] font-sans font-black uppercase tracking-widest text-black hover:underline transition-all cursor-pointer"
+                  className="text-[10px] font-sans font-semibold uppercase tracking-wider text-black hover:underline transition-all cursor-pointer"
                 >
                   ← Send another message
                 </button>

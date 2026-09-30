@@ -216,24 +216,24 @@ export default function App() {
       }`}>
         <div className="max-w-6xl mx-auto px-4 sm:px-12 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-left">
           <div className="space-y-1">
-            <p className={`font-headline text-[11px] font-black uppercase tracking-widest ${
-              activeTab === 'GAMES' ? 'text-white' : 'text-neutral-950'
+            <p className={`font-serif italic text-base sm:text-lg tracking-wide ${
+              activeTab === 'GAMES' ? 'text-white' : 'text-neutral-900'
             }`}>
-              Lia Parra. © 2026
+              Lia Parra <span className="font-sans not-italic text-xs text-neutral-400 font-normal ml-1">© 2026</span>
             </p>
-            <p className="text-[10px] uppercase tracking-wider font-bold">
+            <p className="text-[11px] font-sans tracking-wide text-neutral-500 font-medium">
               Senior Product &amp; UX Designer
             </p>
           </div>
           <div className="sm:text-right space-y-0.5">
-            <p className="text-[10px] uppercase tracking-widest font-black text-black">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 font-medium">
               B2B SAAS, AI &amp; ENTERPRISE SYSTEMS
             </p>
             <a 
               href="https://linkedin.com/in/liangely-diseno-grafico" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[10px] font-sans font-bold transition-colors mt-0.5 uppercase tracking-widest text-neutral-500 hover:text-neutral-800"
+              className="inline-flex items-center gap-1.5 text-[10px] font-sans font-medium transition-colors mt-0.5 uppercase tracking-wider text-neutral-500 hover:text-neutral-800"
               id="footer-linkedin-link"
             >
               <Linkedin className="w-3 h-3 shrink-0" />
