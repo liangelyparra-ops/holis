@@ -88,7 +88,7 @@ export default function App() {
         </div>
 
         {/* Professional context and externally attributed recognition */}
-        <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-6 sm:p-8 shadow-xs my-6 text-left grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-6 sm:p-8 shadow-xs text-left grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-4">
             <p className="text-xs font-bold uppercase tracking-widest text-stone-500 font-mono">Product experience across startup and enterprise</p>
             <div className="space-y-3">
@@ -116,7 +116,7 @@ export default function App() {
             <p className="font-mono text-xs font-bold uppercase tracking-widest text-neutral-500">Selected work</p>
             <h2 className="font-headline text-2xl sm:text-3xl font-light text-neutral-900 tracking-tight">Product decisions in context.</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto w-full mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto w-full">
             {useCases.map((project, idx) => (
             <CaseStudyCard 
               key={project.id}

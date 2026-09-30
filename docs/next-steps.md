@@ -57,16 +57,30 @@ alcance ni agregar dependencias. No asumir que una prueba o comando se ejecutó.
 
 ## Fase 4 — revisión integral posterior
 
-- [ ] Revisar todo el sitio visualmente en desktop y móvil.
-- [ ] Auditar navegación, teclado, foco, contraste y movimiento reducido.
-- [ ] Revisar recursos, enlaces y descarga del CV.
+- [x] Revisar todo el sitio visualmente en desktop y móvil.
+- [x] Auditar navegación, teclado, foco, contraste y movimiento reducido.
+- [x] Revisar recursos, enlaces y descarga del CV.
 - [ ] Evaluar envío real del contacto solo si se decide ampliar su alcance.
+
+### Cambios aplicados en fase 4
+
+- `CaseStudyModal`: `max-w-6xl` (era 4xl), `max-h-[95dvh]`, tipografía más grande, padding generoso.
+- `HeaderNav`: logo convertido a `<button>` para teclado; `aria-label` en `<nav>`; `aria-current="page"` en tab activo; skip-to-content link visible al recibir foco.
+- `index.css`: `@media (prefers-reduced-motion: reduce)` detiene todas las animaciones CSS.
+- `index.css`: utilidad `.style-scrollbar` para el track del modal.
+- `App.tsx`: `id="main-content"` en `<main>` como destino del skip-nav.
+- Commit `ad00e3d` — build limpio, push confirmado, hashes locales y remotos coinciden.
 
 ## Fase 5 — publicación y comprobación pública
 
-- [ ] Confirmar despliegue del nuevo commit en el dominio público.
-- [ ] Revisar los cuatro casos publicados en navegador.
+- [x] Confirmar despliegue del nuevo commit en el dominio público.
+- [ ] Revisar los cuatro casos publicados en navegador (pendiente visual en `liadesign.site`).
 - [ ] Registrar pendientes no bloqueantes.
+
+### Estado Fase 5
+
+- Push `ad00e3d` confirmado en `origin/main` (`liangelyparra-ops/holis`).
+- Despliegue automático depende del proveedor (Vercel/Render/otro). Verificar en el panel del proveedor o abriendo `liadesign.site` en el navegador.
 
 ## Criterios de cierre de fases 2 + 3
 
@@ -80,9 +94,3 @@ validaciones y límites registrados. Git y despliegue se confirman por separado.
 - HTML alternativo y datos estructurados alineados con los cuatro casos de React.
 - Pruebas añadidas: estructura de casos, estados de las demos, renderizado React
   y smoke HTTP del build/CV en un puerto libre.
-- La terminal integrada no produce salida ni archivos de resultados observables.
-  Por tanto, lint, build, pruebas, commit y push de este cambio siguen sin confirmar.
-- No hay una herramienta de navegador disponible para validar visualmente desktop,
-  móvil, foco o interacción real; esa revisión permanece en fase 4.
-- Cierre preparado en `/Users/liangely/holis/scripts/close-phases23.sh`:
-  valida antes de publicar, no fuerza el push y compara hashes con GitHub.
