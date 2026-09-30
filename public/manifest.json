@@ -1,6 +1,6 @@
 {
   "short_name": "Lia Design",
-  "name": "Lia Parra — Portfolio & Brand System",
+  "name": "Lia Parra | Senior Product & UX Designer",
   "icons": [
     {
       "src": "/icon.png",
@@ -14,8 +14,8 @@
     }
   ],
   "start_url": "/",
-  "background_color": "#131211",
-  "theme_color": "#131211",
+  "background_color": "#f7f5f0",
+  "theme_color": "#111110",
   "display": "standalone",
   "orientation": "portrait"
 }
