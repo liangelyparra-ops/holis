@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { UseCase } from '../../data/useCases';
 import { CaseVisual, CookieLivePrototypeBlock } from './CustomCaseBlocks';
+import { getDirectDriveUrl } from '../../utils/media';
 
 interface CaseStudyModalProps {
   project: UseCase | null;
@@ -62,22 +63,52 @@ export const CaseStudyModal = ({ project, onClose }: CaseStudyModalProps) => {
                 </dl>
                 <aside className="rounded-2xl border border-stone-200 bg-stone-50 px-5 py-4 text-sm leading-relaxed text-stone-600"><strong className="block mb-1.5 text-stone-900 text-sm font-semibold">About the material shown</strong>{project.evidenceNote}</aside>
               </header>
-              {project.blocks.map((block, index) => block.type === 'custom' ? (
-                block.customType === 'cookie_live_prototype'
-                  ? project.liveUrl && <CookieLivePrototypeBlock key={index} url={project.liveUrl} />
-                  : block.customType && <CaseVisual key={index} type={block.customType} />
-              ) : (
-                <section key={index} className="space-y-5 max-w-4xl">
-                  {block.title && <h3 className="font-headline text-lg sm:text-xl font-semibold border-b border-neutral-100 pb-4">{block.title}</h3>}
-                  {block.paragraphs?.map((paragraph, paragraphIndex) => <p key={paragraphIndex} className="font-sans text-sm sm:text-base leading-relaxed text-neutral-600">{paragraph}</p>)}
-                  {block.bulletPoints && <ul className="list-disc pl-6 space-y-3 font-sans text-sm sm:text-base leading-relaxed text-neutral-600">{block.bulletPoints.map((point, pointIndex) => <li key={pointIndex}>{point}</li>)}</ul>}
-                </section>
-              ))}
-              {project.references && <section className="space-y-4 border-t border-neutral-200 pt-6 max-w-4xl">
-                <h3 className="text-base font-semibold text-neutral-900">Existing asset references</h3>
-                <p className="text-sm text-neutral-500 leading-relaxed">External links retained from the portfolio. Availability and publication permission are not independently verified; these links are not required to understand the case.</p>
-                <ul className="space-y-3">{project.references.map(reference => <li key={reference.url}><a href={reference.url} target="_blank" rel="noopener noreferrer" className="text-sm text-neutral-700 underline underline-offset-4 hover:text-neutral-900 transition-colors">{reference.label} ↗</a></li>)}</ul>
-              </section>}
+              {project.blocks.map((block, index) => {
+                if (block.type === 'custom') {
+                  return block.customType === 'cookie_live_prototype'
+                    ? project.liveUrl && <CookieLivePrototypeBlock key={index} url={project.liveUrl} />
+                    : block.customType && <CaseVisual key={index} type={block.customType} />;
+                }
+
+                if (block.type === 'image') {
+                  return (
+                    <figure key={index} className="space-y-2.5 my-6 max-w-4xl">
+                      <div className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-100 shadow-sm relative group">
+                        <img
+                          src={getDirectDriveUrl(block.imageUrl)}
+                          alt={block.alt || block.imageCaption || project.title}
+                          className="w-full h-auto max-h-[580px] object-contain mx-auto transition-transform duration-500 group-hover:scale-[1.01]"
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      {block.imageCaption && (
+                        <figcaption className="font-sans text-xs text-stone-500 italic pl-1 flex items-center justify-between flex-wrap gap-2">
+                          <span>{block.imageCaption}</span>
+                          {block.imageUrl && (
+                            <a
+                              href={block.imageUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="not-italic text-[11px] font-sans text-neutral-500 hover:text-neutral-900 underline underline-offset-2 shrink-0"
+                            >
+                              View original asset ↗
+                            </a>
+                          )}
+                        </figcaption>
+                      )}
+                    </figure>
+                  );
+                }
+
+                return (
+                  <section key={index} className="space-y-5 max-w-4xl">
+                    {block.title && <h3 className="font-headline text-lg sm:text-xl font-semibold border-b border-neutral-100 pb-4">{block.title}</h3>}
+                    {block.paragraphs?.map((paragraph, paragraphIndex) => <p key={paragraphIndex} className="font-sans text-sm sm:text-base leading-relaxed text-neutral-600">{paragraph}</p>)}
+                    {block.bulletPoints && <ul className="list-disc pl-6 space-y-3 font-sans text-sm sm:text-base leading-relaxed text-neutral-600">{block.bulletPoints.map((point, pointIndex) => <li key={pointIndex}>{point}</li>)}</ul>}
+                  </section>
+                );
+              })}
             </div>
             {/* Modal footer */}
             <div className="px-6 sm:px-10 py-5 border-t border-neutral-100 bg-neutral-50/80 flex justify-end shrink-0">

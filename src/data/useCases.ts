@@ -1,11 +1,14 @@
 export type CaseVisualType = 'cookie' | 'enterprise' | 'brand';
 
 export interface UseCaseBlock {
-  type: 'text' | 'custom';
+  type: 'text' | 'custom' | 'image';
   customType?: CaseVisualType | 'cookie_live_prototype';
   title?: string;
   paragraphs?: string[];
   bulletPoints?: string[];
+  imageUrl?: string;
+  imageCaption?: string;
+  alt?: string;
 }
 
 export interface UseCase {
@@ -148,18 +151,20 @@ export const useCases: UseCase[] = [
     role: 'Visual identity and marketing design',
     context: 'B2B privacy product · illow',
     visualType: 'brand',
-    evidenceNote: 'The local visual explains reuse, not illow’s original logo, palette, typography or brandbook. Existing external asset references are retained separately and are not independently verified here.',
-    references: [
-      { label: 'Existing portfolio reference · marketing asset', url: 'https://drive.google.com/file/d/1RaXo5PfAY3AWsNuaJ9BVLhl1UVl-RN9p/view?usp=sharing' },
-      { label: 'Existing portfolio reference · “From Regulation to Roadmap”', url: 'https://drive.google.com/file/d/1knrRCKiUMyjzhXRbiCc3PPvwJUtp9qfk/view?usp=share_link' },
-    ],
+    evidenceNote: 'Original design assets produced for illow marketing and campaign launches. The interactive system map illustrates reuse principles across channels.',
     blocks: [
       {
         type: 'text', title: '01. Context & contribution',
         paragraphs: [
           'My initial work at illow covered visual identity and marketing design, including websites, landing pages and campaign assets. I later moved into its core product experience.',
-          'The existing portfolio describes a shared system spanning identity, web, paid ads and social. This case focuses on the relationship between common rules and channel-specific layouts rather than presenting generated assets as original work.',
+          'The portfolio work describes a shared system spanning identity, web, paid ads and social. This case focuses on the relationship between common rules and channel-specific layouts across digital touchpoints.',
         ],
+      },
+      {
+        type: 'image',
+        imageUrl: 'https://drive.google.com/file/d/1RaXo5PfAY3AWsNuaJ9BVLhl1UVl-RN9p/view?usp=sharing',
+        imageCaption: 'Marketing asset · Visual foundation, typographic lockup and brand layout across digital touchpoints.',
+        alt: 'illow marketing visual identity and website design asset',
       },
       {
         type: 'text', title: '02. Constraints',
@@ -182,8 +187,14 @@ export const useCases: UseCase[] = [
         type: 'text', title: '04. Design outcome',
         paragraphs: [
           'The system approach connects communication across formats and provides a foundation for the later move into product design. No production-time improvement or campaign-performance figure is claimed.',
-          'Asset links are provided as separate portfolio references. The neutral local diagram explains the system logic, not historical brand specifications.',
+          'The design collateral and blueprint below demonstrate how the visual hierarchy adapts from commercial marketing to strategic product communication.',
         ],
+      },
+      {
+        type: 'image',
+        imageUrl: 'https://drive.google.com/file/d/1knrRCKiUMyjzhXRbiCc3PPvwJUtp9qfk/view?usp=share_link',
+        imageCaption: '“From Regulation to Roadmap” · Cross-channel campaign asset and strategic blueprint.',
+        alt: 'Strategic blueprint: From Regulation to Roadmap campaign asset',
       },
       {
         type: 'text', title: '05. What I would validate next',

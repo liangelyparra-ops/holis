@@ -1,4 +1,4 @@
-import React, { useReducer, useState } from 'react';
+import React, { useReducer } from 'react';
 import type { CaseVisualType } from '../../data/useCases';
 import { canApproveCookie, cookieDemoReducer, cookieFields, createCookieDemoState } from '../../data/caseStudyDemos';
 
@@ -151,16 +151,35 @@ function BrandSystemMap({ compact }: { compact: boolean }) {
 }
 
 export function CookieLivePrototypeBlock({ url }: { key?: string | number | null; url: string }) {
-  const [showEmbed, setShowEmbed] = useState(false);
   return (
-    <section className="space-y-4 rounded-2xl border border-stone-200 p-4 sm:p-6" aria-label="External design prototype">
-      <h3 className="text-sm font-semibold">Explore the existing design prototype</h3>
-      <p className="text-xs leading-relaxed text-stone-600">Optional external demonstration, not a production release. If it is unavailable or cannot be embedded, the local review demo above still explains the pattern. Loading the embed connects to an external site.</p>
-      <div className="flex flex-wrap gap-4 items-center">
-        <a href={url} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold underline underline-offset-4">Open prototype in a new tab ↗</a>
-        <button type="button" onClick={() => setShowEmbed(prev => !prev)} className={buttonClass}>{showEmbed ? 'Hide embedded prototype' : 'Load embedded prototype'}</button>
+    <section className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4 sm:p-6 shadow-xs" aria-label="Interactive design prototype">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className={labelClass}>Interactive design prototype</p>
+          <h3 className="text-sm sm:text-base font-semibold text-neutral-900 mt-1">Explore the prototype in action</h3>
+        </div>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-700 hover:text-neutral-900 underline underline-offset-4 transition-colors"
+        >
+          Open prototype in a new tab ↗
+        </a>
       </div>
-      {showEmbed && <div className="aspect-[4/5] sm:aspect-video overflow-hidden rounded-xl border border-stone-200"><iframe src={url} title="Cookie Classification — external design prototype" className="h-full w-full border-0" loading="lazy" referrerPolicy="no-referrer" /></div>}
+      <p className="text-xs leading-relaxed text-stone-600">
+        Interactive prototype exploring the AI-assisted review queue and human decision boundary. Interact with the controls directly below.
+      </p>
+      <div className="aspect-[4/5] sm:aspect-video w-full overflow-hidden rounded-xl border border-stone-200 bg-stone-50 shadow-inner">
+        <iframe
+          src={url}
+          title="Cookie Classification — external design prototype"
+          className="h-full w-full border-0"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+        />
+      </div>
     </section>
   );
 }

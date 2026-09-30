@@ -90,7 +90,6 @@ validaciones y límites registrados. Git y despliegue se confirman por separado.
 
 ## Estado de esta ejecución
 
-- Código y documentos revisados por lectura y búsqueda de referencias.
-- HTML alternativo y datos estructurados alineados con los cuatro casos de React.
-- Pruebas añadidas: estructura de casos, estados de las demos, renderizado React
-  y smoke HTTP del build/CV en un puerto libre.
+- Prototipos interactivos embebidos directamente en iframe dentro de los casos de estudio en lugar de requerir clic en un botón.
+- Referencias de imágenes (`marketing asset`, `From Regulation to Roadmap`) integradas como bloques visuales enriquecidos (`<figure>`, `<img>`) dentro del flujo narrativo de los casos de uso, eliminando la sección de enlaces externos sueltos.
+- HTML alternativo, metadatos y suite de pruebas (`scripts/portfolio-cases.test.mjs`) actualizados y pasando al 100%.

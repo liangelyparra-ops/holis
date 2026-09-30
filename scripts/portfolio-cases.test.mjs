@@ -38,16 +38,16 @@ const require = createRequire(join(root, 'portfolio-test-entry.cjs'));
 new Function('require', 'module', 'exports', result.outputFiles[0].text)(require, module, module.exports);
 const {
   useCases, createCookieDemoState, cookieDemoReducer, canApproveCookie,
-  getConflictRules, CaseVisual, CookieLivePrototypeBlock, CaseStudyCard, CaseStudyModal, App,
+  CaseVisual, CookieLivePrototypeBlock, CaseStudyCard, CaseStudyModal, App,
 } = module.exports;
 const render = (component, props) => renderToStaticMarkup(React.createElement(component, props));
 
-test('four distinct cases have complete narrative, attribution and illustrative material', () => {
+test('three distinct cases have complete narrative, attribution and illustrative material', () => {
   assert.deepEqual(useCases.map(project => project.id), [
     'bigid_ai_cookie_classification', 'bigid_scaling_to_enterprise',
-    'illow_brand_to_product', 'illow_brand_system',
+    'illow_brand_system',
   ]);
-  assert.equal(new Set(useCases.map(project => project.visualType)).size, 4);
+  assert.equal(new Set(useCases.map(project => project.visualType)).size, 3);
   for (const project of useCases) {
     assert.ok(project.role && project.context && project.evidenceNote);
     assert.equal(project.metrics, undefined);
@@ -91,19 +91,7 @@ test('cookie demo rejects blank fields; editing back does not erase manual origi
   assert.notEqual(createCookieDemoState().values.vendor, other.values.vendor);
 });
 
-test('conflict resolution updates the chosen scope and preserves unrelated settings', () => {
-  assert.deepEqual(getConflictRules(null), {
-    organization: 'Enabled', region: 'Disabled · unresolved', functional: 'Unchanged',
-  });
-  assert.deepEqual(getConflictRules('exception'), {
-    organization: 'Enabled', region: 'Disabled · explicit exception', functional: 'Unchanged',
-  });
-  assert.deepEqual(getConflictRules('global'), {
-    organization: 'Disabled', region: 'Disabled · inherited', functional: 'Unchanged',
-  });
-});
-
-test('cards and detailed cases render with labels and no automatic external embed', () => {
+test('cards and detailed cases render with labels and appropriate media', () => {
   for (const [index, project] of useCases.entries()) {
     const card = render(CaseStudyCard, { project, idx: index, onOpen: () => {} });
     assert.match(card, /Illustrative/);
@@ -114,7 +102,6 @@ test('cards and detailed cases render with labels and no automatic external embe
     assert.match(modal, /aria-modal="true"/);
     assert.match(modal, /About the material shown/);
     assert.match(modal, /What I would validate next/);
-    assert.doesNotMatch(modal, /<iframe/);
     for (const compact of [true, false]) {
       const visual = render(CaseVisual, { type: project.visualType, compact });
       assert.match(visual, /<figcaption[^>]*>Illustrative/);
@@ -123,30 +110,27 @@ test('cards and detailed cases render with labels and no automatic external embe
   assert.equal(render(CaseStudyModal, { project: null, onClose: () => {} }), '');
 });
 
-test('external prototype is optional and historical asset references remain separate', () => {
+test('external prototype is embedded directly and asset images render inside the use case', () => {
   const prototype = render(CookieLivePrototypeBlock, { url: useCases[0].liveUrl });
   assert.match(prototype, /Open prototype in a new tab/);
-  assert.match(prototype, /Load embedded prototype/);
-  assert.match(prototype, /not a production release/);
-  assert.doesNotMatch(prototype, /<iframe/);
+  assert.match(prototype, /<iframe/);
+  assert.match(prototype, /Interactive design prototype/);
   const brand = useCases.at(-1);
-  assert.equal(brand.references.length, 2);
-  assert.ok(brand.references.every(reference => new URL(reference.url).hostname === 'drive.google.com'));
   const html = render(CaseStudyModal, { project: brand, onClose: () => {} });
-  assert.match(html, /Existing asset references/);
-  assert.doesNotMatch(html, /<img|<iframe|Syne Heavy|Active Specification/);
+  assert.match(html, /<img/);
+  assert.doesNotMatch(html, /Existing asset references/);
 });
 
-test('Home renders four selected-work cards and preserves CV/contact integration', () => {
+test('Home renders selected-work cards and preserves CV/contact integration', () => {
   const html = render(App);
-  assert.equal((html.match(/Read case study →/g) || []).length, 4);
+  assert.equal((html.match(/Read case study →/g) || []).length, 3);
   assert.match(html, /Senior Product Designer/);
   assert.match(html, /I make complex systems understandable/);
   assert.match(html, /\/resume\/lia-parra-resume.pdf/);
   assert.match(html, /mailto:liangelyp@gmail.com/);
 });
 
-test('static fallback and structured data match the four React cases', async () => {
+test('static fallback and structured data match the three React cases', async () => {
   const html = await readFile(join(root, 'index.html'), 'utf8');
   const json = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
   assert.ok(json, 'structured data must be present');
@@ -154,7 +138,7 @@ test('static fallback and structured data match the four React cases', async () 
   const list = graph.find(item => item['@type'] === 'ItemList');
   assert.deepEqual(list.itemListElement.map(item => item.item.name), useCases.map(project => project.title));
   for (const project of useCases) assert.ok(html.includes(project.title), project.title);
-  assert.equal((html.match(/<article /g) || []).length, 4);
+  assert.equal((html.match(/<article /g) || []).length, 3);
 });
 
 test('compiled Home, referenced assets and unchanged public CV are served over HTTP', { timeout: 30000 }, async () => {
