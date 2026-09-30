@@ -61,7 +61,7 @@ export default function App() {
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest font-mono text-neutral-700 bg-neutral-100 border border-neutral-200/40 shadow-3xs w-fit">
                 {portfolioContent.title}
               </span>
-              <h1 className="font-headline text-4xl sm:text-6xl lg:text-7xl font-light text-neutral-900 tracking-[-0.03em] leading-[1.05]">
+              <h1 className="font-headline text-3xl sm:text-4xl lg:text-5xl font-light text-neutral-900 tracking-[-0.03em] leading-[1.05]">
                 {portfolioContent.headline}
               </h1>
             </div>
@@ -114,7 +114,7 @@ export default function App() {
         <section id="selected-work" className="space-y-8 scroll-mt-24">
           <div className="space-y-2">
             <p className="font-mono text-xs font-bold uppercase tracking-widest text-neutral-500">Selected work</p>
-            <h2 className="font-headline text-3xl sm:text-5xl font-light text-neutral-900 tracking-tight">Product decisions in context.</h2>
+            <h2 className="font-headline text-2xl sm:text-3xl font-light text-neutral-900 tracking-tight">Product decisions in context.</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto w-full mb-10">
             {useCases.map((project, idx) => (
@@ -129,7 +129,7 @@ export default function App() {
         </section>
 
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start border-t border-neutral-200 pt-10">
-          <h2 className="lg:col-span-5 font-headline text-3xl sm:text-4xl font-light text-neutral-900 tracking-tight">
+          <h2 className="lg:col-span-5 font-headline text-2xl sm:text-3xl font-light text-neutral-900 tracking-tight">
             From startup product building to enterprise systems.
           </h2>
           <div className="lg:col-span-7 space-y-5">
@@ -144,7 +144,7 @@ export default function App() {
         <section className="max-w-6xl mx-auto w-full space-y-6" aria-labelledby="experiments-heading">
           <div className="space-y-2">
             <p className="font-mono text-xs font-bold uppercase tracking-widest text-neutral-500">Experiments</p>
-            <h2 id="experiments-heading" className="font-headline text-3xl sm:text-4xl font-light text-neutral-900 tracking-tight">Playful prototypes and live builds.</h2>
+            <h2 id="experiments-heading" className="font-headline text-2xl sm:text-3xl font-light text-neutral-900 tracking-tight">Playful prototypes and live builds.</h2>
           </div>
           <PapelitoCaseCard onLaunchGame={() => {
             setActiveTab('GAMES');

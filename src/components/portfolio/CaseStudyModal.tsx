@@ -54,7 +54,7 @@ export const CaseStudyModal = ({ project, onClose }: CaseStudyModalProps) => {
             {/* Scrollable body */}
             <div className="flex-1 min-h-0 overflow-y-auto style-scrollbar px-6 sm:px-10 md:px-14 py-8 sm:py-10 md:py-12 space-y-10 text-left">
               <header className="space-y-6 max-w-4xl">
-                <h2 id={titleId} className="font-headline text-3xl sm:text-5xl font-bold tracking-tight leading-tight">{project.title}</h2>
+                <h2 id={titleId} className="font-headline text-2xl sm:text-3xl font-bold tracking-tight leading-tight">{project.title}</h2>
                 <p className="font-sans text-base sm:text-lg leading-relaxed text-neutral-600">{project.challenge}</p>
                 <dl className="grid grid-cols-1 sm:grid-cols-2 gap-6 border-y border-neutral-200 py-6">
                   <div><dt className="font-mono text-[10px] uppercase tracking-widest text-neutral-400 font-bold">Contribution</dt><dd className="mt-2.5 text-sm sm:text-base text-neutral-700 leading-relaxed">{project.role}</dd></div>
@@ -68,7 +68,7 @@ export const CaseStudyModal = ({ project, onClose }: CaseStudyModalProps) => {
                   : block.customType && <CaseVisual key={index} type={block.customType} />
               ) : (
                 <section key={index} className="space-y-5 max-w-4xl">
-                  {block.title && <h3 className="font-headline text-xl sm:text-2xl font-semibold border-b border-neutral-100 pb-4">{block.title}</h3>}
+                  {block.title && <h3 className="font-headline text-lg sm:text-xl font-semibold border-b border-neutral-100 pb-4">{block.title}</h3>}
                   {block.paragraphs?.map((paragraph, paragraphIndex) => <p key={paragraphIndex} className="font-sans text-sm sm:text-base leading-relaxed text-neutral-600">{paragraph}</p>)}
                   {block.bulletPoints && <ul className="list-disc pl-6 space-y-3 font-sans text-sm sm:text-base leading-relaxed text-neutral-600">{block.bulletPoints.map((point, pointIndex) => <li key={pointIndex}>{point}</li>)}</ul>}
                 </section>

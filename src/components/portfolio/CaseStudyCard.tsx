@@ -26,7 +26,7 @@ export function CaseStudyCard({ project, idx, onOpen }: CaseStudyCardProps) {
         <span className="material-symbols-outlined text-neutral-500 text-lg" aria-hidden="true">{project.icon}</span>
       </div>
       <div className="space-y-3">
-        <h3 className="font-headline text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight leading-snug">
+        <h3 className="font-headline text-lg sm:text-xl font-bold text-neutral-900 tracking-tight leading-snug">
           <button type="button" onClick={onOpen} className="text-left cursor-pointer hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-900">{project.title}</button>
         </h3>
         <p className="font-sans text-sm text-neutral-600 leading-relaxed">{project.challenge}</p>
