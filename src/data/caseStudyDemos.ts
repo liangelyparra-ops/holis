@@ -42,13 +42,3 @@ export function cookieDemoReducer(state: CookieDemoState, action: CookieDemoActi
     case 'approve': return canApproveCookie(state) ? { ...state, stage: 'approved' } : state;
   }
 }
-
-export type ConflictResolution = 'exception' | 'global' | null;
-
-export function getConflictRules(resolution: ConflictResolution) {
-  return {
-    organization: resolution === 'global' ? 'Disabled' : 'Enabled',
-    region: resolution === 'exception' ? 'Disabled · explicit exception' : resolution === 'global' ? 'Disabled · inherited' : 'Disabled · unresolved',
-    functional: 'Unchanged',
-  };
-}

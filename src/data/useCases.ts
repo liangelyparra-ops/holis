@@ -1,4 +1,4 @@
-export type CaseVisualType = 'cookie' | 'enterprise' | 'conflict' | 'brand';
+export type CaseVisualType = 'cookie' | 'enterprise' | 'brand';
 
 export interface UseCaseBlock {
   type: 'text' | 'custom';
@@ -134,60 +134,7 @@ export const useCases: UseCase[] = [
           'Does the structure remain understandable with deeper hierarchies and longer lists?',
         ],
       },
-    ],
-  },
-  {
-    id: 'illow_brand_to_product',
-    title: 'Make the conflict clear. Keep the work.',
-    challenge: 'Help people resolve conflicting rules without removing necessary controls or restarting their configuration.',
-    impact: 'Inline explanations and explicit resolution paths turn a blocked step into an understandable decision.',
-    icon: 'alt_route',
-    tags: ['Product UX', 'Conflict resolution'],
-    footerBadge: 'illow · Brand to product',
-    role: 'Sole UX designer after initial brand and marketing ownership',
-    context: 'Privacy and consent management · illow',
-    visualType: 'conflict',
-    evidenceNote: 'This demo reconstructs the interaction described in the existing case. It is not a historical before/after capture, a backend validation engine or proof of production behavior.',
-    blocks: [
-      {
-        type: 'text', title: '01. Context & contribution',
-        paragraphs: [
-          'I initially owned illow’s visual identity and marketing design before becoming its sole UX designer and working on the core product. That transition connected a clear brand promise with the realities of a technical configuration interface.',
-          'This case focuses on the pattern described in the existing portfolio: explaining why rules clash and helping someone continue without discarding unrelated configuration.',
-        ],
-      },
-      {
-        type: 'text', title: '02. Constraints',
-        bulletPoints: [
-          'Keep necessary configuration choices instead of simplifying away the conflict.',
-          'Explain the conflicting rules where the user is working.',
-          'Make the scope of a resolution visible before it is chosen.',
-        ],
-      },
-      {
-        type: 'text', title: '03. Decisions & tradeoffs',
-        paragraphs: [
-          'Replace a generic blocked state with a local explanation: identify the rules and the scope in which they disagree.',
-          'Offer explicit paths, such as keeping a scoped exception or revising the broader rule. Removing the options would avoid the conflict, but would also remove flexibility.',
-          'Keep unaffected work visible during resolution. In the demonstration, only the selected rule changes; nothing is saved to a real account.',
-        ],
-      },
-      { type: 'custom', customType: 'conflict' },
-      {
-        type: 'text', title: '04. Design outcome',
-        paragraphs: [
-          'The pattern connects a conflict to its cause, offers a decision and shows the resulting configuration. The demo explains that logic rather than claiming a reduction in drop-off or support tickets.',
-          'Explanation, conflict and resolution states form a reusable vocabulary for configuration flows.',
-        ],
-      },
-      {
-        type: 'text', title: '05. What I would validate next',
-        bulletPoints: [
-          'Can users explain which rule changes under each resolution path?',
-          'Can they recover without losing track of unrelated settings?',
-          'Which completion, recovery and support signals should be measured after implementation?',
-        ],
-      },
+    
     ],
   },
   {

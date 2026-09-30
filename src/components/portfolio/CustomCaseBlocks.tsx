@@ -1,7 +1,6 @@
 import React, { useReducer, useState } from 'react';
 import type { CaseVisualType } from '../../data/useCases';
-import { canApproveCookie, cookieDemoReducer, cookieFields, createCookieDemoState, getConflictRules } from '../../data/caseStudyDemos';
-import type { ConflictResolution } from '../../data/caseStudyDemos';
+import { canApproveCookie, cookieDemoReducer, cookieFields, createCookieDemoState } from '../../data/caseStudyDemos';
 
 const labelClass = 'font-mono text-[10px] font-bold uppercase tracking-wider text-stone-500';
 const buttonClass = 'rounded-lg bg-neutral-950 px-4 py-2.5 text-xs font-semibold text-white hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-900 disabled:opacity-40 disabled:cursor-not-allowed';
@@ -9,7 +8,6 @@ const buttonClass = 'rounded-lg bg-neutral-950 px-4 py-2.5 text-xs font-semibold
 export const visualCaptions: Record<CaseVisualType, string> = {
   cookie: 'Illustrative demo · sample data · no live AI or saved changes',
   enterprise: 'Illustrative model · example rules, not production configuration',
-  conflict: 'Illustrative reconstruction · local demo, not a historical screen',
   brand: 'Illustrative system map · not original brand specifications',
 };
 
@@ -19,7 +17,6 @@ export function CaseVisual({ type, compact = false }: { key?: string | number | 
       <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 sm:p-6 text-left">
         {type === 'cookie' && (compact ? <CookieSummary /> : <CookieReviewDemo />)}
         {type === 'enterprise' && <EnterpriseModel compact={compact} />}
-        {type === 'conflict' && (compact ? <ConflictSummary /> : <ConflictResolutionDemo />)}
         {type === 'brand' && <BrandSystemMap compact={compact} />}
       </div>
       <figcaption className="font-sans text-[11px] leading-relaxed text-neutral-500">{visualCaptions[type]}</figcaption>
@@ -122,51 +119,6 @@ function EnterpriseModel({ compact }: { compact: boolean }) {
         ))}
       </ol>
       <p className="text-xs leading-relaxed text-stone-600">The exception stays visible alongside its inherited context.</p>
-    </div>
-  );
-}
-
-function ConflictSummary() {
-  return (
-    <div className="space-y-4">
-      <p className={labelClass}>Explain → choose → continue</p>
-      <div className="rounded-xl border border-amber-200 bg-white p-4 space-y-2">
-        <h4 className="text-xs font-semibold">Two rules disagree</h4>
-        <p className="text-xs text-stone-600">Organization: analytics enabled.<br />Example region: analytics disabled.</p>
-      </div>
-      <div className="grid grid-cols-2 gap-2 text-[11px] text-stone-700">
-        <span className="rounded-lg border border-stone-200 bg-white p-3">Keep regional exception</span>
-        <span className="rounded-lg border border-stone-200 bg-white p-3">Revise organization rule</span>
-      </div>
-      <p className="text-xs text-stone-600">Unrelated settings remain in view.</p>
-    </div>
-  );
-}
-
-function ConflictResolutionDemo() {
-  const [resolution, setResolution] = useState<ConflictResolution>(null);
-  const rules = getConflictRules(resolution);
-  return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap justify-between gap-2">
-        <p className={labelClass}>Local conflict demonstration</p>
-        <button type="button" onClick={() => setResolution(null)} className="text-xs underline underline-offset-4">Reset demo</button>
-      </div>
-      <dl className="rounded-xl border border-stone-200 bg-white p-4 space-y-3 text-xs">
-        <div className="flex flex-wrap justify-between gap-2"><dt>Organization · Analytics</dt><dd className="font-semibold">{rules.organization}</dd></div>
-        <div className="flex flex-wrap justify-between gap-2"><dt>Example region · Analytics</dt><dd className="font-semibold">{rules.region}</dd></div>
-        <div className="flex flex-wrap justify-between gap-2 border-t border-stone-100 pt-3 text-stone-500"><dt>Unrelated setting · Functional</dt><dd>{rules.functional}</dd></div>
-      </dl>
-      {!resolution ? (
-        <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 space-y-4">
-          <div className="space-y-2"><h4 className="text-sm font-semibold">The region and organization rules disagree.</h4><p className="text-xs leading-relaxed text-stone-700">Keep the region’s disabled value as an exception, or disable analytics at organization level so the region inherits it.</p></div>
-          <div className="flex flex-wrap gap-3">
-            <button type="button" onClick={() => setResolution('exception')} className={buttonClass}>Keep regional exception</button>
-            <button type="button" onClick={() => setResolution('global')} className={buttonClass}>Revise organization rule</button>
-          </div>
-        </div>
-      ) : <p role="status" className="rounded-xl border border-stone-200 bg-white p-4 text-sm leading-relaxed">{resolution === 'exception' ? 'Regional exception selected. The organization rule stays enabled.' : 'Organization rule changed to disabled. The region now inherits it.'} Unrelated configuration remains unchanged in this local demo.</p>}
-      <p className="text-xs text-stone-500">No production rules are evaluated or saved.</p>
     </div>
   );
 }
