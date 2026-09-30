@@ -1,153 +1,45 @@
 import React from 'react';
-import { motion } from 'motion/react';
-import { Sparkles, Palette, Layers, Heart, Star } from 'lucide-react';
 
 export const DifferentialMockup: React.FC = () => {
   return (
-    <div className="w-full relative select-none flex flex-col justify-center items-center text-center">
-      {/* Hand-made illustration canvas - Transparent, borderless (Sin fondo) */}
-      <div className="relative w-full aspect-[4/3] max-h-[220px] sm:max-h-[260px] flex items-center justify-center overflow-visible">
-        {/* Curved dotted hand-drawn styling connectors */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible" viewBox="0 0 400 200">
-          {/* Handsketched styled path 1 */}
-          <motion.path
-            d="M 80,105 Q 140,45 200,105"
-            fill="none"
-            stroke="#818cf8"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeDasharray="5 5"
-            className="opacity-60"
-            initial={{ strokeDashoffset: 0 }}
-            animate={{ strokeDashoffset: -20 }}
-            transition={{ repeat: Infinity, ease: "linear", duration: 3 }}
-          />
-
-          {/* Handsketched styled path 2 */}
-          <motion.path
-            d="M 200,105 Q 260,165 320,105"
-            fill="none"
-            stroke="#2563eb"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeDasharray="5 5"
-            className="opacity-60"
-            initial={{ strokeDashoffset: 0 }}
-            animate={{ strokeDashoffset: 20 }}
-            transition={{ repeat: Infinity, ease: "linear", duration: 3 }}
-          />
-
-          {/* Sparkles / Flow particles gliding along the path */}
-          <motion.circle
-            r="3.5"
-            fill="#818cf8"
-            filter="drop-shadow(0px 0px 3px #818cf8)"
-            animate={{
-              cx: [80, 105, 140, 175, 200],
-              cy: [105, 80, 63, 76, 105],
-              opacity: [0, 1, 1, 1, 0]
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-
-          <motion.circle
-            r="3.5"
-            fill="#2563eb"
-            filter="drop-shadow(0px 0px 3px #2563eb)"
-            animate={{
-              cx: [200, 225, 260, 295, 320],
-              cy: [105, 134, 147, 134, 105],
-              opacity: [0, 1, 1, 1, 0]
-            }}
-            transition={{
-              duration: 2,
-              delay: 1,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-        </svg>
-
-        {/* 1. BRANDING NODE */}
-        <div className="absolute left-[5%] top-[40%] flex flex-col items-center">
-          <motion.div
-            animate={{
-              y: [0, -6, 0],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="w-12 h-12 rounded-full border border-[#818cf8]/40 bg-white/40 backdrop-blur-sm shadow-sm flex items-center justify-center text-[#818cf8]"
-          >
-            <div className="relative">
-              <Palette className="w-5 h-5 stroke-[1.5]" />
-              <Heart className="w-2 h-2 fill-current absolute -top-1 -right-1.5 text-[#818cf8] animate-pulse" />
-            </div>
-          </motion.div>
-          <span className="font-mono text-[9px] font-semibold uppercase tracking-wider mt-2 text-neutral-600">
-            brand ♡
+    <figure className="w-full rounded-2xl border border-neutral-200/80 bg-white/80 p-4 sm:p-5 shadow-xs" aria-labelledby="cookie-review-caption">
+      <div className="rounded-xl border border-neutral-200 bg-neutral-50 overflow-hidden">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 bg-white border-b border-neutral-200">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">Action required</p>
+            <p className="font-headline text-sm font-semibold text-neutral-900">Review AI suggestion</p>
+          </div>
+          <span className="inline-flex items-center px-2 py-1 rounded-full bg-amber-50 border border-amber-200 text-[9px] font-mono font-bold uppercase tracking-wider text-amber-800">
+            Pending review
           </span>
         </div>
 
-        {/* 2. PRODUCT NODE */}
-        <div className="absolute left-[43%] top-[12%] flex flex-col items-center">
-          <motion.div
-            animate={{
-              y: [0, -4, 0],
-            }}
-            transition={{
-              duration: 2.8,
-              delay: 0.4,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="w-12 h-12 rounded-2xl border border-blue-300/40 bg-white/40 backdrop-blur-sm shadow-sm flex items-center justify-center text-blue-500"
-          >
-            <div className="relative">
-              <Layers className="w-5 h-5 stroke-[1.5]" />
-              <Star className="w-2 h-2 fill-current absolute -top-1 -right-1 text-blue-400" />
+        <div className="p-4 space-y-3">
+          <div className="rounded-lg border border-indigo-200 bg-indigo-50/60 p-3 space-y-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-sans text-xs font-semibold text-neutral-900">Category</span>
+              <span className="font-mono text-[9px] uppercase tracking-wider text-indigo-700">AI suggested</span>
             </div>
-          </motion.div>
-          <span className="font-mono text-[9px] font-semibold uppercase tracking-wider mt-2 text-neutral-600">
-            product ✨
-          </span>
-        </div>
+            <p className="font-sans text-sm text-neutral-700">Analytics</p>
+          </div>
 
-        {/* 3. BUSINESS NODE */}
-        <div className="absolute right-[5%] top-[40%] flex flex-col items-center">
-          <motion.div
-            animate={{
-              y: [0, -6, 0],
-            }}
-            transition={{
-              duration: 3.2,
-              delay: 0.8,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="w-12 h-12 rounded-full border border-[#2563eb]/40 bg-white/40 backdrop-blur-sm shadow-sm flex items-center justify-center text-[#2563eb]"
-          >
-            <div className="relative">
-              <Sparkles className="w-5 h-5 stroke-[1.5]" />
-              <span className="absolute -top-1 -right-1.5 text-[8px] font-bold text-[#2563eb]">↗</span>
+          <div className="rounded-lg border border-neutral-300 bg-white p-3 space-y-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-sans text-xs font-semibold text-neutral-900">Vendor</span>
+              <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-500">Edited manually</span>
             </div>
-          </motion.div>
-          <span className="font-mono text-[9px] font-semibold uppercase tracking-wider mt-2 text-neutral-600">
-            business ⚡︎
-          </span>
-        </div>
+            <p className="font-sans text-sm text-neutral-700">Example Analytics Ltd.</p>
+          </div>
 
-        {/* Center organic hand-sketched connector tag annotation */}
-        <div className="absolute top-[48%] left-[34%] bg-[#eff6ff]/40 border border-[#dbeafe]/40 text-[#2563eb] font-sans text-[8px] font-medium uppercase tracking-widest px-2 py-0.5 rounded-full scale-90 sm:scale-100">
-          synergy • lead
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <div className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-center font-sans text-xs font-semibold text-neutral-700">Reject</div>
+            <div className="rounded-lg bg-neutral-950 px-3 py-2 text-center font-sans text-xs font-semibold text-white">Approve</div>
+          </div>
         </div>
       </div>
-    </div>
+      <figcaption id="cookie-review-caption" className="mt-3 font-sans text-xs text-neutral-500 leading-relaxed">
+        Reconstructed example: an AI suggestion stays visible while an edited field becomes a manual entry.
+      </figcaption>
+    </figure>
   );
 };

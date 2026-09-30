@@ -206,7 +206,7 @@ export const BrandGalleryBlock: React.FC = () => {
             </div>
             <div className="h-4 bg-stone-900 rounded flex items-center justify-center text-[7px] text-white font-bold uppercase tracking-widest">Sign Up</div>
           </div>
-          <p className="font-sans text-[11px] text-stone-600 leading-relaxed">High-converting landing page optimized for funnel stage intent.</p>
+          <p className="font-sans text-[11px] text-stone-600 leading-relaxed">Landing-page structure adapted to funnel-stage intent.</p>
         </div>
 
         {/* Card 3: Paid ad creative set */}
@@ -222,7 +222,7 @@ export const BrandGalleryBlock: React.FC = () => {
               <p className="font-headline font-semibold text-[9px] leading-tight">Privacy sells trust before it sells features.</p>
             </div>
             <div className="flex justify-between items-center text-[7px]">
-              <span className="font-mono text-[5px] text-stone-600">✓ GDPR Compliant</span>
+              <span className="font-mono text-[5px] text-stone-600">B2B Privacy Product</span>
               <span className="bg-stone-900 text-white px-1.5 py-0.5 rounded font-bold">Learn More</span>
             </div>
           </div>

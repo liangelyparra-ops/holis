@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Linkedin } from 'lucide-react';
+import { Download, Linkedin } from 'lucide-react';
 import { Toaster } from 'sonner';
 import { useCases } from './data/useCases';
+import { portfolioContent } from './data/portfolioContent';
 import { DifferentialMockup } from './components/DifferentialMockup';
 import { HeaderNav } from './components/portfolio/HeaderNav';
 import { CaseStudyCard } from './components/portfolio/CaseStudyCard';
@@ -15,15 +16,7 @@ const GameSection = lazy(() => import('./components/GameSection'));
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'IMPACT' | 'CONTACT' | 'GAMES'>('IMPACT');
-  const [useCaseFilter, setUseCaseFilter] = useState<'All' | 'UX Strategy' | 'Design Systems' | 'Information Architecture' | 'Branding'>('All');
   const [selectedProjectForModal, setSelectedProjectForModal] = useState<any | null>(null);
-
-  // Memoized useCases filtering for optimal rendering performance
-  const filteredCases = useMemo(() => {
-    return useCases.filter(
-      (item) => useCaseFilter === 'All' || item.tags.includes(useCaseFilter as any)
-    );
-  }, [useCaseFilter]);
 
   // Sync tab with URL hash for deep linking & back/forward navigation support
   useEffect(() => {
@@ -58,93 +51,104 @@ export default function App() {
 
   const renderImpact = () => {
     return (
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-12 py-10 sm:py-16 space-y-16 md:space-y-24 text-left select-none">
+      <div className="max-w-6xl w-full mx-auto px-5 sm:px-12 py-10 sm:py-16 space-y-16 md:space-y-24 text-left">
         {/* Section Header with End-to-End Differential Showcase Mockup */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           <div className="lg:col-span-7 space-y-6">
             <div className="space-y-3 animate-fade-in">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono text-neutral-700 bg-neutral-100 border border-neutral-200/40 shadow-3xs w-fit">
-                Senior Product &amp; UX Designer
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest font-mono text-neutral-700 bg-neutral-100 border border-neutral-200/40 shadow-3xs w-fit">
+                {portfolioContent.title}
               </span>
-              <h2 className="font-headline text-4xl sm:text-6xl lg:text-7xl font-light text-neutral-900 tracking-[-0.03em] leading-[1.05]">
-                Strategy &amp; <span className="font-cursive italic font-normal text-neutral-400 pr-1">Design</span> <br />
-                as a Growth Engine
-              </h2>
+              <h1 className="font-headline text-4xl sm:text-6xl lg:text-7xl font-light text-neutral-900 tracking-[-0.03em] leading-[1.05]">
+                {portfolioContent.headline}
+              </h1>
             </div>
-            <p className="font-sans text-sm sm:text-base text-stone-700 max-w-2xl leading-relaxed">
-              I simplify extreme technical complexity into clean, intuitive, and high-performing B2B SaaS products. Former Lead Product Designer at illow (acquired by BigID). Specialized in multi-tenant architecture, global regulatory compliance, scalable design systems, and AI-powered interfaces.
+            <p className="font-sans text-base sm:text-lg text-stone-700 max-w-2xl leading-relaxed">
+              {portfolioContent.summary}
             </p>
+            <p className="font-mono text-xs uppercase tracking-wider text-neutral-500">
+              {portfolioContent.specialization}
+            </p>
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <a href="#selected-work" className="inline-flex items-center justify-center px-5 py-3 rounded-xl bg-neutral-950 text-white font-sans text-sm font-semibold hover:bg-black transition-colors">
+                View selected work
+              </a>
+              <a href={portfolioContent.resumeUrl} download className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-neutral-300 bg-white/60 text-neutral-900 font-sans text-sm font-semibold hover:bg-white hover:border-neutral-500 transition-colors">
+                <Download className="w-4 h-4" />
+                Download resume
+              </a>
+            </div>
+            <p className="font-sans text-sm text-neutral-500">{portfolioContent.location}</p>
           </div>
           <div className="lg:col-span-5 w-full">
             <DifferentialMockup />
           </div>
         </div>
 
-        {/* Proof Bar / Key Highlights */}
-        <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-6 sm:p-8 shadow-xs my-6 text-left">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-stone-900 font-mono mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-stone-900 text-sm">verified_user</span>
-            Proof Bar / Key Highlights
+        {/* Professional context and externally attributed recognition */}
+        <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-6 sm:p-8 shadow-xs my-6 text-left grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-stone-500 font-mono">Product experience across startup and enterprise</p>
+            <div className="space-y-3">
+              {portfolioContent.experience.map((item) => (
+                <div key={item.company} className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 border-b border-stone-200 pb-3 last:border-0 last:pb-0">
+                  <p className="font-headline text-lg font-semibold text-stone-900">{item.company}</p>
+                  <p className="font-sans text-sm text-stone-600">{item.context} · {item.dates}</p>
+                </div>
+              ))}
+            </div>
+            <p className="font-sans text-sm text-stone-600 leading-relaxed">
+              Continued working on the product after illow’s acquisition by BigID.
+            </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="space-y-1.5">
-              <h4 className="font-headline text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-stone-700 text-sm">handshake</span>
-                Corporate Acquisition
-              </h4>
-              <p className="font-sans text-xs text-stone-600 leading-relaxed">
-                Led illow’s product strategy from 0-to-1 through its acquisition by BigID and global relaunch as BigID CMP Express.
-              </p>
-            </div>
-            <div className="space-y-1.5">
-              <h4 className="font-headline text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-stone-700 text-sm">workspace_premium</span>
-                12+ G2 Badges
-              </h4>
-              <p className="font-sans text-xs text-stone-600 leading-relaxed">
-                Earned top recognitions for usability and implementation excellence (including Easiest Setup and High Performer) with a 4.8/5 average user rating.
-              </p>
-            </div>
-            <div className="space-y-1.5">
-              <h4 className="font-headline text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-stone-700 text-sm">public</span>
-                Global Scale
-              </h4>
-              <p className="font-sans text-xs text-stone-600 leading-relaxed">
-                Architected systems supporting 250+ localized languages and processing millions of monthly visitors per account.
-              </p>
-            </div>
-            <div className="space-y-1.5">
-              <h4 className="font-headline text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-stone-700 text-sm">auto_awesome</span>
-                AI Innovation
-              </h4>
-              <p className="font-sans text-xs text-stone-600 leading-relaxed">
-                Automated a database of 50,000+ cookies using AI and accelerated design workflows with the Figma MCP server.
-              </p>
-            </div>
+          <div className="space-y-3 lg:border-l lg:border-stone-200 lg:pl-8">
+            <p className="text-xs font-bold uppercase tracking-widest text-stone-500 font-mono">Product recognition</p>
+            <h2 className="font-headline text-2xl font-semibold text-stone-900">{portfolioContent.recognition.title}</h2>
+            <p className="font-sans text-sm text-stone-600 leading-relaxed">{portfolioContent.recognition.description}</p>
           </div>
         </div>
 
         {/* Featured Case Studies Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto w-full mb-10">
-          {filteredCases.map((project, idx) => (
+        <section id="selected-work" className="space-y-8 scroll-mt-24">
+          <div className="space-y-2">
+            <p className="font-mono text-xs font-bold uppercase tracking-widest text-neutral-500">Selected work</p>
+            <h2 className="font-headline text-3xl sm:text-5xl font-light text-neutral-900 tracking-tight">Product decisions in context.</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto w-full mb-10">
+            {useCases.map((project, idx) => (
             <CaseStudyCard 
               key={project.id}
               project={project} 
               idx={idx} 
               onOpen={() => setSelectedProjectForModal(project)} 
             />
-          ))}
-        </div>
+            ))}
+          </div>
+        </section>
 
-        {/* Co-Creation Game Case Study Card with Direct Live Demo Launch */}
-        <div className="max-w-6xl mx-auto w-full">
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start border-t border-neutral-200 pt-10">
+          <h2 className="lg:col-span-5 font-headline text-3xl sm:text-4xl font-light text-neutral-900 tracking-tight">
+            From startup product building to enterprise systems.
+          </h2>
+          <div className="lg:col-span-7 space-y-5">
+            <p className="font-sans text-base text-neutral-600 leading-relaxed">{portfolioContent.shortAbout}</p>
+            <button type="button" onClick={() => setActiveTab('CONTACT')} className="font-sans text-sm font-semibold text-neutral-900 underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-900 cursor-pointer">
+              More about me
+            </button>
+          </div>
+        </section>
+
+        {/* Experimental work remains separate from selected product cases */}
+        <section className="max-w-6xl mx-auto w-full space-y-6" aria-labelledby="experiments-heading">
+          <div className="space-y-2">
+            <p className="font-mono text-xs font-bold uppercase tracking-widest text-neutral-500">Experiments</p>
+            <h2 id="experiments-heading" className="font-headline text-3xl sm:text-4xl font-light text-neutral-900 tracking-tight">Playful prototypes and live builds.</h2>
+          </div>
           <PapelitoCaseCard onLaunchGame={() => {
             setActiveTab('GAMES');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }} />
-        </div>
+        </section>
       </div>
     );
   };
@@ -222,7 +226,7 @@ export default function App() {
               Lia Parra <span className="font-sans not-italic text-xs text-neutral-400 font-normal ml-1">© 2026</span>
             </p>
             <p className="text-[11px] font-sans tracking-wide text-neutral-500 font-medium">
-              Senior Product &amp; UX Designer
+              {portfolioContent.title}
             </p>
           </div>
           <div className="sm:text-right space-y-0.5">

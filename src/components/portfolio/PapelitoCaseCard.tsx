@@ -20,7 +20,7 @@ export const PapelitoCaseCard: React.FC<PapelitoCaseCardProps> = ({ onLaunchGame
             />
           </div>
           <p className="font-sans text-[10px] text-neutral-400 italic pl-0.5 leading-normal select-text">
-            Preview: Real-time Multi-agent Engine &amp; Web Audio
+            Preview: Real-time multiplayer game experiment
           </p>
         </div>
 
@@ -40,15 +40,15 @@ export const PapelitoCaseCard: React.FC<PapelitoCaseCardProps> = ({ onLaunchGame
               Holis / Papelito Game: Real-time Multiplayer Engine
             </h3>
             <p className="font-sans text-xs sm:text-sm text-neutral-300 leading-relaxed">
-              Designing a multiplayer party game requires granular event management and zero-latency feedback. Using structured prompt sequencing with Gemini, we co-designed and deployed the entire party flow featuring custom Web Audio synthesizers, Firestore realtime state machines, and dynamic AI card generation.
+              A playable party-game experiment combining round-based interaction, shared Firestore state and optional AI-assisted card generation. Audio feedback uses loaded sound files rather than synthesized Web Audio.
             </p>
           </div>
 
           {/* Bottom Row / Pipeline badges + Launch CTA */}
           <div className="pt-4 border-t border-neutral-800/80 flex flex-wrap items-center justify-between gap-4">
             <div className="flex gap-x-4 gap-y-1 flex-wrap text-[11px] text-neutral-400 select-text">
-              <span><strong className="text-white font-mono">Audio:</strong> Web Audio Synth</span>
-              <span><strong className="text-white font-mono">AI:</strong> Gemini 2.5 Flash</span>
+              <span><strong className="text-white font-mono">Audio:</strong> Pre-recorded cues</span>
+              <span><strong className="text-white font-mono">AI:</strong> Optional Gemini generation</span>
               <span><strong className="text-white font-mono">Sync:</strong> Firestore Realtime</span>
             </div>
 

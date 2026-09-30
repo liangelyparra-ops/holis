@@ -133,6 +133,7 @@ export const CarouselBlock: React.FC<{ block: any; getDirectDriveUrl: (url: stri
 };
 
 export interface CaseStudyCardProps {
+  key?: React.Key;
   project: any;
   idx: number;
   onOpen: () => void;
@@ -177,7 +178,7 @@ export function CaseStudyCard({ project, idx, onOpen }: CaseStudyCardProps) {
           </span>
         </h3>
         <p className="font-sans text-xs sm:text-sm text-neutral-500 leading-relaxed max-w-3xl">
-          <strong className="text-neutral-800 font-semibold group-hover:text-neutral-900 transition-all duration-300">Challenge:</strong> {project.challenge}
+          <strong className="text-neutral-800 font-semibold group-hover:text-neutral-900 transition-all duration-300">Context:</strong> {project.challenge}
         </p>
       </div>
 
@@ -303,10 +304,10 @@ export function CaseStudyCard({ project, idx, onOpen }: CaseStudyCardProps) {
         })()}
       </div>
 
-      {/* Decorative Bottom / Empirical Metrics Block (Key Results) */}
+      {/* Concise summary for comparing project cards */}
       <div className="flex flex-col gap-3.5 border-t border-neutral-100/80 pt-4 mt-2 select-none">
         <div className="p-3.5 bg-neutral-50/60 rounded-xl border border-neutral-200/30 italic text-[11px] sm:text-xs text-neutral-600 leading-relaxed group-hover:bg-neutral-100/50 group-hover:border-neutral-200/50 transition-all duration-500">
-          <strong className="text-neutral-800 font-bold not-italic block mb-0.5 group-hover:text-black transition-colors">Key Result Integration:</strong> 
+          <strong className="text-neutral-800 font-bold not-italic block mb-0.5 group-hover:text-black transition-colors">Design contribution:</strong>
           {project.impact}
         </div>
         

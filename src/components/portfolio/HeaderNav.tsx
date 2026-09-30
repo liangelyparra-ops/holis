@@ -8,8 +8,8 @@ interface HeaderNavProps {
 
 export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab }) => {
   const navItems = [
-    { id: 'IMPACT', label: 'Experience' },
-    { id: 'CONTACT', label: 'About me' }
+    { id: 'IMPACT', label: 'Work' },
+    { id: 'CONTACT', label: 'About' }
   ];
 
   return (

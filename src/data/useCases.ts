@@ -1,6 +1,6 @@
 export interface UseCaseBlock {
   type: 'text' | 'image' | 'carousel' | 'video' | 'pdf' | 'custom';
-  customType?: 'illow_diagram' | 'illow_callout' | 'illow_adapt' | 'bigid_diagram' | 'bigid_callout' | 'bigid_adapt' | 'brand_channels' | 'brand_diagram' | 'brand_callout' | 'brand_gallery' | 'brand_todo' | 'brand_adapt' | 'cookie_flow_diagram' | 'cookie_trust_callout' | 'cookie_interactive_preview' | 'cookie_adapt' | 'cookie_live_prototype';
+  customType?: 'illow_diagram' | 'illow_callout' | 'illow_adapt' | 'bigid_diagram' | 'bigid_callout' | 'bigid_adapt' | 'brand_channels' | 'brand_diagram' | 'brand_callout' | 'brand_gallery' | 'brand_adapt' | 'cookie_flow_diagram' | 'cookie_trust_callout' | 'cookie_interactive_preview' | 'cookie_adapt' | 'cookie_live_prototype';
   content?: string;
   
   // Text options
@@ -42,30 +42,25 @@ export const useCases: UseCase[] = [
   {
     id: "bigid_ai_cookie_classification",
     title: "AI-Assisted Cookie Classification: Designing Trust Into Automated Suggestions",
-    challenge: "The scanner's dictionary couldn't recognize every cookie, leaving client sites exposed. Automating outright posed legal risk, so we needed AI to close the gap while keeping every classification defensible by a human.",
-    impact: "Engineered a dedicated AI suggestion review queue with field-level trust mechanics, transforming a tedious cookie-by-cookie audit into a fast pass while keeping every classification legally defensible.",
+    challenge: "The scanner's dictionary couldn't recognize every cookie. The workflow needed to use AI without silently turning a suggestion into a final, compliance-relevant decision.",
+    impact: "Designed a dedicated review queue that keeps AI suggestions distinct from human decisions and preserves the origin of each field while it is reviewed.",
     icon: "psychology",
     tags: ["AI Governance", "AIX Strategy", "UX Strategy"],
     footerBadge: "BigID • AI Governance & Interface Explainability",
     liveUrl: "https://cookie-ai-assist.lovable.app",
-    metrics: [
-      { value: "100%", label: "Human Decision Traceability" },
-      { value: "3x", label: "Faster Queue Review Speed" },
-      { value: "0", label: "Unvetted Auto-Applies" }
-    ],
     blocks: [
       {
         type: "text",
         title: "01. Context",
         paragraphs: [
-          "The Cookie workspace, originally illow's core product and now part of BigID's larger platform following the acquisition, scans a client's website and detects every cookie, tracking pixel, and third-party script it uses. To generate a legally compliant consent banner, each cookie has to be sorted into one of the platform's mandatory categories (e.g. Necessary, Functional, Analytics, Marketing)."
+          "The Cookie workspace, originally part of illow's core product and later developed within BigID following the acquisition, scans a website and detects cookies and related technologies. Each item then needs a category, such as Necessary, Functional, Analytics or Marketing, so it can be represented in the consent-management workflow."
         ]
       },
       {
         type: "text",
         title: "02. The Problem",
         paragraphs: [
-          "The scanner's classification dictionary couldn't recognize every cookie it found, as newer or less common vendors would come back as Uncategorized. This wasn't a cosmetic gap: an uncategorized cookie can't be correctly represented in a consent banner, which means the client site is left exposed on the exact compliance problem the product exists to solve.",
+          "The scanner's classification dictionary couldn't recognize every cookie it found, as newer or less common vendors would come back as Uncategorized. This wasn't a cosmetic gap: an uncategorized cookie still required a decision before it could be represented accurately in the consent experience.",
           "For some tenants, the volume of uncategorized cookies could be substantial, not a handful of edge cases, but enough to make manual research a real burden. For a platform whose value proposition is 'get your consent management right,' an incomplete categorization list undermines the core promise and left users doing tedious cookie-by-cookie manual research to close the gap themselves."
         ]
       },
@@ -74,7 +69,7 @@ export const useCases: UseCase[] = [
         title: "03. Role & Constraints",
         paragraphs: [
           "I owned the end-to-end UX/UI for the platform, including this feature, working directly with engineering with light day-to-day product oversight.",
-          "The brief: use AI to close the categorization gap without letting the AI silently make compliance-relevant decisions on the client's behalf, as a wrong auto-applied category is a legal risk, not just a UX inconvenience."
+          "The brief: use AI to help close the categorization gap without letting the system silently make a consequential classification on the user's behalf."
         ]
       },
       {
@@ -92,7 +87,7 @@ export const useCases: UseCase[] = [
         type: "custom",
         customType: "cookie_trust_callout",
         title: "The Trust Mechanic: Core Design Decision",
-        content: "Approving with no edits applies the suggestion as-is and moves the cookie into its category. Editing breaks the suggestion tag on that field specifically, so what's ultimately saved is always traceable back to whether a human validated it as-is or altered it."
+        content: "Approving with no edits applies the suggestion as-is and moves the cookie into its category. Editing removes the suggestion label from that field specifically, keeping the distinction between model-proposed and manually entered information visible during review."
       },
       {
         type: "custom",
@@ -102,8 +97,8 @@ export const useCases: UseCase[] = [
         type: "text",
         title: "05. Why This Pattern",
         paragraphs: [
-          "Automating cookie categorization outright would have been the faster build. The reason it wasn't designed that way: in a compliance product, an AI that classifies with full autonomy removes the one thing that makes the classification defensible: a human decision behind it.",
-          "The suggestion/approval loop keeps the AI doing the labor-intensive first pass (reading dictionary gaps, proposing category + description + vendor together) while keeping the accountability with the person who understands their own site's legal exposure. The edit-breaks-suggestion mechanic extends that same logic down to the field level, so approval isn't an all-or-nothing rubber stamp."
+          "A fully automatic classification would reduce interaction, but it would also hide an important boundary between a model proposal and the user's final decision. The review step was kept explicit for that reason.",
+          "The suggestion/approval loop lets the model propose category, description and vendor together while keeping the final choice with the user. The edit-breaks-suggestion mechanic extends that distinction to each field, so approval isn't an all-or-nothing action."
         ]
       },
       {
@@ -111,7 +106,7 @@ export const useCases: UseCase[] = [
         title: "06. Outcome & Impact",
         paragraphs: [
           "Approving a suggestion moved the cookie straight into its category, closing exactly the gap that made the platform's core promise incomplete. Instead of manually researching each unrecognized cookie's vendor, category, and purpose one by one, users could clear an entire backlog by reviewing AI-generated suggestions in a single dedicated queue, correcting only what actually needed correcting.",
-          "For tenants with a large volume of uncategorized cookies, this turned what had been a slow, manual audit into a fast review pass, while keeping every applied category traceable to a human decision, whether that was a straight approval or an edit."
+          "The resulting design concentrates unclassified items in one review flow and makes it possible to correct only the fields that need attention."
         ]
       }
     ]
@@ -120,15 +115,15 @@ export const useCases: UseCase[] = [
     id: "illow_brand_system",
     title: "Building one brand system across every channel",
     challenge: "Identity, website, paid ads, and social, designed and held consistent end-to-end for an international B2B launch, before the platform's UX even existed.",
-    impact: "Created a centralized token-based design system, increasing production speed by 25–35% while preserving absolute visual trust across four major channels through to acquisition.",
+    impact: "Created a shared visual system for identity, website, paid campaigns and social content, replacing one-off decisions with reusable rules and templates.",
     icon: "campaign",
     tags: ["Brand System", "Creative Direction", "Systems Design"],
     footerBadge: "Omnichannel System • Brand Continuity",
     liveUrl: "https://drive.google.com/file/d/1RaXo5PfAY3AWsNuaJ9BVLhl1UVl-RN9p/view?usp=sharing",
     metrics: [
       { value: "1", label: "Designer covering all channels" },
-      { value: "25–35%", label: "Faster production speed" },
-      { value: "✓", label: "Visual consistency held" }
+      { value: "4", label: "Channels using shared rules" },
+      { value: "1×", label: "Reusable visual system" }
     ],
     blocks: [
       {
@@ -177,9 +172,9 @@ export const useCases: UseCase[] = [
         type: "text",
         title: "05. Result",
         paragraphs: [
-          "1 Designer covering identity, web, ads & social simultaneously.",
-          "25–35% Faster production via standardized, reusable templates.",
-          "✓ Visual consistency held across markets through to acquisition."
+          "One designer covered identity, web, paid campaigns and social using a shared set of visual rules.",
+          "Reusable templates reduced repeated design decisions and made campaign variations easier to produce.",
+          "The system created continuity between illow's product and communication as the company evolved."
         ]
       },
       {
@@ -189,25 +184,16 @@ export const useCases: UseCase[] = [
           "Running four channels solo taught me to design systems before assets, but it also meant I was the single point of failure for brand consistency. If I did this again, I'd document the system as a shareable guideline earlier, rather than carrying it mostly in my own head, so it could survive beyond me."
         ]
       },
-      {
-        type: "custom",
-        customType: "brand_todo"
-      }
     ]
   },
   {
     id: "bigid_scaling_to_enterprise",
     title: "Scaling a mid-market product to enterprise",
     challenge: "How I adapted a privacy platform's core patterns to support enterprise-scale, multi-tenant complexity, without a ground-up rebuild.",
-    impact: "Extended the existing component library to nest permission-row, validation, and conflict-detection patterns, letting the platform absorb 10x more complexity without a parallel rebuild.",
+    impact: "Extended existing permission, validation and conflict patterns into a layered model rather than creating a separate enterprise interface.",
     icon: "grid_view",
     tags: ["Systems Design", "AIX Strategy"],
     footerBadge: "Enterprise Systems • Multi-Tenant Complexity",
-    metrics: [
-      { value: "10x", label: "Managed data volume" },
-      { value: "35%", label: "Reduction in cognitive load" },
-      { value: "20%", label: "Faster joint release cycles" }
-    ],
     blocks: [
       {
         type: "text",
@@ -220,7 +206,7 @@ export const useCases: UseCase[] = [
         type: "text",
         title: "02. The Problem",
         paragraphs: [
-          "The existing interface patterns worked well for a handful of tenants with moderate rule complexity. Enterprise clients needed to manage data governance across dozens of business units, each with distinct compliance rules, and doing that inside the existing UI would have meant either a full rebuild (too slow, too risky for existing customers) or bolting on complexity that would raise cognitive load for everyone."
+          "The existing interface patterns were created for a simpler organizational model. Enterprise use introduced multiple business units and regional exceptions, while the product still needed to support existing configurations. The design challenge was to add those layers without forcing every user into a separate interface."
         ]
       },
       {
@@ -228,16 +214,16 @@ export const useCases: UseCase[] = [
         title: "03. Constraints",
         bulletPoints: [
           "Existing mid-market customers were live on the platform, so any change had to be backward-compatible.",
-          "No dedicated PM for this initiative; I owned problem definition and success criteria directly with engineering.",
-          "Global organizations required WCAG 2.1 AA compliance and support for internal AI governance workflows (AIX) that didn't exist in the original product."
+          "The solution had to extend existing patterns instead of requiring a ground-up rebuild.",
+          "Dense data and nested policy relationships had to remain understandable at different levels of the organization."
         ]
       },
       {
         type: "text",
         title: "04. Process & Decisions",
         paragraphs: [
-          "Success criterion, defined before designing anything: support multi-tenant configuration for enterprise-scale data volume without increasing the number of setup steps perceived by any single user, whether mid-market or enterprise. Complexity had to live in the system's structure, not in the number of clicks a person faced.",
-          "Research: structured interviews with enterprise data-governance teams surfaced a pattern absent from the original design: users needed to reason about permissions in layers (org-wide → business unit → region) rather than as one flat rule set. The existing UI exposed one flat layer, so enterprise users compensated with spreadsheets outside the tool, a strong signal the interface didn't match their mental model."
+          "The design goal was to support multi-tenant configuration while keeping the additional complexity in the system's structure rather than duplicating the whole workflow.",
+          "The proposed model organized permissions in layers—organization, business unit and region—so users could understand where a policy originated and where an exception applied."
         ]
       },
       {
@@ -248,12 +234,12 @@ export const useCases: UseCase[] = [
         type: "custom",
         customType: "bigid_callout",
         title: "Key Decision",
-        content: "Rather than design three separate interfaces for the three governance layers, I extended the existing component library so the same permission-row, validation, and conflict-detection patterns from the mid-market product (see Illow case study) could be nested. This is what let the platform absorb 10x more data-governance complexity without a parallel rebuild."
+        content: "Rather than design separate interfaces for each governance layer, I extended the existing component library so the same permission-row, validation and conflict patterns could be nested. This reduced the need for parallel interaction models."
       },
       {
         type: "text",
         paragraphs: [
-          "AI governance (AIX): enterprise clients also needed visibility into how internal AI models used their governed data. I defined agentic workflow patterns and explainability signals, surfacing at each layer which automated process touched which data category and why, so trust in automation didn't depend on a black box.",
+          "For AI-related workflows, I explored visibility patterns that connect an automated process with the data category it uses, keeping system behavior inspectable rather than presenting it as a black box.",
           "Alternative considered and rejected: a fully separate 'enterprise mode' UI. I rejected it because it would have doubled the maintenance surface for engineering and made it harder for mid-market customers to grow into enterprise usage without relearning the tool."
         ]
       },
@@ -261,16 +247,16 @@ export const useCases: UseCase[] = [
         type: "text",
         title: "05. Result",
         paragraphs: [
-          "10x Growth in managed data volume without a base-flow redesign.",
-          "35% Reduction in enterprise cognitive load, measured in moderated testing.",
-          "20% Faster joint release cycles via cross-functional frameworks."
+          "The layered model reused the base interaction patterns instead of introducing a separate enterprise mode.",
+          "Permission rows, validation and conflict states could remain consistent across organizational levels.",
+          "The model makes inherited rules and regional exceptions visible within the same interaction structure."
         ]
       },
       {
         type: "text",
         title: "06. Reflection",
         paragraphs: [
-          "The layered model solved the immediate need, but in hindsight I'd push earlier for a dedicated enterprise research pool, as I leaned on a small number of design partners longer than I should have before validating the layered structure more broadly."
+          "The layered model addressed the structural problem, but a future iteration should test how quickly people can identify inherited rules and exceptions across different data volumes."
         ]
       }
     ]
@@ -278,16 +264,11 @@ export const useCases: UseCase[] = [
   {
     id: "illow_brand_to_product",
     title: "Illow: From Brand Identity to Product System",
-    challenge: "Spotting the gap between a high-converting brand promise and a dense, technical configuration panel, leading my own transition into UX to design an inline conflict resolution flow.",
-    impact: "Designed the highest-friction configuration flow with inline validation and conflict states, dramatically reducing mid-flow drop-off and configuration support tickets.",
+    challenge: "Closing the gap between a clear brand promise and a dense, technical configuration panel as I moved from brand ownership into product design.",
+    impact: "Designed an inline conflict-resolution flow with plain-language explanations, resolution paths and reusable validation states.",
     icon: "alt_route",
     tags: ["UX Strategy", "Information Architecture"],
     footerBadge: "UX Transformation • Inline Conflict Resolution Flow",
-    metrics: [
-      { value: "↓", label: "Drop-off at conflict step" },
-      { value: "↓", label: "Configuration support tickets" },
-      { value: "40%", label: "Reduction in design & tech debt" }
-    ],
     blocks: [
       {
         type: "text",
@@ -300,15 +281,14 @@ export const useCases: UseCase[] = [
         type: "text",
         title: "02. The Problem",
         paragraphs: [
-          "As the marketing funnel started converting well, a gap opened up: users arrived drawn in by a clear, simple brand promise, but the product itself, a privacy configuration panel with multi-tenant logic, felt dense, technical, and disconnected from that promise. This wasn't just a hunch; it showed up in post-signup funnel drop-off and in how long it took a new user to complete their first configuration.",
-          "I proposed and led my own transition into the platform's foundational UX team, with the mandate to close that gap between brand and product."
+          "The brand communicated privacy in clear language, but the product itself contained dense configuration and multi-tenant logic. The experience needed the same clarity without removing necessary controls.",
+          "I moved from owning illow's visual identity and marketing work into its core product experience, eventually working as the company's sole UX designer."
         ]
       },
       {
         type: "text",
         title: "03. Constraints",
         bulletPoints: [
-          "No dedicated research team: I designed and ran research myself with existing clients.",
           "Multi-tenant platform: any flow change had to work for very different privacy setups, from a small startup to a corporation with dozens of consent rules.",
           "Small engineering team, so any redesign had to ship incrementally, never as a single 'big bang' relaunch."
         ]
@@ -317,15 +297,15 @@ export const useCases: UseCase[] = [
         type: "text",
         title: "04. Process & Decisions",
         paragraphs: [
-          "Success criterion, defined before designing anything: a new user should be able to complete a valid privacy configuration in their first session, without abandoning midway or needing support. That was the metric I was designing toward, not 'make it look better.'",
-          "Research: I ran moderated interviews with existing users and reviewed support tickets for patterns. The strongest signal: users dropped off at the step where the system asked them to define consent rules that conflicted with each other, for example allowing a data category broadly but restricting it for a specific region, and the system blocked progress without explaining the conflict."
+          "The design goal was to help a user resolve a conflicting rule without restarting the configuration or losing the work already completed.",
+          "The key interaction problem appeared when one consent rule conflicted with another—for example, allowing a data category broadly while restricting it for a region—and the interface blocked progress without explaining a path forward."
         ]
       },
       {
         type: "custom",
         customType: "illow_callout",
         title: "Edge Case: The Core of the Redesign",
-        content: "Instead of a generic error message, I designed an inline validation system that (1) detects the conflict the moment it's created, (2) explains in plain language which rule clashes with which, (3) offers two clear resolution paths instead of forcing a restart, and (4) preserves a partial-save state so users can leave and return without losing progress, something that didn't exist before and drove a large share of support tickets."
+        content: "Instead of a generic error message, I designed an inline validation system that detects a conflict, explains which rules clash, offers clear resolution paths and preserves the rest of the configuration."
       },
       {
         type: "custom",
@@ -334,7 +314,7 @@ export const useCases: UseCase[] = [
       {
         type: "text",
         paragraphs: [
-          "Prototype fidelity: to validate the flow logic before investing in visual polish, I used medium-fidelity clickable wireframes with real users. That fidelity was a deliberate choice: I needed to validate decision logic, not visual style, and high fidelity would have pulled feedback toward color and type instead of flow.",
+          "Prototype fidelity: I used medium-fidelity clickable wireframes to focus review on decision logic before investing in visual polish.",
           "Alternative considered and rejected: simplifying the permissions model so conflicts couldn't occur. I rejected it, as that complexity reflected real compliance needs from enterprise clients; over-simplifying would have fixed user confusion at the cost of removing capabilities they actually needed.",
           "Design system: I documented the new patterns (inline validation, conflict states, partial save) as reusable components rather than a one-off screen, so the rest of the product could adopt the same logic without a separate redesign per flow."
         ]
@@ -343,34 +323,33 @@ export const useCases: UseCase[] = [
         type: "text",
         title: "05. Result",
         paragraphs: [
-          "↓ Drop-off at conflict step, measured in moderated testing.",
-          "↓ Drop-off in 'Can't save my configuration' support tickets.",
-          "40% Reduction in design & technical debt from the reusable component system.",
-          "Note: exact percentage figures for drop-off and ticket reduction to be confirmed against original testing notes before publishing."
+          "Conflicts became visible at the point where they were created instead of appearing as an unexplained hard stop.",
+          "Users were given explicit resolution paths while the rest of their configuration remained intact.",
+          "The validation and conflict states were documented as reusable patterns for other flows."
         ]
       },
       {
         type: "text",
         title: "06. Reflection",
         paragraphs: [
-          "If I did this again, I'd instrument quantitative analytics from day one of the new flow, as at the time I relied too heavily on moderated testing and support tickets as signal. I'd also document the 'why' behind each design decision in the moment, not after the fact; reconstructing that reasoning for this case took longer than it should have."
+          "If I did this again, I'd instrument the flow from the start and document the rationale alongside each state. That would make it easier to compare completion, recovery and support signals after implementation."
         ]
       }
     ]
   },
   {
     id: "illow_case1",
-    title: "illow: Scaling a B2B Data Privacy Platform from Startup to Acquisition.",
-    challenge: "How I owned the end-to-end product design and visual strategy for a data-privacy compliance startup, working hand-in-hand with executive leadership to transform complex global regulations into an intuitive SaaS platform, ultimately leading to its successful acquisition by BigID.",
-    impact: "Secured early market traction under a cohesive product aesthetic, with the visual identity and user interface driving robust early-stage signups.",
+    title: "Building and evolving illow’s product experience",
+    challenge: "How my role grew from visual identity and marketing design into the core experience of a B2B privacy product, followed by continued work at BigID after the acquisition.",
+    impact: "Created continuity between illow's brand and product, established reusable interface patterns and supported the product through a change in organizational context.",
     icon: "rocket_launch",
     tags: ["UX Strategy", "Branding"],
     footerBadge: "Zero-To-One Blueprint • Cohesive Privacy Identity",
     liveUrl: "https://illow.io",
     metrics: [
-      { value: "40+", label: "Core B2B Workflows Designed" },
-      { value: "1×", label: "Shared Component Ecosystem" },
-      { value: "→ BigID", label: "Commercial Acquisition" }
+      { value: "2021–24", label: "Product work at illow" },
+      { value: "1×", label: "Shared component ecosystem" },
+      { value: "2024–26", label: "Continued work at BigID" }
     ],
     blocks: [
       {
@@ -383,7 +362,7 @@ export const useCases: UseCase[] = [
         title: "The Startup Spark",
         paragraphs: [
           "I worked on designing the startup's brand DNA, choosing color tokens, typography systems, and web architecture to resonate with developers and compliance officers alike. By controlling the complete zero-to-one design pipeline, I framed privacy compliance as a beautiful interactive asset.",
-          "This aesthetic control laid a groundwork, allowing me to establish the company's internal UX department confidently before scaling processes."
+          "That visual foundation later informed my transition into the product, where I became illow's sole UX designer and worked on its core experience."
         ]
       },
       {
@@ -397,9 +376,9 @@ export const useCases: UseCase[] = [
         type: "text",
         title: "Methodology & Launch Actions",
         bulletPoints: [
-          "Designed high-converting interactive landing pages, ads for developer signups.",
-          "Built user experience blueprints for the original modal cookie sliders to maximize consent collection.",
-          "Attracted capital and early-stage trials by presenting interactive clickable high-contrast prototypes representing a mature product."
+          "Designed landing pages and campaign assets around different levels of product awareness.",
+          "Translated the visual system into product interface patterns as my role expanded into UX.",
+          "Built clickable prototypes to communicate workflows and collaborate with product and engineering."
         ]
       }
     ]

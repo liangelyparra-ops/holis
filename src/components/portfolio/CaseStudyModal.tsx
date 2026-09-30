@@ -296,7 +296,7 @@ export const CaseStudyModal: React.FC<CaseStudyModalProps> = ({ project, onClose
                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-4">
                                 {[
                                   { t: "Identity", d: "Logo system, color, type, voice guidelines", icon: "palette" },
-                                  { t: "Website", d: "Brand site + high-converting landing pages", icon: "language" },
+                                  { t: "Website", d: "Brand site + funnel-stage landing pages", icon: "language" },
                                   { t: "Paid ads", d: "Display & social ad creative, funnel-stage variants", icon: "ads_click" },
                                   { t: "Social", d: "Ongoing organic content system across platforms", icon: "share" }
                                 ].map((item, cidx) => (
@@ -311,29 +311,6 @@ export const CaseStudyModal: React.FC<CaseStudyModalProps> = ({ project, onClose
                                   </div>
                                 ))}
                               </div>
-                            </div>
-                          );
-                        }
-                        if (block.customType === 'brand_todo') {
-                          return (
-                            <div key={idx} className="bg-neutral-50/60 border border-neutral-200/50 p-5 sm:p-6 rounded-2xl border-l-2 border-black mt-4 text-left">
-                              <h5 className="font-headline text-xs font-bold text-black uppercase tracking-wider font-mono mb-3">
-                                Portfolio Verification Checklist
-                              </h5>
-                              <ul className="space-y-3 font-sans text-xs sm:text-sm text-neutral-600 leading-relaxed">
-                                <li className="flex items-start gap-2.5">
-                                  <span className="material-symbols-outlined text-stone-700 text-base leading-none select-none mt-0.5">check_box_outline_blank</span>
-                                  <span>Replace the 5 showcase visual specs with live assets cleared under NDA terms.</span>
-                                </li>
-                                <li className="flex items-start gap-2.5">
-                                  <span className="material-symbols-outlined text-stone-700 text-base leading-none select-none mt-0.5">check_box_outline_blank</span>
-                                  <span>Verify the 25–35% production-speed efficiency metric matches the initial campaign reports.</span>
-                                </li>
-                                <li className="flex items-start gap-2.5">
-                                  <span className="material-symbols-outlined text-stone-700 text-base leading-none select-none mt-0.5">check_box_outline_blank</span>
-                                  <span>Obtain side-by-side snapshots of pre-acquisition ad channels and website iterations if available.</span>
-                                </li>
-                              </ul>
                             </div>
                           );
                         }

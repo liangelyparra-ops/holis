@@ -11,13 +11,13 @@ async function startServer() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  // Contact API endpoint
+  // Legacy contact logging endpoint. This does not deliver email.
   app.post("/api/contact", (req, res) => {
     try {
       const { name, email, subject, message } = req.body;
       
       console.log(`\n================== CONTACT SUBMISSION ==================`);
-      console.log(`Forward To: liangelyp@gmail.com`);
+      console.log(`Portfolio owner: liangelyp@gmail.com`);
       console.log(`From Name:  ${name}`);
       console.log(`From Email: ${email}`);
       console.log(`Subject:    ${subject || "No Subject"}`);
@@ -27,14 +27,14 @@ async function startServer() {
 
       res.status(200).json({
         success: true,
-        message: "Email forwarded and received successfully.",
-        forwardedTo: "liangelyp@gmail.com"
+        delivered: false,
+        message: "Submission logged on the server. No email delivery is configured."
       });
     } catch (error: any) {
       console.error("Error processing contact submission:", error);
       res.status(500).json({
         success: false,
-        message: "Failed to forward standard alert: " + error.message
+        message: "Failed to log contact submission: " + error.message
       });
     }
   });
