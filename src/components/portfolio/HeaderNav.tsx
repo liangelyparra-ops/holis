@@ -13,6 +13,14 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
   ];
 
   return (
+    <>
+      {/* Skip navigation link — visible only on focus for keyboard users */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-neutral-950 focus:text-white focus:text-sm focus:font-semibold focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
     <header className="fixed top-3.5 sm:top-5 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-xl sm:w-auto transition-all duration-500 ease-out select-none">
       <div className={`h-11 sm:h-12 px-3 sm:px-4 py-1 flex items-center justify-between gap-3 sm:gap-6 rounded-full border transition-all duration-300 ${
         activeTab === 'GAMES'
@@ -20,12 +28,14 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
           : 'bg-white/80 border-neutral-200/70 text-neutral-900 shadow-[0_8px_30px_rgba(0,0,0,0.04)] backdrop-blur-xl'
       }`}>
         {/* Brand logo & name */}
-        <div 
+        <button
+          type="button"
           onClick={() => {
             setActiveTab('IMPACT');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className="flex items-center gap-2.5 cursor-pointer group shrink-0"
+          aria-label="Go to portfolio home"
+          className="flex items-center gap-2.5 cursor-pointer group shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-900 rounded-sm"
         >
           <div className={`w-7 h-7 sm:w-7.5 sm:h-7.5 rounded-full flex items-center justify-center border transition-all duration-300 ${
             activeTab === 'GAMES'
@@ -39,11 +49,11 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
           }`}>
             Lia Parra
           </span>
-        </div>
+        </button>
 
         {/* Center Navigation Tabs (Only in Portfolio mode) */}
         {activeTab !== 'GAMES' ? (
-          <nav className="flex items-center gap-1 font-sans text-xs">
+          <nav aria-label="Main navigation" className="flex items-center gap-1 font-sans text-xs">
             {navItems.map((tab) => {
               const isTabActive = activeTab === tab.id;
               return (
@@ -53,7 +63,8 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
                     setActiveTab(tab.id as any);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className={`px-3 py-1 rounded-full transition-all duration-200 cursor-pointer text-xs ${
+                  aria-current={isTabActive ? 'page' : undefined}
+                  className={`px-3 py-1 rounded-full transition-all duration-200 cursor-pointer text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 ${
                     isTabActive 
                       ? 'bg-neutral-150/70 text-neutral-950 font-semibold shadow-3xs' 
                       : 'text-neutral-500 hover:text-neutral-900 font-medium'
@@ -128,5 +139,6 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
         </div>
       </div>
     </header>
+    </>
   );
 };

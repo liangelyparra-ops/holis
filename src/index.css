@@ -146,3 +146,30 @@
   background: linear-gradient(to bottom right, var(--color-tertiary), var(--color-tertiary-dim));
   box-shadow: 0 0 20px rgba(105, 253, 93, 0.3);
 }
+
+/* Respect OS-level reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Style scrollbar for modal body */
+.style-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.style-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.style-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 99px;
+}
+.style-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.22);
+}

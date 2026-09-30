@@ -41,44 +41,47 @@ export const CaseStudyModal = ({ project, onClose }: CaseStudyModalProps) => {
   return (
     <AnimatePresence>
       {project && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-neutral-950/50 backdrop-blur-md" onClick={onClose}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 lg:p-6 bg-neutral-950/60 backdrop-blur-md" onClick={onClose}>
           <motion.div key={project.id} ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 15 }} transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, scale: 0.97, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97, y: 12 }} transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             onClick={event => event.stopPropagation()}
-            className="bg-white border border-neutral-200 rounded-3xl w-full max-w-4xl max-h-[90dvh] shadow-2xl flex flex-col overflow-hidden text-neutral-900 focus:outline-none">
-            <div className="flex justify-between items-center gap-3 px-5 sm:px-8 py-4 border-b border-neutral-100 bg-neutral-50">
-              <p className="font-mono text-[10px] uppercase tracking-wider text-neutral-500">{project.footerBadge}</p>
-              <button type="button" onClick={onClose} aria-label="Close case study" className="shrink-0 w-10 h-10 rounded-full border border-neutral-200 bg-white flex items-center justify-center hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-neutral-900 cursor-pointer"><span aria-hidden="true" className="material-symbols-outlined text-lg">close</span></button>
+            className="bg-white border border-neutral-200 rounded-3xl w-full max-w-6xl max-h-[95dvh] shadow-[0_32px_80px_-12px_rgba(0,0,0,0.28)] flex flex-col overflow-hidden text-neutral-900 focus:outline-none">
+            {/* Modal header */}
+            <div className="flex justify-between items-center gap-4 px-6 sm:px-10 py-5 border-b border-neutral-100 bg-neutral-50/80 backdrop-blur-sm shrink-0">
+              <p className="font-mono text-[11px] uppercase tracking-widest text-neutral-500 font-semibold">{project.footerBadge}</p>
+              <button type="button" onClick={onClose} aria-label="Close case study" className="shrink-0 w-10 h-10 rounded-full border border-neutral-200 bg-white flex items-center justify-center hover:bg-neutral-100 hover:border-neutral-300 transition-colors focus-visible:outline-2 focus-visible:outline-neutral-900 cursor-pointer"><span aria-hidden="true" className="material-symbols-outlined text-xl">close</span></button>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto style-scrollbar p-5 sm:p-8 md:p-10 space-y-8 text-left">
-              <header className="space-y-5">
-                <h2 id={titleId} className="font-headline text-2xl sm:text-4xl font-bold tracking-tight leading-tight">{project.title}</h2>
-                <p className="font-sans text-sm sm:text-base leading-relaxed text-neutral-600">{project.challenge}</p>
-                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-y border-neutral-200 py-5">
-                  <div><dt className="font-mono text-[10px] uppercase tracking-wider text-neutral-500">Contribution</dt><dd className="mt-2 text-sm text-neutral-700">{project.role}</dd></div>
-                  <div><dt className="font-mono text-[10px] uppercase tracking-wider text-neutral-500">Context</dt><dd className="mt-2 text-sm text-neutral-700">{project.context}</dd></div>
+            {/* Scrollable body */}
+            <div className="flex-1 min-h-0 overflow-y-auto style-scrollbar px-6 sm:px-10 md:px-14 py-8 sm:py-10 md:py-12 space-y-10 text-left">
+              <header className="space-y-6 max-w-4xl">
+                <h2 id={titleId} className="font-headline text-3xl sm:text-5xl font-bold tracking-tight leading-tight">{project.title}</h2>
+                <p className="font-sans text-base sm:text-lg leading-relaxed text-neutral-600">{project.challenge}</p>
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-6 border-y border-neutral-200 py-6">
+                  <div><dt className="font-mono text-[10px] uppercase tracking-widest text-neutral-400 font-bold">Contribution</dt><dd className="mt-2.5 text-sm sm:text-base text-neutral-700 leading-relaxed">{project.role}</dd></div>
+                  <div><dt className="font-mono text-[10px] uppercase tracking-widest text-neutral-400 font-bold">Context</dt><dd className="mt-2.5 text-sm sm:text-base text-neutral-700 leading-relaxed">{project.context}</dd></div>
                 </dl>
-                <aside className="rounded-xl border border-stone-200 bg-stone-50 p-4 text-xs leading-relaxed text-stone-600"><strong className="block mb-1 text-stone-900">About the material shown</strong>{project.evidenceNote}</aside>
+                <aside className="rounded-2xl border border-stone-200 bg-stone-50 px-5 py-4 text-sm leading-relaxed text-stone-600"><strong className="block mb-1.5 text-stone-900 text-sm font-semibold">About the material shown</strong>{project.evidenceNote}</aside>
               </header>
               {project.blocks.map((block, index) => block.type === 'custom' ? (
                 block.customType === 'cookie_live_prototype'
                   ? project.liveUrl && <CookieLivePrototypeBlock key={index} url={project.liveUrl} />
                   : block.customType && <CaseVisual key={index} type={block.customType} />
               ) : (
-                <section key={index} className="space-y-4">
-                  {block.title && <h3 className="font-headline text-lg font-semibold border-b border-neutral-100 pb-3">{block.title}</h3>}
-                  {block.paragraphs?.map((paragraph, paragraphIndex) => <p key={paragraphIndex} className="font-sans text-sm leading-relaxed text-neutral-600">{paragraph}</p>)}
-                  {block.bulletPoints && <ul className="list-disc pl-5 space-y-3 font-sans text-sm leading-relaxed text-neutral-600">{block.bulletPoints.map((point, pointIndex) => <li key={pointIndex}>{point}</li>)}</ul>}
+                <section key={index} className="space-y-5 max-w-4xl">
+                  {block.title && <h3 className="font-headline text-xl sm:text-2xl font-semibold border-b border-neutral-100 pb-4">{block.title}</h3>}
+                  {block.paragraphs?.map((paragraph, paragraphIndex) => <p key={paragraphIndex} className="font-sans text-sm sm:text-base leading-relaxed text-neutral-600">{paragraph}</p>)}
+                  {block.bulletPoints && <ul className="list-disc pl-6 space-y-3 font-sans text-sm sm:text-base leading-relaxed text-neutral-600">{block.bulletPoints.map((point, pointIndex) => <li key={pointIndex}>{point}</li>)}</ul>}
                 </section>
               ))}
-              {project.references && <section className="space-y-3 border-t border-neutral-200 pt-5">
-                <h3 className="text-sm font-semibold">Existing asset references</h3>
-                <p className="text-xs text-neutral-500">External links retained from the portfolio. Availability and publication permission are not independently verified; these links are not required to understand the case.</p>
-                <ul className="space-y-3">{project.references.map(reference => <li key={reference.url}><a href={reference.url} target="_blank" rel="noopener noreferrer" className="text-xs text-neutral-700 underline underline-offset-4">{reference.label} ↗</a></li>)}</ul>
+              {project.references && <section className="space-y-4 border-t border-neutral-200 pt-6 max-w-4xl">
+                <h3 className="text-base font-semibold text-neutral-900">Existing asset references</h3>
+                <p className="text-sm text-neutral-500 leading-relaxed">External links retained from the portfolio. Availability and publication permission are not independently verified; these links are not required to understand the case.</p>
+                <ul className="space-y-3">{project.references.map(reference => <li key={reference.url}><a href={reference.url} target="_blank" rel="noopener noreferrer" className="text-sm text-neutral-700 underline underline-offset-4 hover:text-neutral-900 transition-colors">{reference.label} ↗</a></li>)}</ul>
               </section>}
             </div>
-            <div className="px-5 sm:px-8 py-4 border-t border-neutral-100 bg-neutral-50 flex justify-end">
-              <button type="button" onClick={onClose} className="rounded-xl bg-neutral-950 hover:bg-neutral-800 px-5 py-2.5 text-xs font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-900 cursor-pointer">Close case study</button>
+            {/* Modal footer */}
+            <div className="px-6 sm:px-10 py-5 border-t border-neutral-100 bg-neutral-50/80 flex justify-end shrink-0">
+              <button type="button" onClick={onClose} className="rounded-xl bg-neutral-950 hover:bg-neutral-800 px-6 py-3 text-sm font-semibold text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-900 cursor-pointer">Close case study</button>
             </div>
           </motion.div>
         </div>

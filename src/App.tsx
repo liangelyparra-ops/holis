@@ -183,7 +183,7 @@ export default function App() {
       />
 
       {/* Main View Transition */}
-      <main className={`relative z-10 w-full min-h-[calc(100vh-140px)] flex flex-col pb-6 ${
+      <main id="main-content" className={`relative z-10 w-full min-h-[calc(100vh-140px)] flex flex-col pb-6 ${
         activeTab === 'GAMES' ? 'pt-24 sm:pt-28 px-3 sm:px-6' : 'pt-20'
       }`}>
         <AnimatePresence mode="wait">
