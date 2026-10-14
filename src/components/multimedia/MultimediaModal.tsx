@@ -250,12 +250,6 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                     {assets.length} Assets
                   </span>
                 )}
-
-                {activeAsset.driveFileId && (
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-mono font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                    Google Drive
-                  </span>
-                )}
               </div>
 
               {/* Title */}

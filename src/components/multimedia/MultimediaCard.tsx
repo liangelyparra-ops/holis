@@ -160,11 +160,6 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
           <span className="font-sans font-medium flex items-center gap-1">
             Ver {assets.length > 1 ? `${assets.length} assets` : 'detalle'} &amp; workflow <ExternalLink className="w-3 h-3" />
           </span>
-          {primaryAsset.driveFileId && (
-            <span className="font-mono text-[10px] text-white/75 bg-white/15 px-1.5 py-0.5 rounded">
-              Google Drive
-            </span>
-          )}
         </div>
       </div>
 
