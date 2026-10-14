@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Play, Sparkles, Video, Image as ImageIcon, ExternalLink, Film, Box } from 'lucide-react';
 import type { MultimediaItem } from '../../types/multimedia';
+import { normalizeCategory } from '../../types/multimedia';
 
 interface MultimediaCardProps {
   item: MultimediaItem;
@@ -13,16 +14,16 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
   const [isHovered, setIsHovered] = useState(false);
   const isVideo = item.mediaType === 'video' || item.mediaType === 'drive_video' || item.mediaType === 'embed';
 
+  const normalized = normalizeCategory(item.category);
+
   const categoryLabels: Record<string, { label: string; icon: any; color: string }> = {
-    MOTION_VIDEO: { label: 'Motion & Video', icon: Film, color: 'bg-violet-50 text-violet-700 border-violet-200' },
-    AI_GENERATIVO: { label: 'IA Generativa', icon: Sparkles, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    KEY_VISUAL_PAID: { label: 'Key Visual · Paid Ads', icon: ImageIcon, color: 'bg-blue-50 text-blue-700 border-blue-200' },
-    THREED_CONCEPT: { label: '3D & Motion', icon: Box, color: 'bg-amber-50 text-amber-700 border-amber-200' },
-    SOCIAL_HOOKS: { label: 'Social Hook (9:16)', icon: Video, color: 'bg-rose-50 text-rose-700 border-rose-200' },
+    MOTION: { label: 'Motion', icon: Film, color: 'bg-violet-50 text-violet-700 border-violet-200' },
+    IA: { label: 'IA', icon: Sparkles, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    KEY_VISUALS: { label: 'Key Visuals', icon: ImageIcon, color: 'bg-blue-50 text-blue-700 border-blue-200' },
   };
 
-  const currentCategory = categoryLabels[item.category] || {
-    label: item.category,
+  const currentCategory = categoryLabels[normalized] || {
+    label: normalized,
     icon: Sparkles,
     color: 'bg-neutral-100 text-neutral-800 border-neutral-200',
   };

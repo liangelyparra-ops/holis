@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ExternalLink, Sparkles, Film, Image as ImageIcon, Box, Video, Share2, Check } from 'lucide-react';
 import type { MultimediaItem } from '../../types/multimedia';
+import { normalizeCategory } from '../../types/multimedia';
 
 interface MultimediaModalProps {
   item: MultimediaItem | null;
@@ -28,15 +29,15 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
   if (!item) return null;
 
   const isVideo = item.mediaType === 'video' || item.mediaType === 'drive_video' || item.mediaType === 'embed';
+  const normalized = normalizeCategory(item.category);
 
-  const categoryIcons: Record<string, any> = {
-    MOTION_VIDEO: Film,
-    AI_GENERATIVO: Sparkles,
-    KEY_VISUAL_PAID: ImageIcon,
-    THREED_CONCEPT: Box,
-    SOCIAL_HOOKS: Video,
+  const categoryLabels: Record<string, { label: string; icon: any }> = {
+    MOTION: { label: 'Motion', icon: Film },
+    IA: { label: 'IA', icon: Sparkles },
+    KEY_VISUALS: { label: 'Key Visuals', icon: ImageIcon },
   };
-  const CategoryIcon = categoryIcons[item.category] || Sparkles;
+  const currentCat = categoryLabels[normalized] || { label: normalized, icon: Sparkles };
+  const CategoryIcon = currentCat.icon;
 
   const handleCopyLink = () => {
     const shareUrl = item.rawUrl || item.url;
@@ -121,7 +122,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-neutral-100 text-neutral-800 border border-neutral-200">
                   <CategoryIcon className="w-3.5 h-3.5" />
-                  {item.category.replace(/_/g, ' ')}
+                  {currentCat.label}
                 </span>
                 <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono font-medium bg-neutral-900 text-white">
                   Formato: {item.format}

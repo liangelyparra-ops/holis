@@ -20,6 +20,7 @@ import {
 import { toast } from 'sonner';
 import type { MultimediaItem, MultimediaCategory } from '../../types/multimedia';
 import { multimediaInitialItems } from '../../data/multimediaInitialItems';
+import { normalizeCategory } from '../../types/multimedia';
 import { MultimediaCard } from './MultimediaCard';
 import { MultimediaModal } from './MultimediaModal';
 import { MultimediaSettingsModal } from './MultimediaSettingsModal';
@@ -74,16 +75,14 @@ export const MultimediaDesignerPage: React.FC = () => {
 
   const filteredItems = items.filter((item) => {
     if (selectedCategory === 'TODOS') return true;
-    return item.category === selectedCategory;
+    return normalizeCategory(item.category) === selectedCategory;
   });
 
   const categoryTabs: { id: MultimediaCategory; label: string; icon: any }[] = [
     { id: 'TODOS', label: 'Todos', icon: Layers },
-    { id: 'MOTION_VIDEO', label: 'Motion & Video', icon: Film },
-    { id: 'AI_GENERATIVO', label: 'IA Generativa', icon: Sparkles },
-    { id: 'KEY_VISUAL_PAID', label: 'Key Visuals & Paid Ads', icon: ImageIcon },
-    { id: 'SOCIAL_HOOKS', label: 'Social Hooks (9:16)', icon: Video },
-    { id: 'THREED_CONCEPT', label: '3D & Motion', icon: Box },
+    { id: 'MOTION', label: 'Motion', icon: Film },
+    { id: 'IA', label: 'IA', icon: Sparkles },
+    { id: 'KEY_VISUALS', label: 'Key Visuals', icon: ImageIcon },
   ];
 
   return (
@@ -91,24 +90,13 @@ export const MultimediaDesignerPage: React.FC = () => {
       {/* Subtle Top Navigation for this specific page */}
       <header className="sticky top-0 z-40 w-full border-b border-stone-200/80 bg-white/80 backdrop-blur-xl transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <a
-              href="#experience"
-              className="inline-flex items-center gap-1.5 text-xs font-sans font-medium text-stone-500 hover:text-stone-900 transition-colors p-1.5 rounded-lg hover:bg-stone-100"
-              title="Volver a portafolio principal de producto"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Portafolio General</span>
-            </a>
-            <span className="text-stone-300">|</span>
-            <div className="flex items-center gap-2">
-              <span className="font-headline font-bold text-sm tracking-tight text-neutral-900">
-                Lia Parra
-              </span>
-              <span className="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium tracking-wide bg-neutral-100 text-neutral-700 border border-neutral-200">
-                MULTIMEDIA &amp; AI
-              </span>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="font-headline font-bold text-sm tracking-tight text-neutral-900">
+              Lia Parra
+            </span>
+            <span className="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium tracking-wide bg-neutral-100 text-neutral-700 border border-neutral-200">
+              MULTIMEDIA &amp; AI
+            </span>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -141,24 +129,6 @@ export const MultimediaDesignerPage: React.FC = () => {
               <p className="font-sans text-base sm:text-lg text-stone-700 leading-relaxed max-w-3xl">
                 Diseñadora multimedia con formación sólida en diseño gráfico y dirección de arte. Especializada en la conceptualización de <strong>key visuals</strong>, producción audiovisual para <strong>paid media y redes sociales</strong>, integración de herramientas de <strong>IA generativa</strong> en el pipeline creativo y desarrollo de piezas en <strong>3D y animación</strong>.
               </p>
-
-              {/* Portuguese highlight for Brazilian accounts */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-50/90 via-teal-50/60 to-emerald-50/40 border border-emerald-200/90 text-emerald-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl shrink-0" role="img" aria-label="Bandera de Brasil">🇧🇷</span>
-                  <div className="space-y-0.5">
-                    <p className="font-headline font-bold text-sm text-emerald-950">
-                      Português Fluente / Avançado (Oral &amp; Escrito)
-                    </p>
-                    <p className="font-sans text-xs text-emerald-800 leading-normal">
-                      Totalmente capacitada para liderar a ideação, criação de copys, adaptação de key visuals e alinhamento direto com contas e equipes do Brasil.
-                    </p>
-                  </div>
-                </div>
-                <span className="shrink-0 font-mono text-[11px] font-semibold uppercase tracking-wider text-emerald-800 bg-emerald-100/80 px-2.5 py-1 rounded-full border border-emerald-300/60">
-                  Pronta para contas de Brasil
-                </span>
-              </div>
             </div>
 
             {/* Quick Skills & Toolkit Pillar Box */}
@@ -345,7 +315,7 @@ export const MultimediaDesignerPage: React.FC = () => {
               ¿Hablamos sobre tu próximo proyecto o campaña?
             </h3>
             <p className="font-sans text-sm text-white/70 max-w-xl">
-              Disponible para sumarme en modalidad híbrida o remota y liderar proyectos de alto impacto visual, motion graphics y cuentas internacionales (incluyendo Brasil).
+              Disponible para sumarme en modalidad híbrida o remota y liderar proyectos de alto impacto visual, motion graphics y campañas creativas.
             </p>
           </div>
 

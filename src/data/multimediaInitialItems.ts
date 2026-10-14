@@ -3,10 +3,9 @@ import type { MultimediaItem } from '../types/multimedia';
 export const multimediaInitialItems: MultimediaItem[] = [
   {
     id: 'item-showreel-2026',
-    title: 'Showreel · AI, Motion & Visual Direction',
-    category: 'MOTION_VIDEO',
+    title: 'Showreel · Motion & Visual Direction',
+    category: 'MOTION',
     mediaType: 'video',
-    // High-quality modern sample loop or preview
     url: 'https://assets.mixkit.co/videos/preview/mixkit-futuristic-technology-digital-interface-screen-41551-large.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80',
     format: '16:9',
@@ -17,15 +16,15 @@ export const multimediaInitialItems: MultimediaItem[] = [
     createdAt: Date.now() - 600000,
   },
   {
-    id: 'item-kv-brasil',
-    title: 'Key Visual · Campaña Omnicanal & Paid Media (Brasil)',
-    category: 'KEY_VISUAL_PAID',
+    id: 'item-kv-campaign',
+    title: 'Key Visual · Campaña Omnicanal & Paid Media',
+    category: 'KEY_VISUALS',
     mediaType: 'image',
     url: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=1200&q=85',
     thumbnailUrl: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=800&q=80',
     format: '1:1',
     tools: ['Photoshop AI', 'Midjourney v6', 'Figma', 'Illustrator'],
-    description: 'Desarrollo del concepto visual principal y key visual adaptado para Meta Ads, Display y Social Media enfocado en el mercado de Brasil, con comunicación y hooks en portugués.',
+    description: 'Desarrollo del concepto visual principal y key visual adaptado para Meta Ads, Display y Social Media con dirección de arte contemporánea.',
     hookRationale: 'Composición cromática vibrante con contraste alto para destacar en el feed de Instagram y LinkedIn.',
     featured: true,
     createdAt: Date.now() - 500000,
@@ -33,7 +32,7 @@ export const multimediaInitialItems: MultimediaItem[] = [
   {
     id: 'item-ai-social-hooks',
     title: 'Social Hooks 9:16 · Generación de Video con IA',
-    category: 'SOCIAL_HOOKS',
+    category: 'IA',
     mediaType: 'video',
     url: 'https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-screens-with-graphs-and-data-31913-large.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=1200&q=80',
@@ -47,7 +46,7 @@ export const multimediaInitialItems: MultimediaItem[] = [
   {
     id: 'item-3d-motion',
     title: 'Exploración 3D & Brand Identity · Kinetic Volumes',
-    category: 'THREED_CONCEPT',
+    category: 'MOTION',
     mediaType: 'video',
     url: 'https://assets.mixkit.co/videos/preview/mixkit-motion-graphics-computer-network-40995-large.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80',
@@ -61,7 +60,7 @@ export const multimediaInitialItems: MultimediaItem[] = [
   {
     id: 'item-ai-concept-art',
     title: 'Dirección de Arte & Concept Visual con IA Generativa',
-    category: 'AI_GENERATIVO',
+    category: 'IA',
     mediaType: 'image',
     url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=85',
     thumbnailUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80',
@@ -74,8 +73,8 @@ export const multimediaInitialItems: MultimediaItem[] = [
   },
   {
     id: 'item-paid-media-performance',
-    title: 'Campaña Paid Media 360° · Adaptaciones & Performance',
-    category: 'KEY_VISUAL_PAID',
+    title: 'Campaña Paid Media · Key Visual & Adaptaciones',
+    category: 'KEY_VISUALS',
     mediaType: 'image',
     url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200&q=85',
     thumbnailUrl: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&q=80',

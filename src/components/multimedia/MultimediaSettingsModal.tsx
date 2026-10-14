@@ -19,6 +19,7 @@ import {
   Copy,
 } from 'lucide-react';
 import type { MultimediaItem, MultimediaCategory, MediaFormat } from '../../types/multimedia';
+import { normalizeCategory } from '../../types/multimedia';
 import { parseMediaUrl, extractDriveFileId } from '../../utils/driveUrlHelper';
 import { multimediaInitialItems } from '../../data/multimediaInitialItems';
 
@@ -40,7 +41,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
   const [inputUrl, setInputUrl] = useState('');
   const [preferredType, setPreferredType] = useState<'video' | 'image'>('video');
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<Exclude<MultimediaCategory, 'TODOS'>>('MOTION_VIDEO');
+  const [category, setCategory] = useState<'MOTION' | 'IA' | 'KEY_VISUALS'>('MOTION');
   const [format, setFormat] = useState<MediaFormat>('16:9');
   const [toolsInput, setToolsInput] = useState('After Effects, Runway Gen-3, Midjourney');
   const [description, setDescription] = useState('');
@@ -64,7 +65,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
     setHookRationale('');
     setToolsInput('After Effects, Runway Gen-3, Midjourney');
     setFormat('16:9');
-    setCategory('MOTION_VIDEO');
+    setCategory('MOTION');
   };
 
   const handleSaveItem = (e: React.FormEvent) => {
@@ -126,7 +127,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
     setEditingItemId(item.id);
     setInputUrl(item.rawUrl || item.url);
     setTitle(item.title);
-    setCategory(item.category);
+    setCategory(normalizeCategory(item.category));
     setFormat(item.format);
     setToolsInput(item.tools.join(', '));
     setDescription(item.description);
@@ -363,11 +364,9 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                     onChange={(e) => setCategory(e.target.value as any)}
                     className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-sans bg-white focus:outline-none focus:border-neutral-900"
                   >
-                    <option value="MOTION_VIDEO">Motion &amp; Video</option>
-                    <option value="AI_GENERATIVO">IA Generativa</option>
-                    <option value="KEY_VISUAL_PAID">Key Visual · Paid Ads</option>
-                    <option value="SOCIAL_HOOKS">Social Hook (9:16)</option>
-                    <option value="THREED_CONCEPT">3D &amp; Motion</option>
+                    <option value="MOTION">Motion</option>
+                    <option value="IA">IA</option>
+                    <option value="KEY_VISUALS">Key Visuals</option>
                   </select>
                 </div>
 
@@ -563,7 +562,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                                 {item.format}
                               </span>
                               <span className="text-[10px] font-sans text-stone-500 truncate">
-                                {item.category.replace(/_/g, ' ')}
+                                {normalizeCategory(item.category) === 'MOTION' ? 'Motion' : normalizeCategory(item.category) === 'IA' ? 'IA' : 'Key Visuals'}
                               </span>
                             </div>
                           </div>
