@@ -19,8 +19,8 @@ import {
 } from 'lucide-react';
 import { doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { Toaster, toast } from 'sonner';
-import { Player, GameCard, GameState, DEFAULT_CARDS } from '../../types';
-import { db } from '../../firebase';
+import { Player, GameCard, GameState, DEFAULT_CARDS } from '../types';
+import { db } from '../firebase';
 
 const USER_ID_KEY = 'party-game-user-id-v2';
 const NICKNAME_KEY = 'party-game-nickname';
