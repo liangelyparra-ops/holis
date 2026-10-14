@@ -12,36 +12,64 @@ import { CaseStudyModal } from './components/portfolio/CaseStudyModal';
 import { ContactSection } from './components/portfolio/ContactSection';
 import { PapelitoCaseCard } from './components/portfolio/PapelitoCaseCard';
 
+import { MultimediaDesignerPage } from './components/multimedia/MultimediaDesignerPage';
+
+const isMultimediaRoute = (hash: string, pathname: string) => {
+  const h = hash.toLowerCase();
+  const p = pathname.toLowerCase();
+  return (
+    h === '#multimedia' ||
+    h === '#diseno-multimedia' ||
+    h.startsWith('#multimedia') ||
+    p === '/multimedia' ||
+    p === '/diseno-multimedia'
+  );
+};
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<'IMPACT' | 'CONTACT'>('IMPACT');
+  const [isMultimedia, setIsMultimedia] = useState<boolean>(() => {
+    return typeof window !== 'undefined' 
+      ? isMultimediaRoute(window.location.hash, window.location.pathname)
+      : false;
+  });
   const [selectedProjectForModal, setSelectedProjectForModal] = useState<UseCase | null>(null);
   const closeCaseStudy = useCallback(() => setSelectedProjectForModal(null), []);
 
   // Sync tab with URL hash for deep linking & back/forward navigation support
   useEffect(() => {
-    const handleHashChange = () => {
+    const handleLocationSync = () => {
       const hash = window.location.hash.toLowerCase();
-      if (hash === '#about' || hash === '#contact') {
-        setActiveTab('CONTACT');
-      } else {
-        setActiveTab('IMPACT');
+      const path = window.location.pathname.toLowerCase();
+      const isMulti = isMultimediaRoute(hash, path);
+      setIsMultimedia(isMulti);
+
+      if (!isMulti) {
+        if (hash === '#about' || hash === '#contact') {
+          setActiveTab('CONTACT');
+        } else {
+          setActiveTab('IMPACT');
+        }
       }
     };
 
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
+    handleLocationSync();
+    window.addEventListener('hashchange', handleLocationSync);
+    window.addEventListener('popstate', handleLocationSync);
     return () => {
-      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('hashchange', handleLocationSync);
+      window.removeEventListener('popstate', handleLocationSync);
     };
   }, []);
 
-  // Update URL hash whenever tab changes, maintaining clean state
+  // Update URL hash whenever tab changes, maintaining clean state (only when not in multimedia page)
   useEffect(() => {
+    if (isMultimedia) return;
     const targetHash = activeTab === 'CONTACT' ? '#about' : '#experience';
     if (window.location.hash.toLowerCase() !== targetHash) {
       window.history.pushState(null, '', targetHash);
     }
-  }, [activeTab]);
+  }, [activeTab, isMultimedia]);
 
   const renderImpact = () => {
     return (
@@ -143,6 +171,15 @@ export default function App() {
       </div>
     );
   };
+
+  if (isMultimedia) {
+    return (
+      <div className="min-h-screen font-body bg-[#fafafa] text-neutral-900 transition-colors duration-500 overflow-x-hidden">
+        <Toaster position="top-right" richColors closeButton />
+        <MultimediaDesignerPage />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen font-body bg-[#fafafa] text-on-surface transition-colors duration-500 overflow-x-hidden">
