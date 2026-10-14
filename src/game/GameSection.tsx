@@ -1191,22 +1191,6 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
   return (
     <div className="w-full flex flex-col items-center justify-center">
       <div className="w-full max-w-4xl space-y-4 sm:space-y-5 flex flex-col items-center select-none">
-        
-        {/* Secondary Info Header */}
-        <div className="flex justify-between items-center w-full max-w-md px-4 select-none">
-          <button 
-            onClick={() => setShowInstructions(true)}
-            className="flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-colors"
-          >
-            <HelpCircle size={14} />
-            How to Play Papelito
-          </button>
-          <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-[#3C48C3]">
-            <Gamepad2 size={14} />
-            Staging Dev Build 1.0.4
-          </div>
-        </div>
-
         <Toaster position="top-center" theme="dark" closeButton />
 
         <AnimatePresence mode="wait">
@@ -1257,6 +1241,21 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
             )}
           </motion.div>
         </AnimatePresence>
+
+        {/* Footer info: How to play & Staging dev build */}
+        <div className="flex justify-between items-center w-full max-w-md px-4 pt-4 select-none">
+          <button 
+            onClick={() => setShowInstructions(true)}
+            className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-colors cursor-pointer"
+          >
+            <HelpCircle size={14} />
+            How to Play Papelito
+          </button>
+          <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-[#3C48C3]">
+            <Gamepad2 size={14} />
+            Staging Dev Build 1.0.4
+          </div>
+        </div>
       </div>
 
       {/* Instructions Modal Overlay */}
