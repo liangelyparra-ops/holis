@@ -1,8 +1,20 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ExternalLink, Sparkles, Film, Image as ImageIcon, Box, Video, Share2, Check } from 'lucide-react';
+import {
+  X,
+  ExternalLink,
+  Sparkles,
+  Film,
+  Image as ImageIcon,
+  Share2,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Layers,
+  Video,
+} from 'lucide-react';
 import type { MultimediaItem } from '../../types/multimedia';
-import { normalizeCategory } from '../../types/multimedia';
+import { normalizeCategory, getItemAssets } from '../../types/multimedia';
 
 interface MultimediaModalProps {
   item: MultimediaItem | null;
@@ -10,11 +22,25 @@ interface MultimediaModalProps {
 }
 
 export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose }) => {
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
+  const [activeAssetIndex, setActiveAssetIndex] = useState(0);
+
+  const assets = item ? getItemAssets(item) : [];
+  const activeAsset = assets[activeAssetIndex] || assets[0];
+
+  useEffect(() => {
+    setActiveAssetIndex(0);
+  }, [item?.id]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight' && assets.length > 1) {
+        setActiveAssetIndex((prev) => (prev + 1) % assets.length);
+      }
+      if (e.key === 'ArrowLeft' && assets.length > 1) {
+        setActiveAssetIndex((prev) => (prev - 1 + assets.length) % assets.length);
+      }
     };
     if (item) {
       document.body.style.overflow = 'hidden';
@@ -24,13 +50,11 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [item, onClose]);
+  }, [item, onClose, assets.length]);
 
-  if (!item) return null;
+  if (!item || !activeAsset) return null;
 
-  const isVideo = item.mediaType === 'video' || item.mediaType === 'drive_video' || item.mediaType === 'embed';
   const normalized = normalizeCategory(item.category);
-
   const categoryLabels: Record<string, { label: string; icon: any }> = {
     MOTION: { label: 'Motion', icon: Film },
     IA: { label: 'IA', icon: Sparkles },
@@ -40,10 +64,18 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
   const CategoryIcon = currentCat.icon;
 
   const handleCopyLink = () => {
-    const shareUrl = item.rawUrl || item.url;
+    const shareUrl = activeAsset.rawUrl || activeAsset.url || item.rawUrl || item.url || window.location.href;
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleNext = () => {
+    setActiveAssetIndex((prev) => (prev + 1) % assets.length);
+  };
+
+  const handlePrev = () => {
+    setActiveAssetIndex((prev) => (prev - 1 + assets.length) % assets.length);
   };
 
   return (
@@ -76,42 +108,125 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
           </button>
 
           {/* Media Display Area (Left or Top) */}
-          <div className="lg:w-7/12 bg-neutral-950 flex items-center justify-center min-h-[320px] sm:min-h-[440px] max-h-[60vh] lg:max-h-none overflow-hidden relative">
-            {item.mediaType === 'drive_video' ? (
-              <iframe
-                src={item.url}
-                title={item.title}
-                allow="autoplay; fullscreen"
-                allowFullScreen
-                className="w-full h-full min-h-[380px] lg:min-h-[540px] border-0"
-              />
-            ) : item.mediaType === 'embed' ? (
-              <iframe
-                src={item.url}
-                title={item.title}
-                allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-                allowFullScreen
-                className="w-full h-full min-h-[380px] lg:min-h-[540px] border-0"
-              />
-            ) : item.mediaType === 'video' ? (
-              <video
-                src={item.url}
-                controls
-                autoPlay
-                playsInline
-                className="w-full max-h-[70vh] object-contain"
-              />
-            ) : (
-              <img
-                src={item.url}
-                alt={item.title}
-                className="w-full max-h-[70vh] object-contain"
-                onError={(e) => {
-                  if (item.thumbnailUrl && item.thumbnailUrl !== item.url) {
-                    (e.target as HTMLImageElement).src = item.thumbnailUrl;
-                  }
-                }}
-              />
+          <div className="lg:w-7/12 bg-neutral-950 flex flex-col items-center justify-center min-h-[340px] sm:min-h-[460px] max-h-[60vh] lg:max-h-none overflow-hidden relative">
+            <div className="w-full flex-1 flex items-center justify-center relative overflow-hidden">
+              {activeAsset.mediaType === 'drive_video' ? (
+                <iframe
+                  key={activeAsset.id + activeAsset.url}
+                  src={activeAsset.url}
+                  title={activeAsset.title || item.title}
+                  allow="autoplay; fullscreen"
+                  allowFullScreen
+                  className="w-full h-full min-h-[380px] lg:min-h-[500px] border-0"
+                />
+              ) : activeAsset.mediaType === 'embed' ? (
+                <iframe
+                  key={activeAsset.id + activeAsset.url}
+                  src={activeAsset.url}
+                  title={activeAsset.title || item.title}
+                  allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full min-h-[380px] lg:min-h-[500px] border-0"
+                />
+              ) : activeAsset.mediaType === 'video' ? (
+                <video
+                  key={activeAsset.id + activeAsset.url}
+                  src={activeAsset.url}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="w-full max-h-[65vh] object-contain"
+                />
+              ) : (
+                <img
+                  key={activeAsset.id + activeAsset.url}
+                  src={activeAsset.url}
+                  alt={activeAsset.title || item.title}
+                  className="w-full max-h-[65vh] object-contain transition-opacity duration-300"
+                  onError={(e) => {
+                    if (activeAsset.thumbnailUrl && activeAsset.thumbnailUrl !== activeAsset.url) {
+                      (e.target as HTMLImageElement).src = activeAsset.thumbnailUrl;
+                    }
+                  }}
+                />
+              )}
+
+              {/* Prev / Next Floating Arrows for Multi-Asset */}
+              {assets.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handlePrev}
+                    aria-label="Asset anterior"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition-all backdrop-blur-md cursor-pointer border border-white/10 shadow-lg"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    aria-label="Asset siguiente"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition-all backdrop-blur-md cursor-pointer border border-white/10 shadow-lg"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Multi-Asset Bottom Thumbnail / Selector Strip */}
+            {assets.length > 1 && (
+              <div className="w-full bg-neutral-900/90 border-t border-neutral-800 px-4 py-2.5 flex items-center justify-between gap-3 shrink-0 z-10">
+                <div className="flex items-center gap-1.5 text-white/70 text-xs font-mono font-medium">
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>
+                    Asset {activeAssetIndex + 1} de {assets.length}
+                  </span>
+                  {activeAsset.title && (
+                    <span className="text-white/90 truncate max-w-[150px] sm:max-w-xs font-sans">
+                      · {activeAsset.title}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 overflow-x-auto py-0.5">
+                  {assets.map((asset, idx) => {
+                    const isSelected = idx === activeAssetIndex;
+                    return (
+                      <button
+                        key={asset.id || idx}
+                        type="button"
+                        onClick={() => setActiveAssetIndex(idx)}
+                        className={`w-9 h-9 rounded-lg overflow-hidden border transition-all cursor-pointer shrink-0 relative ${
+                          isSelected
+                            ? 'border-white ring-2 ring-emerald-500 scale-105'
+                            : 'border-white/20 opacity-50 hover:opacity-100'
+                        }`}
+                        title={asset.title || `Asset ${idx + 1}`}
+                      >
+                        {asset.thumbnailUrl || (asset.mediaType === 'image' && asset.url) ? (
+                          <img
+                            src={asset.thumbnailUrl || asset.url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-white/70">
+                            {asset.mediaType.includes('video') ? (
+                              <Video className="w-3.5 h-3.5" />
+                            ) : (
+                              <ImageIcon className="w-3.5 h-3.5" />
+                            )}
+                          </div>
+                        )}
+                        <span className="absolute bottom-0 right-0 px-1 text-[8px] font-mono bg-black/80 text-white rounded-tl">
+                          {idx + 1}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             )}
           </div>
 
@@ -124,10 +239,19 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                   <CategoryIcon className="w-3.5 h-3.5" />
                   {currentCat.label}
                 </span>
+
                 <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono font-medium bg-neutral-900 text-white">
-                  Formato: {item.format}
+                  Formato: {activeAsset.format}
                 </span>
-                {item.driveFileId && (
+
+                {assets.length > 1 && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    <Layers className="w-3 h-3" />
+                    {assets.length} Assets
+                  </span>
+                )}
+
+                {activeAsset.driveFileId && (
                   <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-mono font-medium bg-blue-50 text-blue-700 border border-blue-200">
                     Google Drive
                   </span>
@@ -135,9 +259,16 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
               </div>
 
               {/* Title */}
-              <h2 className="font-headline text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight leading-tight">
-                {item.title}
-              </h2>
+              <div>
+                <h2 className="font-headline text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight leading-tight">
+                  {item.title}
+                </h2>
+                {activeAsset.title && (
+                  <p className="font-sans text-xs font-semibold text-emerald-700 mt-1">
+                    Visualizando: {activeAsset.title} ({activeAssetIndex + 1}/{assets.length})
+                  </p>
+                )}
+              </div>
 
               {/* Description */}
               <div className="space-y-2">
@@ -181,9 +312,9 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
 
             {/* Actions Footer */}
             <div className="pt-6 border-t border-stone-200 flex flex-wrap items-center gap-3">
-              {(item.rawUrl || item.url) && (
+              {(activeAsset.rawUrl || activeAsset.url) && (
                 <a
-                  href={item.rawUrl || item.url}
+                  href={activeAsset.rawUrl || activeAsset.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-neutral-900 text-white font-sans text-xs font-semibold hover:bg-black transition-colors"

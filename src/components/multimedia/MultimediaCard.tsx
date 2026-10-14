@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Play, Sparkles, Video, Image as ImageIcon, ExternalLink, Film, Box } from 'lucide-react';
-import type { MultimediaItem } from '../../types/multimedia';
-import { normalizeCategory } from '../../types/multimedia';
+import { Play, Sparkles, Video, Image as ImageIcon, ExternalLink, Film, Layers } from 'lucide-react';
+import type { MultimediaItem, MediaAsset } from '../../types/multimedia';
+import { normalizeCategory, getItemAssets } from '../../types/multimedia';
 
 interface MultimediaCardProps {
   item: MultimediaItem;
@@ -12,7 +12,14 @@ interface MultimediaCardProps {
 
 export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, index }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const isVideo = item.mediaType === 'video' || item.mediaType === 'drive_video' || item.mediaType === 'embed';
+  const assets = getItemAssets(item);
+  const primaryAsset: MediaAsset = assets[0] || {
+    id: 'fallback',
+    url: '',
+    mediaType: 'image',
+    format: '16:9',
+  };
+  const isVideo = primaryAsset.mediaType === 'video' || primaryAsset.mediaType === 'drive_video' || primaryAsset.mediaType === 'embed';
 
   const normalized = normalizeCategory(item.category);
 
@@ -30,9 +37,9 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
 
   const CategoryIcon = currentCategory.icon;
 
-  // Format aspect ratio class
+  // Format aspect ratio class based on primary asset format
   const getAspectRatioClass = () => {
-    switch (item.format) {
+    switch (primaryAsset.format) {
       case '9:16':
         return 'aspect-[9/16] max-h-[520px]';
       case '1:1':
@@ -58,26 +65,24 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
     >
       {/* Media Preview Container */}
       <div className={`relative w-full ${getAspectRatioClass()} bg-neutral-900 overflow-hidden`}>
-        {/* If it's a direct video with preview, we can show video or thumbnail */}
-        {item.mediaType === 'video' ? (
+        {primaryAsset.mediaType === 'video' ? (
           <video
-            src={item.url}
-            poster={item.thumbnailUrl}
+            src={primaryAsset.url}
+            poster={primaryAsset.thumbnailUrl}
             muted
             loop
             playsInline
             autoPlay={isHovered}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
-        ) : item.mediaType === 'drive_video' ? (
+        ) : primaryAsset.mediaType === 'drive_video' ? (
           <div className="w-full h-full relative">
-            {item.thumbnailUrl ? (
+            {primaryAsset.thumbnailUrl ? (
               <img
-                src={item.thumbnailUrl}
+                src={primaryAsset.thumbnailUrl}
                 alt={item.title}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 onError={(e) => {
-                  // Fallback if drive thumbnail fails
                   (e.target as HTMLElement).style.display = 'none';
                 }}
               />
@@ -88,11 +93,11 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
               </div>
             </div>
           </div>
-        ) : item.mediaType === 'embed' ? (
+        ) : primaryAsset.mediaType === 'embed' ? (
           <div className="w-full h-full relative">
-            {item.thumbnailUrl ? (
+            {primaryAsset.thumbnailUrl ? (
               <img
-                src={item.thumbnailUrl}
+                src={primaryAsset.thumbnailUrl}
                 alt={item.title}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
@@ -108,15 +113,14 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
             </div>
           </div>
         ) : (
-          /* Image or Drive Image */
           <img
-            src={item.url}
+            src={primaryAsset.url}
             alt={item.title}
             loading="lazy"
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             onError={(e) => {
-              if (item.thumbnailUrl && item.thumbnailUrl !== item.url) {
-                (e.target as HTMLImageElement).src = item.thumbnailUrl;
+              if (primaryAsset.thumbnailUrl && primaryAsset.thumbnailUrl !== primaryAsset.url) {
+                (e.target as HTMLImageElement).src = primaryAsset.thumbnailUrl;
               }
             }}
           />
@@ -129,13 +133,21 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
             {currentCategory.label}
           </span>
 
-          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-medium tracking-wider bg-black/70 text-white/90 backdrop-blur-md border border-white/10">
-            {item.format}
-          </span>
+          <div className="flex items-center gap-1.5">
+            {assets.length > 1 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold tracking-wider bg-white/95 text-neutral-900 shadow-xs backdrop-blur-md">
+                <Layers className="w-3 h-3 text-neutral-800" />
+                {assets.length} assets
+              </span>
+            )}
+            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-medium tracking-wider bg-black/70 text-white/90 backdrop-blur-md border border-white/10">
+              {primaryAsset.format}
+            </span>
+          </div>
         </div>
 
-        {/* Play Icon Indicator overlay for videos */}
-        {isVideo && item.mediaType === 'video' && (
+        {/* Play Icon Indicator overlay for direct video */}
+        {isVideo && primaryAsset.mediaType === 'video' && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300 opacity-90 group-hover:opacity-100">
             <div className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-md text-neutral-950 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
               <Play className="w-5 h-5 fill-current ml-0.5" />
@@ -146,9 +158,9 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
         {/* Hover Click prompt banner */}
         <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-between text-white text-xs">
           <span className="font-sans font-medium flex items-center gap-1">
-            Ver detalle & workflow <ExternalLink className="w-3 h-3" />
+            Ver {assets.length > 1 ? `${assets.length} assets` : 'detalle'} &amp; workflow <ExternalLink className="w-3 h-3" />
           </span>
-          {item.driveFileId && (
+          {primaryAsset.driveFileId && (
             <span className="font-mono text-[10px] text-white/75 bg-white/15 px-1.5 py-0.5 rounded">
               Google Drive
             </span>

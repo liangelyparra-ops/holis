@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import {
   X,
   Plus,
@@ -8,18 +8,17 @@ import {
   ArrowUp,
   ArrowDown,
   RotateCcw,
-  Sparkles,
   Link as LinkIcon,
   Video,
   Image as ImageIcon,
   Check,
   AlertCircle,
   HelpCircle,
-  Share2,
   Copy,
+  Layers,
 } from 'lucide-react';
-import type { MultimediaItem, MultimediaCategory, MediaFormat } from '../../types/multimedia';
-import { normalizeCategory } from '../../types/multimedia';
+import type { MultimediaItem, MediaFormat, MediaAsset } from '../../types/multimedia';
+import { normalizeCategory, getItemAssets } from '../../types/multimedia';
 import { parseMediaUrl, extractDriveFileId } from '../../utils/driveUrlHelper';
 import { multimediaInitialItems } from '../../data/multimediaInitialItems';
 
@@ -30,6 +29,14 @@ interface MultimediaSettingsModalProps {
   onUpdateItems: (newItems: MultimediaItem[]) => void;
 }
 
+interface AssetInputState {
+  id: string;
+  url: string;
+  preferredType: 'video' | 'image';
+  format: MediaFormat;
+  title: string;
+}
+
 export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = ({
   isOpen,
   onClose,
@@ -38,14 +45,16 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
 }) => {
   // Form state for adding or editing
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
-  const [inputUrl, setInputUrl] = useState('');
-  const [preferredType, setPreferredType] = useState<'video' | 'image'>('video');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<'MOTION' | 'IA' | 'KEY_VISUALS'>('MOTION');
-  const [format, setFormat] = useState<MediaFormat>('16:9');
   const [toolsInput, setToolsInput] = useState('After Effects, Runway Gen-3, Midjourney');
   const [description, setDescription] = useState('');
   const [hookRationale, setHookRationale] = useState('');
+
+  // Multi-asset state
+  const [assetsList, setAssetsList] = useState<AssetInputState[]>([
+    { id: 'asset-1', url: '', preferredType: 'video', format: '16:9', title: '' },
+  ]);
 
   // Drag and drop state
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -53,26 +62,65 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
   const [copiedLink, setCopiedLink] = useState(false);
   const [showDriveHelp, setShowDriveHelp] = useState(false);
 
-  // Compute live preview of the entered URL
-  const parsedPreview = inputUrl.trim() ? parseMediaUrl(inputUrl, preferredType) : null;
-  const isDriveDetected = inputUrl ? !!extractDriveFileId(inputUrl) : false;
-
   const resetForm = () => {
     setEditingItemId(null);
-    setInputUrl('');
     setTitle('');
     setDescription('');
     setHookRationale('');
     setToolsInput('After Effects, Runway Gen-3, Midjourney');
-    setFormat('16:9');
     setCategory('MOTION');
+    setAssetsList([{ id: `asset-${Date.now()}`, url: '', preferredType: 'video', format: '16:9', title: '' }]);
+  };
+
+  const handleAddAssetRow = () => {
+    setAssetsList((prev) => [
+      ...prev,
+      { id: `asset-${Date.now()}-${prev.length}`, url: '', preferredType: 'video', format: '16:9', title: '' },
+    ]);
+  };
+
+  const handleRemoveAssetRow = (index: number) => {
+    if (assetsList.length <= 1) return;
+    setAssetsList((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUpdateAsset = <K extends keyof AssetInputState>(
+    index: number,
+    field: K,
+    value: AssetInputState[K]
+  ) => {
+    setAssetsList((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
   };
 
   const handleSaveItem = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputUrl.trim() || !title.trim()) return;
+    if (!title.trim()) return;
 
-    const parsed = parseMediaUrl(inputUrl, preferredType);
+    const validAssets = assetsList.filter((a) => a.url.trim().length > 0);
+    if (validAssets.length === 0) {
+      alert('Debes ingresar al menos un enlace de recurso multimedia (Google Drive, video o imagen).');
+      return;
+    }
+
+    const parsedAssets: MediaAsset[] = validAssets.map((a, idx) => {
+      const parsed = parseMediaUrl(a.url, a.preferredType);
+      return {
+        id: a.id || `asset-${idx}-${Date.now()}`,
+        url: parsed.url,
+        rawUrl: parsed.rawUrl,
+        mediaType: parsed.mediaType,
+        format: a.format,
+        title: a.title.trim() || undefined,
+        thumbnailUrl: parsed.thumbnailUrl,
+        driveFileId: parsed.driveFileId,
+      };
+    });
+
+    const primary = parsedAssets[0];
     const toolsArray = toolsInput
       .split(',')
       .map((t) => t.trim())
@@ -86,15 +134,17 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
             ...item,
             title,
             category,
-            mediaType: parsed.mediaType,
-            url: parsed.url,
-            rawUrl: parsed.rawUrl,
-            driveFileId: parsed.driveFileId,
-            thumbnailUrl: parsed.thumbnailUrl || item.thumbnailUrl,
-            format,
             tools: toolsArray.length ? toolsArray : ['Design', 'Motion'],
             description,
             hookRationale,
+            assets: parsedAssets,
+            // primary fallbacks
+            mediaType: primary.mediaType,
+            url: primary.url,
+            rawUrl: primary.rawUrl,
+            driveFileId: primary.driveFileId,
+            thumbnailUrl: primary.thumbnailUrl || item.thumbnailUrl,
+            format: primary.format,
           };
         }
         return item;
@@ -106,16 +156,18 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
         id: `item-${Date.now()}`,
         title,
         category,
-        mediaType: parsed.mediaType,
-        url: parsed.url,
-        rawUrl: parsed.rawUrl,
-        driveFileId: parsed.driveFileId,
-        thumbnailUrl: parsed.thumbnailUrl,
-        format,
         tools: toolsArray.length ? toolsArray : ['Creative Direction', 'AI'],
         description: description || 'Pieza multimedia creada para campañas digitales.',
         hookRationale: hookRationale || '',
         createdAt: Date.now(),
+        assets: parsedAssets,
+        // primary fallbacks
+        mediaType: primary.mediaType,
+        url: primary.url,
+        rawUrl: primary.rawUrl,
+        driveFileId: primary.driveFileId,
+        thumbnailUrl: primary.thumbnailUrl,
+        format: primary.format,
       };
       onUpdateItems([newItem, ...items]);
     }
@@ -125,14 +177,22 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
 
   const handleStartEdit = (item: MultimediaItem) => {
     setEditingItemId(item.id);
-    setInputUrl(item.rawUrl || item.url);
     setTitle(item.title);
     setCategory(normalizeCategory(item.category));
-    setFormat(item.format);
     setToolsInput(item.tools.join(', '));
     setDescription(item.description);
     setHookRationale(item.hookRationale || '');
-    setPreferredType(item.mediaType === 'image' || item.mediaType === 'drive_image' ? 'image' : 'video');
+
+    const itemAssets = getItemAssets(item);
+    setAssetsList(
+      itemAssets.map((a, idx) => ({
+        id: a.id || `asset-${idx}`,
+        url: a.rawUrl || a.url,
+        preferredType: a.mediaType.includes('image') ? 'image' : 'video',
+        format: a.format || '16:9',
+        title: a.title || '',
+      }))
+    );
   };
 
   const handleDeleteItem = (id: string) => {
@@ -208,7 +268,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="relative w-full max-w-4xl max-h-[92vh] flex flex-col bg-white rounded-3xl overflow-hidden shadow-2xl border border-stone-200 z-10 my-auto text-left"
+        className="relative w-full max-w-5xl max-h-[92vh] flex flex-col bg-white rounded-3xl overflow-hidden shadow-2xl border border-stone-200 z-10 my-auto text-left"
       >
         {/* Header */}
         <div className="px-6 py-5 border-b border-stone-200 bg-stone-50/80 flex items-center justify-between">
@@ -220,7 +280,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
               </h2>
             </div>
             <p className="font-sans text-xs text-stone-600">
-              Pega links de Google Drive, videos o imágenes y organiza el orden con drag &amp; drop.
+              Agrega uno o varios assets por entrada (Drive, videos, imágenes) y organiza el orden con drag &amp; drop.
             </p>
           </div>
 
@@ -246,11 +306,11 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
 
         {/* Content Body: Two columns on Desktop */}
         <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Column: Form to Paste & Add/Edit */}
-          <div className="lg:col-span-6 space-y-5">
+          {/* Left Column: Form to Add/Edit */}
+          <div className="lg:col-span-7 space-y-5">
             <div className="flex items-center justify-between">
               <h3 className="font-headline text-sm font-bold uppercase tracking-wider text-neutral-900">
-                {editingItemId ? '✏️ Editar Pieza' : '➕ Añadir Nueva Pieza'}
+                {editingItemId ? '✏️ Editar Entrada' : '➕ Añadir Nueva Entrada'}
               </h3>
               {editingItemId && (
                 <button
@@ -264,132 +324,168 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
             </div>
 
             <form onSubmit={handleSaveItem} className="space-y-4">
-              {/* Drive link or URL field */}
-              <div className="space-y-1.5">
-                <label className="block font-sans text-xs font-semibold text-neutral-800">
-                  Enlace de Google Drive, Video o Imagen *
-                </label>
-                <div className="relative">
-                  <input
-                    type="url"
-                    required
-                    value={inputUrl}
-                    onChange={(e) => setInputUrl(e.target.value)}
-                    placeholder="https://drive.google.com/file/d/... o https://.../video.mp4"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-sans focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 pr-9"
-                  />
-                  <div className="absolute right-3 top-3 text-stone-400">
-                    <LinkIcon className="w-4 h-4" />
-                  </div>
-                </div>
-
-                {isDriveDetected && (
-                  <div className="flex items-center justify-between text-[11px] text-blue-700 bg-blue-50/80 border border-blue-200/80 px-2.5 py-1.5 rounded-lg">
-                    <span className="font-medium">✨ Enlace de Google Drive detectado</span>
-                    <button
-                      type="button"
-                      onClick={() => setShowDriveHelp(!showDriveHelp)}
-                      className="inline-flex items-center gap-1 font-semibold underline text-blue-800 cursor-pointer"
-                    >
-                      <HelpCircle className="w-3 h-3" />
-                      Permisos
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Drive help toggle */}
-              {showDriveHelp && (
-                <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-950 space-y-1">
-                  <p className="font-semibold">Importante para enlaces de Google Drive:</p>
-                  <p>
-                    1. En Google Drive, haz clic derecho en el archivo &gt; <strong>Compartir</strong>.<br />
-                    2. En &quot;Acceso general&quot;, selecciona <strong>&quot;Cualquier persona con el enlace&quot;</strong>.<br />
-                    3. Los videos se reproducen con el visor de Drive y las imágenes se renderizan en alta resolución.
-                  </p>
-                </div>
-              )}
-
-              {/* Type Preference (Video vs Imagen) */}
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPreferredType('video')}
-                  className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
-                    preferredType === 'video'
-                      ? 'border-neutral-900 bg-neutral-900 text-white'
-                      : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
-                  }`}
-                >
-                  <Video className="w-3.5 h-3.5" />
-                  Es Video / Reel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreferredType('image')}
-                  className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
-                    preferredType === 'image'
-                      ? 'border-neutral-900 bg-neutral-900 text-white'
-                      : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
-                  }`}
-                >
-                  <ImageIcon className="w-3.5 h-3.5" />
-                  Es Imagen / Gráfico
-                </button>
-              </div>
-
-              {/* Title */}
+              {/* Title & Category */}
               <div className="space-y-1">
                 <label className="block font-sans text-xs font-semibold text-neutral-800">
-                  Título de la pieza *
+                  Título de la entrada *
                 </label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="ej: Reel Lanzamiento Producto · AI Motion"
+                  placeholder="ej: Campaña Visual 360° & Reels AI"
                   className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs font-sans focus:outline-none focus:border-neutral-900"
                 />
               </div>
 
-              {/* Category & Format */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="block font-sans text-xs font-semibold text-neutral-800">
-                    Categoría
-                  </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-sans bg-white focus:outline-none focus:border-neutral-900"
+              <div className="space-y-1">
+                <label className="block font-sans text-xs font-semibold text-neutral-800">
+                  Categoría
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value as any)}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-sans bg-white focus:outline-none focus:border-neutral-900"
+                >
+                  <option value="MOTION">Motion</option>
+                  <option value="IA">IA</option>
+                  <option value="KEY_VISUALS">Key Visuals</option>
+                </select>
+              </div>
+
+              {/* Multi-Assets Section */}
+              <div className="space-y-3 pt-2 border-t border-stone-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-emerald-600" />
+                    <span className="font-headline text-xs font-bold uppercase tracking-wider text-neutral-900">
+                      Recursos &amp; Assets ({assetsList.length})
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddAssetRow}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 font-sans text-xs font-semibold transition-colors cursor-pointer"
                   >
-                    <option value="MOTION">Motion</option>
-                    <option value="IA">IA</option>
-                    <option value="KEY_VISUALS">Key Visuals</option>
-                  </select>
+                    <Plus className="w-3.5 h-3.5" />
+                    Añadir otro asset
+                  </button>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="block font-sans text-xs font-semibold text-neutral-800">
-                    Formato
-                  </label>
-                  <select
-                    value={format}
-                    onChange={(e) => setFormat(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-sans bg-white focus:outline-none focus:border-neutral-900"
-                  >
-                    <option value="9:16">9:16 (Vertical Reels/TikTok)</option>
-                    <option value="1:1">1:1 (Cuadrado Feed)</option>
-                    <option value="16:9">16:9 (Horizontal)</option>
-                    <option value="4:5">4:5 (Feed Vertical)</option>
-                    <option value="auto">Auto</option>
-                  </select>
+                <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
+                  {assetsList.map((asset, index) => {
+                    const isDrive = asset.url ? !!extractDriveFileId(asset.url) : false;
+                    return (
+                      <div
+                        key={asset.id}
+                        className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/90 space-y-2.5 text-left"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-[11px] font-bold text-stone-700 bg-white px-2 py-0.5 rounded border border-stone-200">
+                            Asset #{index + 1} {index === 0 ? '(Principal / Portada)' : ''}
+                          </span>
+
+                          {assetsList.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveAssetRow(index)}
+                              className="text-stone-400 hover:text-rose-600 p-1 cursor-pointer transition-colors"
+                              title="Eliminar este asset"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* URL field */}
+                        <div className="relative">
+                          <input
+                            type="url"
+                            required={index === 0}
+                            value={asset.url}
+                            onChange={(e) => handleUpdateAsset(index, 'url', e.target.value)}
+                            placeholder="Enlace de Google Drive, video .mp4 o imagen..."
+                            className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-sans focus:outline-none focus:border-neutral-900 pr-8 bg-white"
+                          />
+                          <div className="absolute right-2.5 top-2.5 text-stone-400 pointer-events-none">
+                            <LinkIcon className="w-3.5 h-3.5" />
+                          </div>
+                        </div>
+
+                        {/* Asset Title (optional label) */}
+                        <input
+                          type="text"
+                          value={asset.title}
+                          onChange={(e) => handleUpdateAsset(index, 'title', e.target.value)}
+                          placeholder="Etiqueta opcional (ej: Reel 9:16, Key Visual Feed, Storyboard)"
+                          className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs font-sans bg-white focus:outline-none focus:border-neutral-900"
+                        />
+
+                        {/* Type toggle & Format selector */}
+                        <div className="grid grid-cols-2 gap-2 pt-1">
+                          <div className="flex rounded-lg border border-stone-200 bg-white overflow-hidden p-0.5">
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateAsset(index, 'preferredType', 'video')}
+                              className={`flex-1 flex items-center justify-center gap-1 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                                asset.preferredType === 'video'
+                                  ? 'bg-neutral-900 text-white font-semibold'
+                                  : 'text-stone-600 hover:bg-stone-50'
+                              }`}
+                            >
+                              <Video className="w-3 h-3" />
+                              Video
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateAsset(index, 'preferredType', 'image')}
+                              className={`flex-1 flex items-center justify-center gap-1 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                                asset.preferredType === 'image'
+                                  ? 'bg-neutral-900 text-white font-semibold'
+                                  : 'text-stone-600 hover:bg-stone-50'
+                              }`}
+                            >
+                              <ImageIcon className="w-3 h-3" />
+                              Imagen
+                            </button>
+                          </div>
+
+                          <select
+                            value={asset.format}
+                            onChange={(e) => handleUpdateAsset(index, 'format', e.target.value as any)}
+                            className="px-2 py-1 rounded-lg border border-stone-200 text-xs font-sans bg-white focus:outline-none focus:border-neutral-900"
+                          >
+                            <option value="9:16">9:16 (Vertical)</option>
+                            <option value="1:1">1:1 (Cuadrado)</option>
+                            <option value="16:9">16:9 (Horizontal)</option>
+                            <option value="4:5">4:5 (Feed)</option>
+                            <option value="auto">Auto</option>
+                          </select>
+                        </div>
+
+                        {isDrive && (
+                          <p className="text-[10px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded font-medium">
+                            ✨ Link de Google Drive detectado
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
+
+                <button
+                  type="button"
+                  onClick={handleAddAssetRow}
+                  className="w-full py-2 rounded-xl border border-dashed border-stone-300 hover:border-neutral-900 text-stone-600 hover:text-black font-sans text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  + Añadir otro asset a esta entrada
+                </button>
               </div>
 
               {/* Tools */}
-              <div className="space-y-1">
+              <div className="space-y-1 pt-2 border-t border-stone-200">
                 <label className="block font-sans text-xs font-semibold text-neutral-800">
                   Herramientas usadas (separadas por coma)
                 </label>
@@ -439,44 +535,10 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                 {editingItemId ? 'Guardar Cambios' : 'Añadir a la Galería'}
               </button>
             </form>
-
-            {/* Instant Preview Box */}
-            {parsedPreview && (
-              <div className="p-3 bg-stone-50 rounded-2xl border border-stone-200 space-y-2">
-                <p className="font-mono text-[10px] uppercase font-bold tracking-wider text-stone-500">
-                  Vista Previa en Vivo
-                </p>
-                <div className="h-32 bg-neutral-900 rounded-xl overflow-hidden flex items-center justify-center">
-                  {parsedPreview.mediaType === 'drive_video' ? (
-                    <div className="text-white text-xs font-sans text-center p-2">
-                      <Video className="w-6 h-6 mx-auto mb-1 text-blue-400" />
-                      Google Drive Video Embed ({parsedPreview.driveFileId})
-                    </div>
-                  ) : parsedPreview.mediaType === 'video' ? (
-                    <video
-                      src={parsedPreview.url}
-                      muted
-                      autoPlay
-                      loop
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <img
-                      src={parsedPreview.url}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = 'none';
-                      }}
-                    />
-                  )}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Right Column: Drag and Drop Reordering List */}
-          <div className="lg:col-span-6 space-y-4 flex flex-col justify-between">
+          <div className="lg:col-span-5 space-y-4 flex flex-col justify-between">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div>
@@ -500,19 +562,22 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
               </div>
 
               {/* Items List with Drag and Drop */}
-              <div className="space-y-2 max-h-[520px] overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-[540px] overflow-y-auto pr-1">
                 {items.length === 0 ? (
                   <div className="p-8 text-center border-2 border-dashed border-stone-200 rounded-2xl space-y-2">
                     <AlertCircle className="w-8 h-8 text-stone-400 mx-auto" />
                     <p className="font-sans text-xs text-stone-600">No hay piezas añadidas aún.</p>
                     <p className="font-sans text-[11px] text-stone-400">
-                      Pega un link en el formulario de la izquierda para comenzar.
+                      Crea una entrada con uno o más assets a la izquierda.
                     </p>
                   </div>
                 ) : (
                   items.map((item, index) => {
                     const isDragging = draggedIndex === index;
                     const isOver = dragOverIndex === index;
+                    const itemAssets = getItemAssets(item);
+                    const primary: MediaAsset = itemAssets[0] || { id: 'fallback', url: '', mediaType: 'image', format: '16:9' };
+
                     return (
                       <div
                         key={item.id}
@@ -539,9 +604,9 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
 
                           {/* Mini Thumbnail */}
                           <div className="w-12 h-12 rounded-lg bg-neutral-900 shrink-0 overflow-hidden relative">
-                            {item.thumbnailUrl || (item.mediaType === 'image' && item.url) ? (
+                            {primary.thumbnailUrl || (primary.mediaType === 'image' && primary.url) ? (
                               <img
-                                src={item.thumbnailUrl || item.url}
+                                src={primary.thumbnailUrl || primary.url}
                                 alt={item.title}
                                 className="w-full h-full object-cover"
                               />
@@ -558,11 +623,21 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                               {item.title}
                             </p>
                             <div className="flex items-center gap-1.5 mt-0.5">
+                              {itemAssets.length > 1 && (
+                                <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded flex items-center gap-1">
+                                  <Layers className="w-2.5 h-2.5" />
+                                  {itemAssets.length}
+                                </span>
+                              )}
                               <span className="text-[10px] font-mono text-stone-500 bg-stone-100 px-1.5 py-0.2 rounded">
-                                {item.format}
+                                {primary.format}
                               </span>
                               <span className="text-[10px] font-sans text-stone-500 truncate">
-                                {normalizeCategory(item.category) === 'MOTION' ? 'Motion' : normalizeCategory(item.category) === 'IA' ? 'IA' : 'Key Visuals'}
+                                {normalizeCategory(item.category) === 'MOTION'
+                                  ? 'Motion'
+                                  : normalizeCategory(item.category) === 'IA'
+                                  ? 'IA'
+                                  : 'Key Visuals'}
                               </span>
                             </div>
                           </div>
@@ -613,11 +688,11 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
 
             {/* Bottom info alert */}
             <div className="p-3 bg-stone-100 rounded-2xl text-[11px] font-sans text-stone-600 flex items-center justify-between">
-              <span>💾 Los cambios se guardan automáticamente en tu navegador.</span>
+              <span>💾 Se sincroniza en vivo en la nube (Firestore).</span>
               <button
                 type="button"
                 onClick={onClose}
-                className="px-3 py-1.5 bg-neutral-900 text-white rounded-xl text-xs font-semibold hover:bg-black cursor-pointer"
+                className="px-3.5 py-1.5 bg-neutral-950 text-white rounded-xl text-xs font-semibold hover:bg-black cursor-pointer shadow-xs"
               >
                 Listo
               </button>
