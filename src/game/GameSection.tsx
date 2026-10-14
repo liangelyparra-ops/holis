@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Gamepad2, 
@@ -6,24 +6,20 @@ import {
   Trophy, 
   Timer, 
   Flame, 
-  Skull, 
-  Upload, 
   Play, 
   Check, 
   ChevronRight,
   Star,
   AlertCircle,
-  User,
   Info,
   HelpCircle,
   X,
   Settings,
-  Shuffle,
-  Type as TypeIcon
+  Shuffle
 } from 'lucide-react';
 import { doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { Toaster, toast } from 'sonner';
-import { Player, GameCard, GameState, DEFAULT_CARDS, PREDEFINED_PLAYERS, PRIMOS_CARDS, PAPELITO_RANDOM_THEMES } from '../../types';
+import { Player, GameCard, GameState, DEFAULT_CARDS } from '../../types';
 import { db } from '../../firebase';
 
 const USER_ID_KEY = 'party-game-user-id-v2';
@@ -117,12 +113,10 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
   const [selectedAvatarSeed, setSelectedAvatarSeed] = useState<string>('avatar-1');
   const [papelitoInput, setPapelitoInput] = useState<string>('');
   const [showRoundAnimation, setShowRoundAnimation] = useState<number | null>(null);
-  const [isUploading, setIsUploading] = useState<boolean>(false);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [showPlayersList, setShowPlayersList] = useState<boolean>(false);
   const [showInstructions, setShowInstructions] = useState<boolean>(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const soundCacheRef = useRef<Record<string, HTMLAudioElement>>({});
   const lastPlayedSoundRef = useRef<string | null>(null);
 
@@ -347,7 +341,7 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
     window.location.reload();
   };
 
-  const updateMode = async (mode: 'PAPELITO' | 'HOLIS' | 'PRIMOS' | 'WHATSAPP') => {
+  const updateMode = async (mode: 'PAPELITO' | 'HOLIS') => {
     const updates: Partial<GameState> = { mode };
     if (mode !== 'PAPELITO') {
       updates.cards = shuffleArray(DEFAULT_CARDS);
@@ -495,68 +489,6 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    const reader = new FileReader();
-    
-    reader.onerror = () => {
-      toast.error("Error reading file.");
-      setIsUploading(false);
-    };
-
-    reader.onload = async (event) => {
-      let text = event.target?.result as string;
-      if (!text || text.trim().length < 10) {
-        toast.error("The file seems empty or too short.");
-        setIsUploading(false);
-        return;
-      }
-
-      if (text.length > 30000) {
-        text = text.substring(0, 30000);
-      }
-
-      try {
-        // Safe, server-side API call
-        const res = await fetch("/api/gemini/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text })
-        });
-
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.error || "Server-side card generation failed.");
-        }
-
-        const data = await res.json();
-        const cards = data.cards;
-
-        if (!Array.isArray(cards) || cards.length === 0) {
-          throw new Error("No cards could be parsed from response.");
-        }
-
-        const newCards = shuffleArray(cards.map((c: any, i: number) => ({
-          ...c,
-          id: `ai-${Date.now()}-${i}`
-        })));
-
-        await updateDoc(doc(db, 'games', GAME_ID), { cards: newCards });
-        toast.success("Custom deck generated successfully! 🔥");
-      } catch (error: any) {
-        console.error("Error generating cards:", error);
-        toast.error(`Generation error: ${error.message || "Unknown error"}`);
-        await updateDoc(doc(db, 'games', GAME_ID), { cards: shuffleArray(DEFAULT_CARDS) });
-      } finally {
-        setIsUploading(false);
-      }
-    };
-
-    reader.readAsText(file);
-  };
 
   const voteWinner = async (winnerId: string) => {
     if (!userId) return;
@@ -814,7 +746,7 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
           <div className="space-y-4">
             <div className="bg-[#111113] p-6 rounded-[2rem] border border-neutral-800 shadow-xl space-y-4">
               <h3 className="text-[10px] font-black uppercase tracking-widest text-[#3C48C3]">Game Mode</h3>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button 
                   onClick={() => updateMode('PAPELITO')}
                   className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'PAPELITO' ? 'bg-emerald-500/10 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-neutral-900 border-neutral-800 opacity-60'}`}
@@ -828,20 +760,6 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
                 >
                   <Flame size={20} className={gameState.mode === 'HOLIS' ? 'text-[#3C48C3]' : 'text-neutral-400'} />
                   <span className="text-[8px] font-black uppercase tracking-widest text-white">Holis</span>
-                </button>
-                <button 
-                  onClick={() => updateMode('PRIMOS')}
-                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'PRIMOS' ? 'bg-amber-500/10 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.3)]' : 'bg-neutral-900 border-neutral-800 opacity-60'}`}
-                >
-                  <Users size={20} className={gameState.mode === 'PRIMOS' ? 'text-amber-500' : 'text-neutral-400'} />
-                  <span className="text-[8px] font-black uppercase tracking-widest text-white">Primos</span>
-                </button>
-                <button 
-                  onClick={() => updateMode('WHATSAPP')}
-                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'WHATSAPP' ? 'bg-red-500/10 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'bg-neutral-900 border-neutral-800 opacity-60'}`}
-                >
-                  <Upload size={20} className={gameState.mode === 'WHATSAPP' ? 'text-red-500' : 'text-neutral-400'} />
-                  <span className="text-[8px] font-black uppercase tracking-widest text-white">Custom</span>
                 </button>
               </div>
             </div>
@@ -966,46 +884,7 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
               </div>
             )}
 
-            {gameState.mode === 'WHATSAPP' && (
-              <div className="bg-[#111113] p-5 rounded-[2rem] border border-neutral-800 shadow-xl space-y-4">
-                <div className="space-y-1">
-                  <h3 className="text-[9px] font-black uppercase tracking-widest text-red-500">Custom WhatsApp Deck Generator</h3>
-                  <p className="text-[10px] text-neutral-400">Upload a exported WhatsApp chat file (.txt) to automatically generate personalized party cards with real jokes, catchphrases, and situations!</p>
-                </div>
 
-                <div className="pt-2">
-                  <input 
-                    type="file" 
-                    accept=".txt" 
-                    ref={fileInputRef} 
-                    onChange={handleFileUpload}
-                    className="hidden" 
-                  />
-                  
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    className={`w-full py-4 rounded-xl border-2 border-dashed font-headline font-black text-xs uppercase tracking-widest flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${
-                      isUploading 
-                        ? 'border-red-500/40 bg-red-500/5 text-neutral-500' 
-                        : 'border-neutral-800 hover:border-red-500/50 hover:bg-neutral-900 text-neutral-300'
-                    }`}
-                  >
-                    {isUploading ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-                        <span>Analyzing with Gemini...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Upload size={24} className="text-red-500" />
-                        <span>Select WhatsApp .txt File</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="space-y-4 flex flex-col justify-between">
