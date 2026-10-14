@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Download, Linkedin } from 'lucide-react';
 import { Toaster } from 'sonner';
@@ -12,11 +12,8 @@ import { CaseStudyModal } from './components/portfolio/CaseStudyModal';
 import { ContactSection } from './components/portfolio/ContactSection';
 import { PapelitoCaseCard } from './components/portfolio/PapelitoCaseCard';
 
-// Lazy-load the heavy multiplayer game engine only when accessed
-const GameSection = lazy(() => import('./components/GameSection'));
-
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'IMPACT' | 'CONTACT' | 'GAMES'>('IMPACT');
+  const [activeTab, setActiveTab] = useState<'IMPACT' | 'CONTACT'>('IMPACT');
   const [selectedProjectForModal, setSelectedProjectForModal] = useState<UseCase | null>(null);
   const closeCaseStudy = useCallback(() => setSelectedProjectForModal(null), []);
 
@@ -24,9 +21,7 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.toLowerCase();
-      if (hash === '#game' || hash === '#games') {
-        setActiveTab('GAMES');
-      } else if (hash === '#about' || hash === '#contact') {
+      if (hash === '#about' || hash === '#contact') {
         setActiveTab('CONTACT');
       } else {
         setActiveTab('IMPACT');
@@ -42,10 +37,7 @@ export default function App() {
 
   // Update URL hash whenever tab changes, maintaining clean state
   useEffect(() => {
-    let targetHash = '#experience';
-    if (activeTab === 'GAMES') targetHash = '#game';
-    else if (activeTab === 'CONTACT') targetHash = '#about';
-
+    const targetHash = activeTab === 'CONTACT' ? '#about' : '#experience';
     if (window.location.hash.toLowerCase() !== targetHash) {
       window.history.pushState(null, '', targetHash);
     }
@@ -146,35 +138,23 @@ export default function App() {
             <p className="font-mono text-xs font-bold uppercase tracking-widest text-neutral-500">Experiments</p>
             <h2 id="experiments-heading" className="font-headline text-2xl sm:text-3xl font-light text-neutral-900 tracking-tight">Playful prototypes and live builds.</h2>
           </div>
-          <PapelitoCaseCard onLaunchGame={() => {
-            setActiveTab('GAMES');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }} />
+          <PapelitoCaseCard />
         </section>
       </div>
     );
   };
 
   return (
-    <div className={`min-h-screen font-body transition-colors duration-500 overflow-x-hidden ${
-      activeTab === 'GAMES' ? 'bg-[#0e0e0e] text-on-surface' : 'bg-[#fafafa] text-on-surface'
-    }`}>
+    <div className="min-h-screen font-body bg-[#fafafa] text-on-surface transition-colors duration-500 overflow-x-hidden">
       <Toaster position="top-right" richColors closeButton />
 
-      {/* Dynamic Ambient Background */}
+      {/* Ambient Background */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        {activeTab === 'GAMES' ? (
-          <>
-            <div className="absolute -top-10 -left-10 w-[600px] h-[600px] bg-[#3C48C3]/15 blur-[120px]" />
-            <div className="absolute -bottom-10 -right-10 w-[650px] h-[650px] bg-[#3C48C3]/10 blur-[140px]" />
-          </>
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-b from-[#e0f2fe]/50 via-[#f0f9ff]/60 to-[#f7f5f0]" />
-        )}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#e0f2fe]/50 via-[#f0f9ff]/60 to-[#f7f5f0]" />
       </div>
 
       {/* Navigation Header */}
-      <HeaderNav activeTab={activeTab} setActiveTab={setActiveTab} />
+      <HeaderNav activeTab={activeTab} setActiveTab={setActiveTab as (tab: 'IMPACT' | 'CONTACT') => void} />
 
       {/* Case Study Modal */}
       <CaseStudyModal 
@@ -183,9 +163,7 @@ export default function App() {
       />
 
       {/* Main View Transition */}
-      <main id="main-content" className={`relative z-10 w-full min-h-[calc(100vh-140px)] flex flex-col pb-6 ${
-        activeTab === 'GAMES' ? 'pt-24 sm:pt-28 px-3 sm:px-6' : 'pt-20'
-      }`}>
+      <main id="main-content" className="relative z-10 w-full min-h-[calc(100vh-140px)] flex flex-col pb-6 pt-20">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -197,34 +175,15 @@ export default function App() {
           >
             {activeTab === 'IMPACT' && renderImpact()}
             {activeTab === 'CONTACT' && <ContactSection />}
-            
-            {activeTab === 'GAMES' && (
-              <Suspense fallback={
-                <div className="flex flex-col items-center justify-center py-24 space-y-4 text-white">
-                  <div className="w-10 h-10 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                  <p className="font-mono text-xs uppercase tracking-widest text-neutral-400">
-                    Initializing Holis Game Engine...
-                  </p>
-                </div>
-              }>
-                <GameSection />
-              </Suspense>
-            )}
           </motion.div>
         </AnimatePresence>
       </main>
 
       {/* Global Interactive Portfolio Footer */}
-      <footer className={`relative z-10 w-full border-t py-8 font-sans text-xs transition-colors duration-300 ${
-        activeTab === 'GAMES'
-          ? 'bg-[#090909] text-neutral-400 border-neutral-800/60'
-          : 'bg-[#fafafa] text-neutral-500 border-neutral-200/45'
-      }`}>
+      <footer className="relative z-10 w-full border-t py-8 font-sans text-xs bg-[#fafafa] text-neutral-500 border-neutral-200/45">
         <div className="max-w-6xl mx-auto px-4 sm:px-12 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-left">
           <div className="space-y-1">
-            <p className={`font-serif italic text-base sm:text-lg tracking-wide ${
-              activeTab === 'GAMES' ? 'text-white' : 'text-neutral-900'
-            }`}>
+            <p className="font-serif italic text-base sm:text-lg tracking-wide text-neutral-900">
               Lia Parra <span className="font-sans not-italic text-xs text-neutral-400 font-normal ml-1">© 2026</span>
             </p>
             <p className="text-[11px] font-sans tracking-wide text-neutral-500 font-medium">

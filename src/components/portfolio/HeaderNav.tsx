@@ -2,8 +2,8 @@ import React from 'react';
 import { Mail } from 'lucide-react';
 
 interface HeaderNavProps {
-  activeTab: 'IMPACT' | 'CONTACT' | 'GAMES';
-  setActiveTab: (tab: 'IMPACT' | 'CONTACT' | 'GAMES') => void;
+  activeTab: 'IMPACT' | 'CONTACT';
+  setActiveTab: (tab: 'IMPACT' | 'CONTACT') => void;
 }
 
 export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab }) => {
@@ -22,11 +22,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
         Skip to main content
       </a>
     <header className="fixed top-3.5 sm:top-5 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-xl sm:w-auto transition-all duration-500 ease-out select-none">
-      <div className={`h-11 sm:h-12 px-3 sm:px-4 py-1 flex items-center justify-between gap-3 sm:gap-6 rounded-full border transition-all duration-300 ${
-        activeTab === 'GAMES'
-          ? 'bg-[#141416]/90 border-neutral-800 text-white shadow-2xl shadow-black/80 backdrop-blur-xl'
-          : 'bg-white/80 border-neutral-200/70 text-neutral-900 shadow-[0_8px_30px_rgba(0,0,0,0.04)] backdrop-blur-xl'
-      }`}>
+      <div className="h-11 sm:h-12 px-3 sm:px-4 py-1 flex items-center justify-between gap-3 sm:gap-6 rounded-full border transition-all duration-300 bg-white/80 border-neutral-200/70 text-neutral-900 shadow-[0_8px_30px_rgba(0,0,0,0.04)] backdrop-blur-xl">
         {/* Brand logo & name */}
         <button
           type="button"
@@ -37,58 +33,39 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
           aria-label="Go to portfolio home"
           className="flex items-center gap-2.5 cursor-pointer group shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-900 rounded-sm"
         >
-          <div className={`w-7 h-7 sm:w-7.5 sm:h-7.5 rounded-full flex items-center justify-center border transition-all duration-300 ${
-            activeTab === 'GAMES'
-              ? 'border-neutral-700 bg-neutral-800/90 text-white group-hover:border-neutral-500'
-              : 'border-neutral-200/90 bg-neutral-50/90 text-neutral-900 group-hover:border-neutral-400 group-hover:bg-white shadow-3xs'
-          }`}>
+          <div className="w-7 h-7 sm:w-7.5 sm:h-7.5 rounded-full flex items-center justify-center border transition-all duration-300 border-neutral-200/90 bg-neutral-50/90 text-neutral-900 group-hover:border-neutral-400 group-hover:bg-white shadow-3xs">
             <span className="font-serif italic font-normal text-xs sm:text-sm">LP</span>
           </div>
-          <span className={`font-headline font-semibold text-xs sm:text-sm tracking-tight transition-colors ${
-            activeTab === 'GAMES' ? 'text-white' : 'text-neutral-900 group-hover:text-black'
-          }`}>
+          <span className="font-headline font-semibold text-xs sm:text-sm tracking-tight transition-colors text-neutral-900 group-hover:text-black">
             Lia Parra
           </span>
         </button>
 
-        {/* Center Navigation Tabs (Only in Portfolio mode) */}
-        {activeTab !== 'GAMES' ? (
-          <nav aria-label="Main navigation" className="flex items-center gap-1 font-sans text-xs">
-            {navItems.map((tab) => {
-              const isTabActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id as any);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  aria-current={isTabActive ? 'page' : undefined}
-                  className={`px-3 py-1 rounded-full transition-all duration-200 cursor-pointer text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 ${
-                    isTabActive 
-                      ? 'bg-neutral-150/70 text-neutral-950 font-semibold shadow-3xs' 
-                      : 'text-neutral-500 hover:text-neutral-900 font-medium'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </nav>
-        ) : (
-          <button
-            onClick={() => {
-              setActiveTab('IMPACT');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-850 hover:bg-neutral-800 border border-neutral-700 text-white font-sans text-xs font-medium transition-all cursor-pointer shadow-xs hover:scale-105"
-          >
-            <span className="material-symbols-outlined text-xs">arrow_back</span>
-            Portfolio
-          </button>
-        )}
+        {/* Center Navigation Tabs */}
+        <nav aria-label="Main navigation" className="flex items-center gap-1 font-sans text-xs">
+          {navItems.map((tab) => {
+            const isTabActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id as any);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                aria-current={isTabActive ? 'page' : undefined}
+                className={`px-3 py-1 rounded-full transition-all duration-200 cursor-pointer text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 ${
+                  isTabActive 
+                    ? 'bg-neutral-150/70 text-neutral-950 font-semibold shadow-3xs' 
+                    : 'text-neutral-500 hover:text-neutral-900 font-medium'
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
 
-        {/* Right Section: Two Icon Buttons (WhatsApp + Mail) with hover tooltips */}
+        {/* Right Section: Icon Buttons (WhatsApp + Mail) */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* WhatsApp Icon Button */}
           <div className="relative group">
@@ -97,11 +74,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Contact via WhatsApp"
-              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center transition-all duration-200 cursor-pointer ${
-                activeTab === 'GAMES'
-                  ? 'border-neutral-700 bg-neutral-800/80 text-neutral-300 hover:text-emerald-400 hover:border-emerald-500/60 hover:bg-neutral-800'
-                  : 'border-neutral-200/80 bg-neutral-50/60 text-neutral-600 hover:text-emerald-600 hover:border-emerald-400 hover:bg-emerald-50/70 shadow-3xs'
-              }`}
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center transition-all duration-200 cursor-pointer border-neutral-200/80 bg-neutral-50/60 text-neutral-600 hover:text-emerald-600 hover:border-emerald-400 hover:bg-emerald-50/70 shadow-3xs"
             >
               {/* Clean WhatsApp SVG vector */}
               <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" viewBox="0 0 24 24">
@@ -121,11 +94,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
             <a
               href="mailto:liangelyp@gmail.com"
               aria-label="Send Email"
-              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center transition-all duration-200 cursor-pointer ${
-                activeTab === 'GAMES'
-                  ? 'border-neutral-700 bg-neutral-800/80 text-neutral-300 hover:text-white hover:border-neutral-500 hover:bg-neutral-800'
-                  : 'border-neutral-200/80 bg-neutral-50/60 text-neutral-600 hover:text-neutral-950 hover:border-neutral-400 hover:bg-neutral-100 shadow-3xs'
-              }`}
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center transition-all duration-200 cursor-pointer border-neutral-200/80 bg-neutral-50/60 text-neutral-600 hover:text-neutral-950 hover:border-neutral-400 hover:bg-neutral-100 shadow-3xs"
             >
               <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </a>

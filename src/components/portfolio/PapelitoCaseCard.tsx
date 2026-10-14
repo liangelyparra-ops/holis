@@ -1,11 +1,7 @@
 import React from 'react';
 import { getDirectDriveUrl } from '../../utils/media';
 
-interface PapelitoCaseCardProps {
-  onLaunchGame: () => void;
-}
-
-export const PapelitoCaseCard: React.FC<PapelitoCaseCardProps> = ({ onLaunchGame }) => {
+export const PapelitoCaseCard: React.FC = () => {
   return (
     <div className="bg-[#111113] border border-neutral-800 rounded-2xl p-6 sm:p-8 shadow-sm transition-all duration-300 hover:border-neutral-700 max-w-6xl mx-auto w-full select-none text-left">
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center">
@@ -52,14 +48,13 @@ export const PapelitoCaseCard: React.FC<PapelitoCaseCardProps> = ({ onLaunchGame
               <span><strong className="text-white font-mono">Sync:</strong> Firestore Realtime</span>
             </div>
 
-            <button
-              type="button"
-              onClick={onLaunchGame}
+            <a
+              href="/game.html"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-sans text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 shadow-md shadow-indigo-900/30 cursor-pointer"
             >
               <span>Launch Live Demo</span>
               <span className="material-symbols-outlined text-sm font-bold">arrow_forward</span>
-            </button>
+            </a>
           </div>
         </div>
       </div>
