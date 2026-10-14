@@ -1,0 +1,83 @@
+// Word banks for Código Secreto — Spanish & English
+export const CS_WORDS_ES: string[] = [
+  // Lugares & Entornos
+  "PLAYA", "MONTAÑA", "DESIERTO", "SELVA", "CIUDAD", "PUEBLO", "BOSQUE",
+  "AEROPUERTO", "HOSPITAL", "MERCADO", "TEMPLO", "CASTILLO", "CUEVA", "HOTEL",
+  "RÍO", "VOLCÁN", "ISLA", "LUNA", "MARTE", "COSMOS", "PUERTO", "ESTACIÓN",
+  "PARÍS", "TOKIO", "ROMA", "EGIPTO", "LONDRES", "ALASKA", "BERLÍN", "CARIBE",
+  "BIBLIOTECA", "MUSEO", "TEATRO", "CINE", "BANCO", "LABORATORIO", "GRANJA",
+
+  // Profesiones & Roles
+  "ESPÍA", "DOCTOR", "PILOTO", "CHEF", "MAESTRO", "DETECTIVE", "JUEZ",
+  "ASTRONAUTA", "BOMBERO", "MAGO", "ÁRBITRO", "PIRATA", "NINJA", "REY",
+  "AGENTE", "CIENTÍFICO", "ARTISTA", "CANTANTE", "SOLDADO", "POLICÍA",
+  "ARQUITECTO", "FOTÓGRAFO", "MARINERO", "BUZO", "EMBAJADOR", "REINA",
+
+  // Animales & Naturaleza
+  "TIGRE", "BALLENA", "ÁGUILA", "SERPIENTE", "LOBO", "ZORRO", "LEÓN",
+  "COCODRILO", "PANTERA", "PULPO", "CUERVO", "DELFÍN", "CABALLO", "OSO",
+  "MURCIÉLAGO", "ESCORPIÓN", "FLAMENCO", "HALCÓN", "TIBURÓN", "PINGÜINO",
+  "DINOSAURIO", "CAMALEÓN", "ELEFANTE", "JIRAFA", "CANGURO", "ARAÑA",
+
+  // Objetos & Artefactos
+  "LLAVE", "ESPEJO", "MAPA", "BRÚJULA", "TELESCOPIO", "RELOJ", "DIAMANTE",
+  "LINTERNA", "ANCLA", "CORONA", "MÁSCARA", "ESCUDO", "ESPADA", "PISTOLA",
+  "CÁMARA", "CÓDIGO", "SELLO", "MALETÍN", "ANTENA", "BATERÍA", "RADIO",
+  "LIBRO", "GUITARRA", "TELÉFONO", "MONEDA", "CAMPANA", "BOTELLA", "VELA",
+  "TREN", "SUBMARINO", "COHETE", "HELICÓPTERO", "BICICLETA", "BARCO",
+
+  // Comida & Bebida
+  "MANGO", "CHOCOLATE", "CACAO", "VINO", "LIMÓN", "CAFÉ", "QUESO",
+  "MANZANA", "PAN", "PIZZA", "SUSHI", "MIEL", "TÉ", "VAINILLA", "SAL",
+
+  // Conceptos, Elementos & Acciones
+  "SOMBRA", "SECRETO", "SILENCIO", "PELIGRO", "TRAMPA", "MISIÓN", "DESTINO",
+  "SEÑAL", "BASE", "FUEGO", "HIELO", "VIENTO", "TRUENO", "NIEVE", "LUZ",
+  "ORO", "PLATA", "HIERRO", "CRISTAL", "VENENO", "IMÁN", "LÁSER", "ENERGÍA",
+  "NOCHE", "SUEÑO", "TIEMPO", "CORAZÓN", "SUERTE", "FIESTA", "REVOLUCIÓN"
+];
+
+export const CS_WORDS_EN: string[] = [
+  // Places & Environments
+  "BEACH", "MOUNTAIN", "DESERT", "JUNGLE", "CITY", "TOWN", "FOREST",
+  "AIRPORT", "HOSPITAL", "MARKET", "TEMPLE", "CASTLE", "CAVE", "HOTEL",
+  "RIVER", "VOLCANO", "ISLAND", "MOON", "MARS", "SPACE", "PORT", "STATION",
+  "PARIS", "TOKYO", "ROME", "EGYPT", "LONDON", "ALASKA", "BERLIN", "CARIBBEAN",
+  "LIBRARY", "MUSEUM", "THEATER", "CINEMA", "BANK", "LAB", "FARM",
+
+  // Roles & Characters
+  "SPY", "DOCTOR", "PILOT", "CHEF", "TEACHER", "DETECTIVE", "JUDGE",
+  "ASTRONAUT", "FIREFIGHTER", "WIZARD", "REFEREE", "PIRATE", "NINJA", "KING",
+  "AGENT", "SCIENTIST", "ARTIST", "SINGER", "SOLDIER", "POLICE",
+  "ARCHITECT", "PHOTOGRAPHER", "SAILOR", "DIVER", "AMBASSADOR", "QUEEN",
+
+  // Animals & Wildlife
+  "TIGER", "WHALE", "EAGLE", "SNAKE", "WOLF", "FOX", "LION",
+  "CROCODILE", "PANTHER", "OCTOPUS", "CROW", "DOLPHIN", "HORSE", "BEAR",
+  "BAT", "SCORPION", "FLAMINGO", "HAWK", "SHARK", "PENGUIN",
+  "DINOSAUR", "CHAMELEON", "ELEPHANT", "GIRAFFE", "KANGAROO", "SPIDER",
+
+  // Items & Objects
+  "KEY", "MIRROR", "MAP", "COMPASS", "TELESCOPE", "WATCH", "DIAMOND",
+  "FLASHLIGHT", "ANCHOR", "CROWN", "MASK", "SHIELD", "SWORD", "GUN",
+  "CAMERA", "CODE", "STAMP", "BRIEFCASE", "ANTENNA", "BATTERY", "RADIO",
+  "BOOK", "GUITAR", "PHONE", "COIN", "BELL", "BOTTLE", "CANDLE",
+  "TRAIN", "SUBMARINE", "ROCKET", "HELICOPTER", "BICYCLE", "SHIP",
+
+  // Food & Drinks
+  "MANGO", "CHOCOLATE", "COCOA", "WINE", "LEMON", "COFFEE", "CHEESE",
+  "APPLE", "BREAD", "PIZZA", "SUSHI", "HONEY", "TEA", "VANILLA", "SALT",
+
+  // Concepts & Elements
+  "SHADOW", "SECRET", "SILENCE", "DANGER", "TRAP", "MISSION", "DESTINY",
+  "SIGNAL", "BASE", "FIRE", "ICE", "WIND", "THUNDER", "SNOW", "LIGHT",
+  "GOLD", "SILVER", "IRON", "CRYSTAL", "POISON", "MAGNET", "LASER", "ENERGY",
+  "NIGHT", "DREAM", "TIME", "HEART", "LUCK", "PARTY", "GHOST"
+];
+
+// Deduplication
+const dedup = (arr: string[]) => Array.from(new Set(arr));
+export const CS_WORDS_ES_CLEAN = dedup(CS_WORDS_ES);
+export const CS_WORDS_EN_CLEAN = dedup(CS_WORDS_EN);
+// Backward compatibility
+export const CS_WORDS = CS_WORDS_ES_CLEAN;

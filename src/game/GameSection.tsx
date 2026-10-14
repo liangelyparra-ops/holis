@@ -15,11 +15,18 @@ import {
   HelpCircle,
   X,
   Settings,
-  Shuffle
+  Shuffle,
+  Eye,
+  EyeOff,
+  Shield,
+  Swords,
+  SkipForward,
+  Globe
 } from 'lucide-react';
 import { doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { Toaster, toast } from 'sonner';
-import { Player, GameCard, GameState, DEFAULT_CARDS } from '../types';
+import { Player, GameCard, GameState, DEFAULT_CARDS, CodigoSecretoCell, CodigoSecretoState } from '../types';
+import { CS_WORDS_ES_CLEAN, CS_WORDS_EN_CLEAN } from '../data/codigoSecretoWords';
 import { db } from '../firebase';
 
 const USER_ID_KEY = 'party-game-user-id-v2';
@@ -116,6 +123,10 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [showPlayersList, setShowPlayersList] = useState<boolean>(false);
   const [showInstructions, setShowInstructions] = useState<boolean>(false);
+  // Código Secreto local state
+  const [csClueWord, setCsClueWord] = useState<string>('');
+  const [csClueNumber, setCsClueNumber] = useState<number>(2);
+  const [csShowSpymasterView, setCsShowSpymasterView] = useState<boolean>(true);
 
   const soundCacheRef = useRef<Record<string, HTMLAudioElement>>({});
   const lastPlayedSoundRef = useRef<string | null>(null);
@@ -243,9 +254,10 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
     return () => unsubscribe();
   }, [isConnected, userId, GAME_ID, onPlayerJoin]);
 
-  // Timer Manager (Client-side sync handle)
+  // Timer Manager (Client-side sync handle) — disabled for Código Secreto
   useEffect(() => {
     if (gameState.status !== 'GAME' || !userId || gameState.isShowingWinner) return;
+    if (gameState.mode === 'CODIGO_SECRETO') return; // CS manages its own flow
 
     const isHost = gameState.players[0]?.id === userId;
     if (!isHost) return;
@@ -341,16 +353,35 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
     window.location.reload();
   };
 
-  const updateMode = async (mode: 'PAPELITO' | 'HOLIS') => {
+  const updateMode = async (mode: 'PAPELITO' | 'HOLIS' | 'CODIGO_SECRETO') => {
     const updates: Partial<GameState> = { mode };
-    if (mode !== 'PAPELITO') {
-      updates.cards = shuffleArray(DEFAULT_CARDS);
-    } else {
+    if (mode === 'PAPELITO') {
       updates.cards = [];
       updates.currentRound = 1;
       updates.papelitosPerPlayer = 2;
       updates.papelitoTheme = 'free';
       updates.papelitoCustomTheme = '';
+      updates.codigoSecreto = undefined;
+    } else if (mode === 'CODIGO_SECRETO') {
+      updates.cards = [];
+      updates.codigoSecreto = {
+        board: [],
+        teamRed: [],
+        teamBlue: [],
+        spymasterRed: null,
+        spymasterBlue: null,
+        currentTeam: 'RED',
+        clueWord: null,
+        clueNumber: null,
+        guessesLeft: 0,
+        winner: null,
+        wordsLeft: { red: 9, blue: 8 },
+        phase: 'TEAM_SELECT',
+        language: 'es',
+      };
+    } else {
+      updates.cards = shuffleArray(DEFAULT_CARDS);
+      updates.codigoSecreto = undefined;
     }
     const gameRef = doc(db, 'games', GAME_ID);
     try {
@@ -359,6 +390,246 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
       handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
     }
   };
+
+  // ─── Código Secreto helpers ───────────────────────────────────────
+  function buildCsBoard(lang: 'es' | 'en' = 'es'): CodigoSecretoCell[] {
+    const wordPool = lang === 'en' ? CS_WORDS_EN_CLEAN : CS_WORDS_ES_CLEAN;
+    const words = shuffleArray([...wordPool]).slice(0, 25);
+    const colorPool: Array<CodigoSecretoCell['color']> = [
+      ...Array(9).fill('RED' as const),
+      ...Array(8).fill('BLUE' as const),
+      ...Array(7).fill('NEUTRAL' as const),
+      'ASSASSIN' as const,
+    ];
+    const colors = shuffleArray(colorPool);
+    return words.map((word, i) => ({ word, color: colors[i], revealed: false }));
+  }
+
+  const updateCsLanguage = async (language: 'es' | 'en') => {
+    if (!gameState.codigoSecreto) return;
+    try {
+      await updateDoc(doc(db, 'games', GAME_ID), {
+        'codigoSecreto.language': language,
+      });
+    } catch (err) { handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`); }
+  };
+
+  const randomizeCsTeams = async () => {
+    if (!gameState.codigoSecreto || gameState.players.length === 0) return;
+    const cs = gameState.codigoSecreto;
+    const shuffled = shuffleArray([...gameState.players]);
+    const teamRed: string[] = [];
+    const teamBlue: string[] = [];
+    shuffled.forEach((p, idx) => {
+      if (idx % 2 === 0) teamRed.push(p.id);
+      else teamBlue.push(p.id);
+    });
+    const spymasterRed = (cs.spymasterRed && teamRed.includes(cs.spymasterRed))
+      ? cs.spymasterRed
+      : (teamRed[0] || null);
+    const spymasterBlue = (cs.spymasterBlue && teamBlue.includes(cs.spymasterBlue))
+      ? cs.spymasterBlue
+      : (teamBlue[0] || null);
+
+    try {
+      await updateDoc(doc(db, 'games', GAME_ID), {
+        'codigoSecreto.teamRed': teamRed,
+        'codigoSecreto.teamBlue': teamBlue,
+        'codigoSecreto.spymasterRed': spymasterRed,
+        'codigoSecreto.spymasterBlue': spymasterBlue,
+      });
+      toast.success("¡Equipos repartidos al azar!");
+    } catch (err) { handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`); }
+  };
+
+  const joinCsTeam = async (team: 'RED' | 'BLUE') => {
+    if (!userId || !gameState.codigoSecreto) return;
+    const cs = gameState.codigoSecreto;
+    const newTeamRed = team === 'RED'
+      ? [...new Set([...cs.teamRed, userId])]
+      : cs.teamRed.filter(id => id !== userId);
+    const newTeamBlue = team === 'BLUE'
+      ? [...new Set([...cs.teamBlue, userId])]
+      : cs.teamBlue.filter(id => id !== userId);
+    const spymasterRed = cs.spymasterRed === userId && team === 'BLUE' ? null : cs.spymasterRed;
+    const spymasterBlue = cs.spymasterBlue === userId && team === 'RED' ? null : cs.spymasterBlue;
+    try {
+      await updateDoc(doc(db, 'games', GAME_ID), {
+        codigoSecreto: { ...cs, teamRed: newTeamRed, teamBlue: newTeamBlue, spymasterRed, spymasterBlue },
+      });
+    } catch (err) { handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`); }
+  };
+
+  const becomeCsSpymaster = async (team: 'RED' | 'BLUE') => {
+    if (!userId || !gameState.codigoSecreto) return;
+    const cs = gameState.codigoSecreto;
+    const myTeam = cs.teamRed.includes(userId) ? 'RED' : cs.teamBlue.includes(userId) ? 'BLUE' : null;
+    if (myTeam !== team) { toast.error('Únete al equipo primero'); return; }
+    try {
+      await updateDoc(doc(db, 'games', GAME_ID), {
+        codigoSecreto: {
+          ...cs,
+          spymasterRed: team === 'RED' ? userId : cs.spymasterRed,
+          spymasterBlue: team === 'BLUE' ? userId : cs.spymasterBlue,
+        },
+      });
+    } catch (err) { handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`); }
+  };
+
+  const submitCsClue = async () => {
+    if (!userId || !gameState.codigoSecreto || !csClueWord.trim()) return;
+    const cs = gameState.codigoSecreto;
+    const isSpymasterRed = cs.spymasterRed === userId && cs.currentTeam === 'RED';
+    const isSpymasterBlue = cs.spymasterBlue === userId && cs.currentTeam === 'BLUE';
+    if ((!isSpymasterRed && !isSpymasterBlue) || cs.phase !== 'SPYMASTER_CLUE') return;
+    try {
+      await updateDoc(doc(db, 'games', GAME_ID), {
+        codigoSecreto: {
+          ...cs,
+          clueWord: csClueWord.trim().toUpperCase(),
+          clueNumber: csClueNumber,
+          guessesLeft: csClueNumber + 1,
+          phase: 'TEAM_GUESS',
+        },
+      });
+      setCsClueWord('');
+    } catch (err) { handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`); }
+  };
+
+  const revealCsCell = async (cellIndex: number) => {
+    if (!userId || !gameState.codigoSecreto) return;
+    const cs = gameState.codigoSecreto;
+    if (cs.phase !== 'TEAM_GUESS') return;
+    if (cs.board[cellIndex].revealed) return;
+    const myTeam = cs.teamRed.includes(userId) ? 'RED' : cs.teamBlue.includes(userId) ? 'BLUE' : null;
+    const isSpymaster = userId === cs.spymasterRed || userId === cs.spymasterBlue;
+    const teamMembers = cs.currentTeam === 'RED' ? cs.teamRed : cs.teamBlue;
+    if (myTeam !== cs.currentTeam) return;
+    // Spymasters cannot guess if their team has 2+ members; solo players can test/guess
+    if (isSpymaster && teamMembers.length > 1) return;
+
+    const newBoard = cs.board.map((c, i) => i === cellIndex ? { ...c, revealed: true } : c);
+    const cell = cs.board[cellIndex];
+    let phase = cs.phase;
+    let currentTeam = cs.currentTeam;
+    let wordsLeft = { ...cs.wordsLeft };
+    let winner = cs.winner;
+    let winnerReason: 'CARDS' | 'ASSASSIN' | undefined = undefined;
+    let guessesLeft = cs.guessesLeft - 1;
+
+    if (cell.color === 'ASSASSIN') {
+      winner = cs.currentTeam === 'RED' ? 'BLUE' : 'RED';
+      winnerReason = 'ASSASSIN';
+      phase = 'GAME_OVER';
+    } else if (cell.color === cs.currentTeam) {
+      wordsLeft[cs.currentTeam === 'RED' ? 'red' : 'blue']--;
+      if (wordsLeft[cs.currentTeam === 'RED' ? 'red' : 'blue'] <= 0) {
+        winner = cs.currentTeam;
+        winnerReason = 'CARDS';
+        phase = 'GAME_OVER';
+      } else if (guessesLeft <= 0) {
+        phase = 'SPYMASTER_CLUE';
+        currentTeam = cs.currentTeam === 'RED' ? 'BLUE' : 'RED';
+      }
+      // else stay in TEAM_GUESS with remaining guesses
+    } else {
+      if (cell.color === 'RED') wordsLeft.red--;
+      else if (cell.color === 'BLUE') wordsLeft.blue--;
+      const otherTeam = cs.currentTeam === 'RED' ? 'BLUE' : 'RED';
+      if ((cell.color === 'RED' && wordsLeft.red <= 0) || (cell.color === 'BLUE' && wordsLeft.blue <= 0)) {
+        winner = cell.color as 'RED' | 'BLUE';
+        winnerReason = 'CARDS';
+        phase = 'GAME_OVER';
+      } else {
+        phase = 'SPYMASTER_CLUE';
+        currentTeam = otherTeam;
+      }
+    }
+
+    const csUpdate: CodigoSecretoState = {
+      ...cs, board: newBoard, phase, currentTeam, wordsLeft, winner, winnerReason, guessesLeft,
+      ...(phase !== 'TEAM_GUESS' ? { clueWord: null, clueNumber: null } : {}),
+    };
+
+    try {
+      await updateDoc(doc(db, 'games', GAME_ID), {
+        codigoSecreto: csUpdate,
+        ...(phase === 'GAME_OVER' ? { status: 'RESULTS' } : {}),
+      });
+    } catch (err) { handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`); }
+  };
+
+  const endCsTurn = async () => {
+    if (!userId || !gameState.codigoSecreto) return;
+    const cs = gameState.codigoSecreto;
+    if (cs.phase !== 'TEAM_GUESS') return;
+    const myTeam = cs.teamRed.includes(userId) ? 'RED' : cs.teamBlue.includes(userId) ? 'BLUE' : null;
+    if (myTeam !== cs.currentTeam) return;
+    const nextTeam = cs.currentTeam === 'RED' ? 'BLUE' : 'RED';
+    try {
+      await updateDoc(doc(db, 'games', GAME_ID), {
+        codigoSecreto: {
+          ...cs,
+          currentTeam: nextTeam,
+          phase: 'SPYMASTER_CLUE',
+          clueWord: null,
+          clueNumber: null,
+          guessesLeft: 0,
+        },
+      });
+    } catch (err) { handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`); }
+  };
+
+  const restartCsGame = async () => {
+    const gameRef = doc(db, 'games', GAME_ID);
+    const cs = gameState.codigoSecreto;
+    if (!cs) return;
+    const lang = cs.language || 'es';
+    const board = buildCsBoard(lang);
+    const wordsLeft = {
+      red: board.filter(c => c.color === 'RED').length,
+      blue: board.filter(c => c.color === 'BLUE').length,
+    };
+    try {
+      await updateDoc(gameRef, {
+        status: 'GAME',
+        codigoSecreto: {
+          ...cs,
+          board,
+          wordsLeft,
+          currentTeam: 'RED',
+          phase: 'SPYMASTER_CLUE',
+          clueWord: null,
+          clueNumber: null,
+          guessesLeft: 0,
+          winner: null,
+          winnerReason: undefined,
+        },
+      });
+      playSound(SOUNDS.START);
+    } catch (err) { handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`); }
+  };
+
+  const exitCsToLobby = async () => {
+    const gameRef = doc(db, 'games', GAME_ID);
+    const cs = gameState.codigoSecreto;
+    try {
+      await updateDoc(gameRef, {
+        status: 'LOBBY',
+        codigoSecreto: cs ? {
+          ...cs,
+          board: [],
+          phase: 'TEAM_SELECT',
+          clueWord: null,
+          clueNumber: null,
+          guessesLeft: 0,
+          winner: null,
+          winnerReason: undefined,
+        } : undefined,
+      });
+    } catch (err) { handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`); }
+  };
+  // ─── End Código Secreto helpers ────────────────────────────────────
 
   const updatePapelitoSettings = async (settings: Partial<GameState>) => {
     const gameRef = doc(db, 'games', GAME_ID);
@@ -447,6 +718,50 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
 
   const startGame = async () => {
     const gameRef = doc(db, 'games', GAME_ID);
+
+    // Código Secreto start
+    if (gameState.mode === 'CODIGO_SECRETO') {
+      const cs = gameState.codigoSecreto;
+      if (!cs) return;
+      if (cs.teamRed.length < 1 || cs.teamBlue.length < 1) {
+        toast.error('¡Ambos equipos necesitan al menos 1 jugador!');
+        return;
+      }
+      const spymasterRed = (cs.spymasterRed && cs.teamRed.includes(cs.spymasterRed))
+        ? cs.spymasterRed
+        : cs.teamRed[0];
+      const spymasterBlue = (cs.spymasterBlue && cs.teamBlue.includes(cs.spymasterBlue))
+        ? cs.spymasterBlue
+        : cs.teamBlue[0];
+
+      const lang = cs.language || 'es';
+      const board = buildCsBoard(lang);
+      const wordsLeft = {
+        red: board.filter(c => c.color === 'RED').length,
+        blue: board.filter(c => c.color === 'BLUE').length,
+      };
+      try {
+        await updateDoc(gameRef, {
+          status: 'GAME',
+          codigoSecreto: {
+            ...cs,
+            spymasterRed,
+            spymasterBlue,
+            board,
+            wordsLeft,
+            currentTeam: 'RED',
+            phase: 'SPYMASTER_CLUE',
+            clueWord: null,
+            clueNumber: null,
+            guessesLeft: 0,
+            winner: null,
+            winnerReason: undefined,
+          },
+        });
+        playSound(SOUNDS.START);
+      } catch (err) { handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`); }
+      return;
+    }
     
     let gameCards: GameCard[] = [];
     if (gameState.mode === 'PAPELITO') {
@@ -733,6 +1048,13 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
           <div className="bg-[#3C48C3]/10 px-4 py-1 rounded-full border border-[#3C48C3]/20 flex items-center gap-2">
             <span className="text-[10px] font-black uppercase tracking-widest text-[#3C48C3]">Waiting for Players</span>
             <button 
+              onClick={() => setShowInstructions(true)}
+              className="p-1 hover:bg-[#3C48C3]/20 rounded-full transition-all text-[#3C48C3]"
+              title="Reglas del juego"
+            >
+              <HelpCircle size={14} />
+            </button>
+            <button 
               onClick={resetGame}
               className="p-1 hover:bg-[#3C48C3]/20 rounded-full transition-all text-[#3C48C3]"
               title="Reset Room"
@@ -746,7 +1068,7 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
           <div className="space-y-4">
             <div className="bg-[#111113] p-6 rounded-[2rem] border border-neutral-800 shadow-xl space-y-4">
               <h3 className="text-[10px] font-black uppercase tracking-widest text-[#3C48C3]">Game Mode</h3>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <button 
                   onClick={() => updateMode('PAPELITO')}
                   className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'PAPELITO' ? 'bg-emerald-500/10 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-neutral-900 border-neutral-800 opacity-60'}`}
@@ -760,6 +1082,13 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
                 >
                   <Flame size={20} className={gameState.mode === 'HOLIS' ? 'text-[#3C48C3]' : 'text-neutral-400'} />
                   <span className="text-[8px] font-black uppercase tracking-widest text-white">Holis</span>
+                </button>
+                <button 
+                  onClick={() => updateMode('CODIGO_SECRETO')}
+                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'CODIGO_SECRETO' ? 'bg-amber-500/10 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.3)]' : 'bg-neutral-900 border-neutral-800 opacity-60'}`}
+                >
+                  <Shield size={20} className={gameState.mode === 'CODIGO_SECRETO' ? 'text-amber-500' : 'text-neutral-400'} />
+                  <span className="text-[8px] font-black uppercase tracking-widest text-white">Código</span>
                 </button>
               </div>
             </div>
@@ -884,7 +1213,200 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
               </div>
             )}
 
+            {gameState.mode === 'CODIGO_SECRETO' && gameState.codigoSecreto && (
+              <div className="space-y-4">
+                {/* Language Picker */}
+                <div className="bg-[#111113] p-4 rounded-[2rem] border border-neutral-800 shadow-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-amber-500 flex items-center gap-1.5">
+                      <Globe size={13} /> Idioma de las Palabras
+                    </span>
+                    <span className="text-[8px] font-mono text-neutral-500 font-bold uppercase">25 cartas</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => updateCsLanguage('es')}
+                      className={`py-2 px-3 rounded-xl border text-xs font-headline font-black flex items-center justify-center gap-2 transition-all ${
+                        gameState.codigoSecreto.language !== 'en'
+                          ? 'bg-amber-500/15 border-amber-500 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                          : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
+                      }`}
+                    >
+                      <span>🇪🇸 Español</span>
+                    </button>
+                    <button
+                      onClick={() => updateCsLanguage('en')}
+                      className={`py-2 px-3 rounded-xl border text-xs font-headline font-black flex items-center justify-center gap-2 transition-all ${
+                        gameState.codigoSecreto.language === 'en'
+                          ? 'bg-amber-500/15 border-amber-500 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                          : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
+                      }`}
+                    >
+                      <span>🇺🇸 English</span>
+                    </button>
+                  </div>
+                </div>
 
+                {/* Team Selection Panel */}
+                <div className="bg-[#111113] p-4 rounded-[2rem] border border-neutral-800 shadow-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-[9px] font-black uppercase tracking-widest text-amber-500 flex items-center gap-1.5">
+                      <Swords size={13} /> Elige tu Equipo
+                    </h3>
+                    {myPlayer?.isHost && (
+                      <button
+                        onClick={randomizeCsTeams}
+                        className="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full text-[8px] font-headline font-black uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer"
+                        title="Repartir jugadores al azar entre rojo y azul"
+                      >
+                        <Shuffle size={10} /> Repartir azar
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {/* RED TEAM */}
+                    <div className={`p-3 rounded-2xl border transition-all ${
+                      gameState.codigoSecreto.teamRed.includes(userId || '')
+                        ? 'bg-red-500/10 border-red-500'
+                        : 'bg-neutral-900/60 border-neutral-800'
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-headline font-black text-xs uppercase text-red-400 flex items-center gap-1.5">
+                          🔴 Equipo Rojo
+                        </span>
+                        <span className="text-[8px] font-black px-2 py-0.5 rounded-full bg-red-500/20 text-red-300">
+                          {gameState.codigoSecreto.teamRed.length} {gameState.codigoSecreto.teamRed.length === 1 ? 'jugador' : 'jugadores'}
+                        </span>
+                      </div>
+
+                      <div className="flex gap-2 mb-2">
+                        <button
+                          onClick={() => joinCsTeam('RED')}
+                          disabled={gameState.codigoSecreto.teamRed.includes(userId || '')}
+                          className={`flex-1 py-1.5 rounded-xl font-headline font-black text-[9px] uppercase transition-all ${
+                            gameState.codigoSecreto.teamRed.includes(userId || '')
+                              ? 'bg-red-500/20 text-red-300 border border-red-500/40 cursor-default'
+                              : 'bg-red-600 hover:bg-red-500 text-white active:scale-95 cursor-pointer shadow-md'
+                          }`}
+                        >
+                          {gameState.codigoSecreto.teamRed.includes(userId || '') ? '✓ En el Rojo' : 'Unirme al Rojo'}
+                        </button>
+                        {gameState.codigoSecreto.teamRed.includes(userId || '') && (
+                          <button
+                            onClick={() => becomeCsSpymaster('RED')}
+                            disabled={gameState.codigoSecreto.spymasterRed === userId}
+                            className={`px-3 py-1.5 rounded-xl text-[8px] font-headline font-black uppercase tracking-wider transition-all border ${
+                              gameState.codigoSecreto.spymasterRed === userId
+                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
+                                : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border-neutral-700'
+                            }`}
+                          >
+                            {gameState.codigoSecreto.spymasterRed === userId ? '👑 Eres Jefe' : 'Ser Jefe 🕵️'}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Red members list */}
+                      <div className="flex flex-wrap gap-1.5">
+                        {gameState.codigoSecreto.teamRed.map(pid => {
+                          const p = gameState.players.find(pl => pl.id === pid);
+                          if (!p) return null;
+                          const isSpy = gameState.codigoSecreto?.spymasterRed === pid;
+                          return (
+                            <div key={pid} className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-neutral-900 border border-neutral-800 text-[9px]">
+                              <img src={p.avatar} alt={p.name} className="w-4 h-4 rounded-full" />
+                              <span className="text-white font-bold truncate max-w-[80px]">{p.name}</span>
+                              {isSpy && (
+                                <span className="text-[7px] font-black uppercase px-1 rounded bg-amber-500/20 text-amber-400">
+                                  JEFE
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* BLUE TEAM */}
+                    <div className={`p-3 rounded-2xl border transition-all ${
+                      gameState.codigoSecreto.teamBlue.includes(userId || '')
+                        ? 'bg-blue-500/10 border-blue-500'
+                        : 'bg-neutral-900/60 border-neutral-800'
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-headline font-black text-xs uppercase text-blue-400 flex items-center gap-1.5">
+                          🔵 Equipo Azul
+                        </span>
+                        <span className="text-[8px] font-black px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300">
+                          {gameState.codigoSecreto.teamBlue.length} {gameState.codigoSecreto.teamBlue.length === 1 ? 'jugador' : 'jugadores'}
+                        </span>
+                      </div>
+
+                      <div className="flex gap-2 mb-2">
+                        <button
+                          onClick={() => joinCsTeam('BLUE')}
+                          disabled={gameState.codigoSecreto.teamBlue.includes(userId || '')}
+                          className={`flex-1 py-1.5 rounded-xl font-headline font-black text-[9px] uppercase transition-all ${
+                            gameState.codigoSecreto.teamBlue.includes(userId || '')
+                              ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40 cursor-default'
+                              : 'bg-blue-600 hover:bg-blue-500 text-white active:scale-95 cursor-pointer shadow-md'
+                          }`}
+                        >
+                          {gameState.codigoSecreto.teamBlue.includes(userId || '') ? '✓ En el Azul' : 'Unirme al Azul'}
+                        </button>
+                        {gameState.codigoSecreto.teamBlue.includes(userId || '') && (
+                          <button
+                            onClick={() => becomeCsSpymaster('BLUE')}
+                            disabled={gameState.codigoSecreto.spymasterBlue === userId}
+                            className={`px-3 py-1.5 rounded-xl text-[8px] font-headline font-black uppercase tracking-wider transition-all border ${
+                              gameState.codigoSecreto.spymasterBlue === userId
+                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
+                                : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border-neutral-700'
+                            }`}
+                          >
+                            {gameState.codigoSecreto.spymasterBlue === userId ? '👑 Eres Jefe' : 'Ser Jefe 🕵️'}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Blue members list */}
+                      <div className="flex flex-wrap gap-1.5">
+                        {gameState.codigoSecreto.teamBlue.map(pid => {
+                          const p = gameState.players.find(pl => pl.id === pid);
+                          if (!p) return null;
+                          const isSpy = gameState.codigoSecreto?.spymasterBlue === pid;
+                          return (
+                            <div key={pid} className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-neutral-900 border border-neutral-800 text-[9px]">
+                              <img src={p.avatar} alt={p.name} className="w-4 h-4 rounded-full" />
+                              <span className="text-white font-bold truncate max-w-[80px]">{p.name}</span>
+                              {isSpy && (
+                                <span className="text-[7px] font-black uppercase px-1 rounded bg-amber-500/20 text-amber-400">
+                                  JEFE
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Unassigned pill */}
+                  {(() => {
+                    const unassigned = gameState.players.filter(
+                      p => !gameState.codigoSecreto?.teamRed.includes(p.id) && !gameState.codigoSecreto?.teamBlue.includes(p.id)
+                    );
+                    if (unassigned.length === 0) return null;
+                    return (
+                      <div className="text-center py-1.5 px-3 rounded-xl bg-neutral-900/50 border border-neutral-800 text-[8px] text-neutral-400">
+                        Pendientes de equipo: {unassigned.map(u => u.name).join(', ')}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4 flex flex-col justify-between">
@@ -917,6 +1439,18 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
                           : 'bg-neutral-800 text-neutral-500'
                       }`}>
                         {(p.papelitos?.length || 0)} / {(gameState.papelitosPerPlayer || 1)} READY
+                      </span>
+                    )}
+                    {gameState.mode === 'CODIGO_SECRETO' && gameState.codigoSecreto && (
+                      <span className={`text-[8px] font-headline font-black px-2.5 py-1 rounded-full border ${
+                        gameState.codigoSecreto.teamRed.includes(p.id)
+                          ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                          : gameState.codigoSecreto.teamBlue.includes(p.id)
+                            ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                            : 'bg-neutral-800 text-neutral-500 border-neutral-700'
+                      }`}>
+                        {gameState.codigoSecreto.teamRed.includes(p.id) ? '🔴 ROJO' :
+                         gameState.codigoSecreto.teamBlue.includes(p.id) ? '🔵 AZUL' : 'SIN EQUIPO'}
                       </span>
                     )}
                   </motion.div>
@@ -952,7 +1486,212 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
     );
   };
 
+  // ─── renderCodigoSecreto ────────────────────────────────────────────
+  const renderCodigoSecreto = () => {
+    const cs = gameState.codigoSecreto;
+    if (!cs || !cs.board.length) return null;
+
+    const myTeam = cs.teamRed.includes(userId || '') ? 'RED' : cs.teamBlue.includes(userId || '') ? 'BLUE' : null;
+    const isMySpymaster = userId === cs.spymasterRed || userId === cs.spymasterBlue;
+    const isMyTurn = myTeam === cs.currentTeam;
+    const teamMembers = cs.currentTeam === 'RED' ? cs.teamRed : cs.teamBlue;
+    const canReveal = isMyTurn && (teamMembers.length === 1 || !isMySpymaster) && cs.phase === 'TEAM_GUESS';
+    const isMySpymasterTurn = isMySpymaster && isMyTurn && cs.phase === 'SPYMASTER_CLUE';
+    const canEndTurn = isMyTurn && (teamMembers.length === 1 || !isMySpymaster) && cs.phase === 'TEAM_GUESS';
+
+    const teamColor = { RED: 'text-red-400', BLUE: 'text-blue-400' };
+    const teamBg = { RED: 'bg-red-500/10 border-red-500', BLUE: 'bg-blue-500/10 border-blue-500' };
+    const teamGlow = { RED: 'shadow-[0_0_30px_rgba(239,68,68,0.2)]', BLUE: 'shadow-[0_0_30px_rgba(59,130,246,0.2)]' };
+
+    const cellColor = (cell: { color: string; revealed: boolean }, showColor: boolean) => {
+      const c = cell.color;
+      if (cell.revealed) {
+        if (c === 'RED') return 'bg-red-600 border-red-500 text-white font-black shadow-lg';
+        if (c === 'BLUE') return 'bg-blue-600 border-blue-500 text-white font-black shadow-lg';
+        if (c === 'ASSASSIN') return 'bg-black border-red-700 text-red-500 font-bold shadow-[0_0_15px_rgba(239,68,68,0.3)]';
+        return 'bg-neutral-700 border-neutral-600 text-neutral-300';
+      }
+      if (showColor) {
+        if (c === 'RED') return 'bg-red-950/70 border-red-500/60 text-red-200 hover:border-red-400';
+        if (c === 'BLUE') return 'bg-blue-950/70 border-blue-500/60 text-blue-200 hover:border-blue-400';
+        if (c === 'ASSASSIN') return 'bg-neutral-950 border-neutral-600 text-neutral-400 hover:border-neutral-500';
+        return 'bg-neutral-900/60 border-neutral-700/50 text-neutral-400 hover:border-neutral-600';
+      }
+      return 'bg-neutral-900 border-neutral-800 hover:border-neutral-600 text-white hover:bg-neutral-850';
+    };
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-4xl p-2 sm:p-4 flex flex-col gap-3 items-center select-none"
+      >
+        {/* Header: teams + words left */}
+        <div className={`w-full flex items-center justify-between bg-[#111113] p-3 rounded-2xl border ${isMyTurn ? teamBg[cs.currentTeam] : 'border-neutral-800'} ${isMyTurn ? teamGlow[cs.currentTeam] : ''} transition-all`}>
+          <div className="flex items-center gap-2">
+            <Swords size={16} className={teamColor[cs.currentTeam]} />
+            <span className={`font-headline font-black text-xs uppercase ${teamColor[cs.currentTeam]}`}>
+              Turno: {cs.currentTeam === 'RED' ? 'Equipo Rojo' : 'Equipo Azul'}
+            </span>
+            {isMyTurn && <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-400 rounded text-[8px] font-black uppercase animate-pulse">TU TURNO</span>}
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-red-400 font-headline font-black text-xs">🔴 {cs.wordsLeft.red}</span>
+            <span className="text-blue-400 font-headline font-black text-xs">🔵 {cs.wordsLeft.blue}</span>
+          </div>
+        </div>
+
+        {/* Active clue or spymaster input */}
+        {cs.phase === 'SPYMASTER_CLUE' && isMySpymasterTurn && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full bg-[#111113] border border-amber-500/30 rounded-2xl p-4 space-y-3"
+          >
+            <p className="text-[9px] font-black uppercase tracking-widest text-amber-500 flex items-center gap-1.5">
+              <Eye size={12} /> Jefe de Espías — Da tu pista
+            </p>
+            <div className="flex gap-2 items-center">
+              <input
+                type="text"
+                value={csClueWord}
+                onChange={e => setCsClueWord(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && submitCsClue()}
+                placeholder="Una sola palabra..."
+                className="flex-1 bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm font-bold uppercase text-white focus:border-amber-500 outline-none transition-all"
+              />
+              <div className="flex gap-1">
+                {[1,2,3,4,5,6].map(n => (
+                  <button
+                    key={n}
+                    onClick={() => setCsClueNumber(n)}
+                    className={`w-7 h-7 rounded-lg text-xs font-black transition-all border ${
+                      csClueNumber === n ? 'bg-amber-500/20 border-amber-500 text-amber-400' : 'bg-neutral-900 border-neutral-700 text-neutral-400'
+                    }`}
+                  >{n}</button>
+                ))}
+              </div>
+              <button
+                onClick={submitCsClue}
+                disabled={!csClueWord.trim()}
+                className="px-4 py-2 bg-amber-500 hover:brightness-110 active:scale-95 text-black font-headline font-black text-xs uppercase rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Dar pista
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {cs.phase === 'SPYMASTER_CLUE' && !isMySpymasterTurn && (
+          <div className={`w-full text-center py-3 px-4 rounded-2xl bg-[#111113] border border-neutral-800`}>
+            <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+              Esperando pista del Jefe de Espías {cs.currentTeam === 'RED' ? '🔴' : '🔵'}...
+            </p>
+          </div>
+        )}
+
+        {cs.phase === 'TEAM_GUESS' && cs.clueWord && (
+          <div className={`w-full flex items-center justify-between py-3 px-4 rounded-2xl border ${
+            cs.currentTeam === 'RED' ? 'bg-red-500/5 border-red-500/30' : 'bg-blue-500/5 border-blue-500/30'
+          }`}>
+            <div>
+              <p className="text-[8px] font-black uppercase tracking-widest text-neutral-500">Pista activa</p>
+              <p className={`font-headline font-black text-2xl uppercase ${teamColor[cs.currentTeam]}`}>
+                {cs.clueWord}
+                <span className="ml-2 text-base text-neutral-400">· {cs.clueNumber}</span>
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-[8px] font-black uppercase tracking-widest text-neutral-500">Intentos</p>
+              <p className={`font-headline font-black text-xl ${teamColor[cs.currentTeam]}`}>{cs.guessesLeft}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Spymaster toggle */}
+        {isMySpymaster && (
+          <button
+            onClick={() => setCsShowSpymasterView(v => !v)}
+            className={`self-end flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase border transition-all ${
+              csShowSpymasterView ? 'bg-amber-500/20 border-amber-500 text-amber-400' : 'bg-neutral-900 border-neutral-700 text-neutral-400'
+            }`}
+          >
+            {csShowSpymasterView ? <Eye size={10} /> : <EyeOff size={10} />}
+            Vista Jefe de Espías
+          </button>
+        )}
+
+        {/* 5x5 Board */}
+        <div className="w-full grid grid-cols-5 gap-1.5 sm:gap-2">
+          {cs.board.map((cell, idx) => {
+            const showColor = isMySpymaster && csShowSpymasterView;
+            const revealed = cell.revealed;
+            const clickable = canReveal && !revealed;
+            return (
+              <motion.button
+                key={idx}
+                onClick={() => clickable && revealCsCell(idx)}
+                whileHover={clickable ? { scale: 1.04 } : {}}
+                whileTap={clickable ? { scale: 0.97 } : {}}
+                disabled={!clickable}
+                className={`relative rounded-xl border-2 py-3 sm:py-4 px-1 flex flex-col items-center justify-center gap-1 transition-all ${
+                  cellColor(cell, showColor)
+                } ${
+                  clickable ? 'cursor-pointer shadow-md' : 'cursor-default'
+                } ${
+                  revealed ? 'opacity-60' : ''
+                }`}
+              >
+                {revealed && cell.color === 'ASSASSIN' && (
+                  <span className="text-base">☠️</span>
+                )}
+                <span className={`font-headline font-black text-center leading-tight ${
+                  cell.word.length > 8 ? 'text-[7px] sm:text-[8px]' : 'text-[8px] sm:text-[9px]'
+                } uppercase tracking-tight`}>
+                  {cell.word}
+                </span>
+                {showColor && !revealed && (
+                  <span className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
+                    cell.color === 'RED' ? 'bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.8)]' :
+                    cell.color === 'BLUE' ? 'bg-blue-500 shadow-[0_0_6px_rgba(59,130,246,0.8)]' :
+                    cell.color === 'ASSASSIN' ? 'bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]' :
+                    'bg-neutral-500'
+                  }`} />
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* End turn button */}
+        {canEndTurn && (
+          <button
+            onClick={endCsTurn}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl border font-headline font-black text-xs uppercase transition-all ${
+              cs.currentTeam === 'RED'
+                ? 'bg-red-500/10 border-red-500/40 text-red-400 hover:bg-red-500/20'
+                : 'bg-blue-500/10 border-blue-500/40 text-blue-400 hover:bg-blue-500/20'
+            }`}
+          >
+            <SkipForward size={14} /> Pasar turno
+          </button>
+        )}
+
+        <button
+          onClick={resetGame}
+          className="py-2 px-5 bg-neutral-900 border border-neutral-800 text-neutral-500 hover:text-white rounded-xl text-[10px] font-headline font-black uppercase tracking-widest transition-all"
+        >
+          Salir
+        </button>
+      </motion.div>
+    );
+  };
+  // ─── End renderCodigoSecreto ───────────────────────────────────────
+
   const renderGame = () => {
+    // Dispatch to CS renderer
+    if (gameState.mode === 'CODIGO_SECRETO') return renderCodigoSecreto();
+
     const activeCard = gameState.cards[gameState.currentCardIndex];
     const activePlayer = gameState.players.find(p => p.id === gameState.currentTurnPlayerId);
     const isMyTurn = gameState.currentTurnPlayerId === userId;
@@ -1126,7 +1865,108 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
     );
   };
 
+  const renderCsResults = () => {
+    const cs = gameState.codigoSecreto;
+    if (!cs) return null;
+    const isRedWinner = cs.winner === 'RED';
+    const myPlayer = gameState.players.find(p => p.id === userId);
+    const isHost = myPlayer?.isHost;
+
+    const redPlayers = gameState.players.filter(p => cs.teamRed.includes(p.id));
+    const bluePlayers = gameState.players.filter(p => cs.teamBlue.includes(p.id));
+    const winningPlayers = isRedWinner ? redPlayers : bluePlayers;
+
+    return (
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="max-w-2xl w-full p-6 sm:p-8 bg-[#111113] rounded-[2.5rem] border-2 border-amber-500/30 shadow-[0_0_80px_rgba(245,158,11,0.15)] text-center space-y-6 sm:space-y-8"
+      >
+        <div className="space-y-3">
+          <Trophy size={64} className={`mx-auto drop-shadow-[0_0_25px_rgba(245,158,11,0.5)] ${isRedWinner ? 'text-red-500' : 'text-blue-500'}`} />
+          <h2 className="font-headline text-3xl sm:text-5xl font-black uppercase tracking-tighter text-white">
+            {isRedWinner ? '🔴 ¡EQUIPO ROJO GANÓ!' : '🔵 ¡EQUIPO AZUL GANÓ!'}
+          </h2>
+          <div className="inline-block px-4 py-1.5 rounded-full bg-neutral-900 border border-neutral-800 text-xs font-headline font-black uppercase tracking-wider text-neutral-300">
+            {cs.winnerReason === 'ASSASSIN'
+              ? '☠️ El equipo rival contactó al Asesino Secreto'
+              : '🎯 ¡Descubrieron todos los agentes de su equipo!'}
+          </div>
+        </div>
+
+        {/* Agentes de la victoria */}
+        <div className="space-y-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-amber-500">
+            Agentes Victoriosos
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            {winningPlayers.map(p => {
+              const isSpy = p.id === (isRedWinner ? cs.spymasterRed : cs.spymasterBlue);
+              return (
+                <div
+                  key={p.id}
+                  className={`p-3 rounded-2xl border flex items-center gap-2.5 ${
+                    isRedWinner ? 'bg-red-500/10 border-red-500/30' : 'bg-blue-500/10 border-blue-500/30'
+                  }`}
+                >
+                  <img src={p.avatar} alt={p.name} className="w-9 h-9 rounded-full border border-neutral-700" />
+                  <div className="text-left truncate">
+                    <p className="font-headline font-black text-xs text-white truncate">{p.name}</p>
+                    <p className="text-[8px] font-bold text-amber-400 uppercase tracking-tight">
+                      {isSpy ? '🕵️ Jefe de Espías' : 'Agente Operativo'}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Words remaining summary */}
+        <div className="flex items-center justify-center gap-6 py-3 px-4 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+          <div className="text-center">
+            <span className="text-[9px] font-black uppercase tracking-widest text-red-400 block">Rojo Restantes</span>
+            <span className="font-headline font-black text-xl text-white">{cs.wordsLeft.red}</span>
+          </div>
+          <div className="w-px h-8 bg-neutral-800" />
+          <div className="text-center">
+            <span className="text-[9px] font-black uppercase tracking-widest text-blue-400 block">Azul Restantes</span>
+            <span className="font-headline font-black text-xl text-white">{cs.wordsLeft.blue}</span>
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex flex-col gap-3 pt-2">
+          {isHost ? (
+            <>
+              <button 
+                onClick={restartCsGame}
+                className="w-full py-4 bg-amber-500 hover:brightness-110 active:scale-95 text-black font-headline font-black text-lg uppercase tracking-wider rounded-2xl shadow-lg transition-all cursor-pointer"
+              >
+                NUEVA PARTIDA 🚀
+              </button>
+              <button 
+                onClick={exitCsToLobby}
+                className="w-full py-3.5 bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white font-headline font-bold text-sm uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+              >
+                VOLVER AL LOBBY
+              </button>
+            </>
+          ) : (
+            <div className="w-full py-4 bg-neutral-900 border border-neutral-800 text-neutral-400 font-headline font-bold text-center text-sm rounded-2xl">
+              ESPERANDO QUE EL HOST REINICIE O VUELVA AL LOBBY...
+            </div>
+          )}
+        </div>
+      </motion.div>
+    );
+  };
+
   const renderResults = () => {
+    if (gameState.mode === 'CODIGO_SECRETO' && gameState.codigoSecreto) {
+      return renderCsResults();
+    }
+
     const sortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
 
     return (
@@ -1242,20 +2082,6 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
           </motion.div>
         </AnimatePresence>
 
-        {/* Footer info: How to play & Staging dev build */}
-        <div className="flex justify-between items-center w-full max-w-md px-4 pt-4 select-none">
-          <button 
-            onClick={() => setShowInstructions(true)}
-            className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-colors cursor-pointer"
-          >
-            <HelpCircle size={14} />
-            How to Play Papelito
-          </button>
-          <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-[#3C48C3]">
-            <Gamepad2 size={14} />
-            Staging Dev Build 1.0.4
-          </div>
-        </div>
       </div>
 
       {/* Instructions Modal Overlay */}
@@ -1283,61 +2109,117 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
               </button>
 
               <div className="space-y-6">
-                <div className="space-y-1.5 pr-8">
-                  <span className="font-sans text-[10px] font-black tracking-widest text-[#3C48C3] bg-[#3C48C3]/10 px-2.5 py-1 rounded-md uppercase">
-                    How to Play Papelito! 📝🎮
-                  </span>
-                  <h3 className="font-headline text-2xl sm:text-3xl font-black text-white tracking-tight leading-none mt-2">
-                    Secret Phrases & Laughter
-                  </h3>
-                  <p className="font-sans text-xs sm:text-sm text-neutral-400">
-                    A party match played in 3 hilarious rounds! Every player writes down secret concepts (papelitos) into a shared online pool before facing off.
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
-                    <span className="font-headline font-black text-xs text-[#3C48C3] bg-[#3C48C3]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
-                      1
-                    </span>
-                    <div className="space-y-0.5">
-                      <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Round 1 • Free Description</p>
-                      <p className="font-sans text-xs text-neutral-400">
-                        Describe the concept using as many words/hints as you want (except translation, spelling, or parts of the secret word).
+                {gameState.mode === 'CODIGO_SECRETO' ? (
+                  <>
+                    <div className="space-y-1.5 pr-8">
+                      <span className="font-sans text-[10px] font-black tracking-widest text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-md uppercase">
+                        ¿Cómo jugar Código Secreto? 🕵️‍♂️
+                      </span>
+                      <h3 className="font-headline text-2xl sm:text-3xl font-black text-white tracking-tight leading-none mt-2">
+                        Espías &amp; Agentes Secretos
+                      </h3>
+                      <p className="font-sans text-xs sm:text-sm text-neutral-400">
+                        Dos equipos (🔴 Rojo y 🔵 Azul) compiten por descifrar sus palabras clave en el tablero de 25 cartas antes que el rival.
                       </p>
                     </div>
-                  </div>
 
-                  <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
-                    <span className="font-headline font-black text-xs text-[#3C48C3] bg-[#3C48C3]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
-                      2
-                    </span>
-                    <div className="space-y-0.5">
-                      <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Round 2 • Single Word</p>
-                      <p className="font-sans text-xs text-neutral-400">
-                        Now that your team knows all words in the pool, you are restricted to guiding them with **only one single word**! Choose wisely.
+                    <div className="space-y-3">
+                      <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
+                        <span className="font-headline font-black text-xs text-amber-400 bg-amber-500/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                          1
+                        </span>
+                        <div className="space-y-0.5">
+                          <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Jefes de Espías • Dan la pista</p>
+                          <p className="font-sans text-xs text-neutral-400">
+                            Solo el Jefe de Espías ve qué palabras pertenecen a su equipo. En su turno, da una pista de **1 sola palabra y 1 número** (ej. "AGUA · 2").
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
+                        <span className="font-headline font-black text-xs text-amber-400 bg-amber-500/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                          2
+                        </span>
+                        <div className="space-y-0.5">
+                          <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Agentes Operativos • Adivinan</p>
+                          <p className="font-sans text-xs text-neutral-400">
+                            Los agentes tocan las cartas que creen correctas. Si aciertan, pueden seguir adivinando. Si eligen neutral o del rival, su turno finaliza.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-red-500/30 bg-red-500/5">
+                        <span className="font-headline font-black text-xs text-red-400 bg-red-500/15 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                          ☠️
+                        </span>
+                        <div className="space-y-0.5">
+                          <p className="font-headline text-xs font-bold uppercase tracking-wider text-red-400">¡Cuidado con el Asesino!</p>
+                          <p className="font-sans text-xs text-neutral-400">
+                            Hay 1 carta negra (el Asesino). Si algún equipo la toca, ¡pierde la partida al instante!
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-1.5 pr-8">
+                      <span className="font-sans text-[10px] font-black tracking-widest text-[#3C48C3] bg-[#3C48C3]/10 px-2.5 py-1 rounded-md uppercase">
+                        How to Play Papelito! 📝🎮
+                      </span>
+                      <h3 className="font-headline text-2xl sm:text-3xl font-black text-white tracking-tight leading-none mt-2">
+                        Secret Phrases & Laughter
+                      </h3>
+                      <p className="font-sans text-xs sm:text-sm text-neutral-400">
+                        A party match played in 3 hilarious rounds! Every player writes down secret concepts (papelitos) into a shared online pool before facing off.
                       </p>
                     </div>
-                  </div>
 
-                  <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
-                    <span className="font-headline font-black text-[#3C48C3] bg-[#3C48C3]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
-                      3
-                    </span>
-                    <div className="space-y-0.5">
-                      <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Round 3 • Full Pantomime</p>
-                      <p className="font-sans text-xs text-neutral-400">
-                        Zero sounds or lip syncing allowed. You must act out the concept using gestures/mime body language under clock pressure!
-                      </p>
+                    <div className="space-y-4">
+                      <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
+                        <span className="font-headline font-black text-xs text-[#3C48C3] bg-[#3C48C3]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                          1
+                        </span>
+                        <div className="space-y-0.5">
+                          <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Round 1 • Free Description</p>
+                          <p className="font-sans text-xs text-neutral-400">
+                            Describe the concept using as many words/hints as you want (except translation, spelling, or parts of the secret word).
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
+                        <span className="font-headline font-black text-xs text-[#3C48C3] bg-[#3C48C3]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                          2
+                        </span>
+                        <div className="space-y-0.5">
+                          <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Round 2 • Single Word</p>
+                          <p className="font-sans text-xs text-neutral-400">
+                            Now that your team knows all words in the pool, you are restricted to guiding them with **only one single word**! Choose wisely.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 items-start bg-neutral-900/40 p-3 sm:p-4 rounded-2xl border border-neutral-800/50">
+                        <span className="font-headline font-black text-[#3C48C3] bg-[#3C48C3]/10 w-6 h-6 flex items-center justify-center rounded-full shrink-0 mt-0.5">
+                          3
+                        </span>
+                        <div className="space-y-0.5">
+                          <p className="font-headline text-xs font-bold uppercase tracking-wider text-white">Round 3 • Full Pantomime</p>
+                          <p className="font-sans text-xs text-neutral-400">
+                            Zero sounds or lip syncing allowed. You must act out the concept using gestures/mime body language under clock pressure!
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </>
+                )}
 
                 <button
                   onClick={() => setShowInstructions(false)}
-                  className="w-full py-4 bg-gradient-to-r from-[#3C48C3] to-[#2532b2] hover:brightness-110 active:scale-[0.98] transition-all text-white font-headline font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(60,72,195,0.3)] block text-center cursor-pointer"
+                  className="w-full py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:brightness-110 active:scale-[0.98] transition-all text-black font-headline font-black text-xs uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.3)] block text-center cursor-pointer"
                 >
-                  Got it • Let's Play! 🚀
+                  Entendido • ¡A jugar! 🚀
                 </button>
               </div>
             </motion.div>

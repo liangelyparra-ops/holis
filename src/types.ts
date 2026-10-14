@@ -24,7 +24,7 @@ export interface GameState {
   cards: GameCard[];
   currentCardIndex: number;
   timer: number;
-  mode: 'PAPELITO' | 'HOLIS' | 'PRIMOS' | 'WHATSAPP';
+  mode: 'PAPELITO' | 'HOLIS' | 'CODIGO_SECRETO';
   currentTurnPlayerId: string | null;
   readyCount: number;
   turnOrder: string[]; // List of player IDs in order
@@ -35,6 +35,30 @@ export interface GameState {
   lastWinnerId?: string | null;
   lastWinnerName?: string | null;
   isShowingWinner?: boolean;
+  codigoSecreto?: CodigoSecretoState;
+}
+
+export interface CodigoSecretoCell {
+  word: string;
+  color: 'RED' | 'BLUE' | 'NEUTRAL' | 'ASSASSIN';
+  revealed: boolean;
+}
+
+export interface CodigoSecretoState {
+  board: CodigoSecretoCell[];        // 25 cells with word + color + revealed
+  teamRed: string[];                 // player IDs on red team
+  teamBlue: string[];                // player IDs on blue team
+  spymasterRed: string | null;       // player ID who is red spymaster
+  spymasterBlue: string | null;      // player ID who is blue spymaster
+  currentTeam: 'RED' | 'BLUE';      // whose turn it is
+  clueWord: string | null;
+  clueNumber: number | null;
+  guessesLeft: number;
+  winner: 'RED' | 'BLUE' | null;
+  winnerReason?: 'CARDS' | 'ASSASSIN';
+  wordsLeft: { red: number; blue: number };
+  phase: 'TEAM_SELECT' | 'SPYMASTER_CLUE' | 'TEAM_GUESS' | 'GAME_OVER';
+  language?: 'es' | 'en';
 }
 
 export const PREDEFINED_PLAYERS = [
