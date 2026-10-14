@@ -46,6 +46,7 @@ export interface CodigoSecretoCell {
 
 export interface CodigoSecretoState {
   board: CodigoSecretoCell[];        // 25 cells with word + color + revealed
+  usedWords?: string[];              // words used in previous games (no-repeat tracking)
   teamRed: string[];                 // player IDs on red team
   teamBlue: string[];                // player IDs on blue team
   spymasterRed: string | null;       // player ID who is red spymaster

@@ -1,4 +1,5 @@
 // Word banks for Código Secreto — Spanish & English
+// 260+ words per language → supports 10 games (250 words) without repeats
 export const CS_WORDS_ES: string[] = [
   // Lugares & Entornos
   "PLAYA", "MONTAÑA", "DESIERTO", "SELVA", "CIUDAD", "PUEBLO", "BOSQUE",
@@ -6,18 +7,23 @@ export const CS_WORDS_ES: string[] = [
   "RÍO", "VOLCÁN", "ISLA", "LUNA", "MARTE", "COSMOS", "PUERTO", "ESTACIÓN",
   "PARÍS", "TOKIO", "ROMA", "EGIPTO", "LONDRES", "ALASKA", "BERLÍN", "CARIBE",
   "BIBLIOTECA", "MUSEO", "TEATRO", "CINE", "BANCO", "LABORATORIO", "GRANJA",
+  "CATEDRAL", "FARO", "PIRÁMIDE", "JARDÍN", "FRONTERA", "CEMENTERIO", "TÚNEL",
+  "PALACIO", "ESTADIO", "CIRCO", "PLAZA",
 
   // Profesiones & Roles
   "ESPÍA", "DOCTOR", "PILOTO", "CHEF", "MAESTRO", "DETECTIVE", "JUEZ",
   "ASTRONAUTA", "BOMBERO", "MAGO", "ÁRBITRO", "PIRATA", "NINJA", "REY",
   "AGENTE", "CIENTÍFICO", "ARTISTA", "CANTANTE", "SOLDADO", "POLICÍA",
   "ARQUITECTO", "FOTÓGRAFO", "MARINERO", "BUZO", "EMBAJADOR", "REINA",
+  "MONJE", "PAYASO", "GLADIADOR", "SACERDOTE", "VAMPIRO", "FANTASMA",
 
   // Animales & Naturaleza
   "TIGRE", "BALLENA", "ÁGUILA", "SERPIENTE", "LOBO", "ZORRO", "LEÓN",
   "COCODRILO", "PANTERA", "PULPO", "CUERVO", "DELFÍN", "CABALLO", "OSO",
   "MURCIÉLAGO", "ESCORPIÓN", "FLAMENCO", "HALCÓN", "TIBURÓN", "PINGÜINO",
   "DINOSAURIO", "CAMALEÓN", "ELEFANTE", "JIRAFA", "CANGURO", "ARAÑA",
+  "TORTUGA", "GORILA", "MEDUSA", "ABEJA", "MARIPOSA", "BÚHO", "RATA",
+  "HORMIGA", "PAVO", "CEBRA", "RINOCERONTE",
 
   // Objetos & Artefactos
   "LLAVE", "ESPEJO", "MAPA", "BRÚJULA", "TELESCOPIO", "RELOJ", "DIAMANTE",
@@ -25,16 +31,39 @@ export const CS_WORDS_ES: string[] = [
   "CÁMARA", "CÓDIGO", "SELLO", "MALETÍN", "ANTENA", "BATERÍA", "RADIO",
   "LIBRO", "GUITARRA", "TELÉFONO", "MONEDA", "CAMPANA", "BOTELLA", "VELA",
   "TREN", "SUBMARINO", "COHETE", "HELICÓPTERO", "BICICLETA", "BARCO",
+  "DADO", "CADENA", "CANDADO", "TIJERA", "MARTILLO", "SILLA", "BANDERA",
+  "PARAGUAS", "PINTURA", "TRONO", "FLECHA",
 
   // Comida & Bebida
   "MANGO", "CHOCOLATE", "CACAO", "VINO", "LIMÓN", "CAFÉ", "QUESO",
   "MANZANA", "PAN", "PIZZA", "SUSHI", "MIEL", "TÉ", "VAINILLA", "SAL",
+  "CEREZA", "PIMIENTA", "CANELA", "TOCINO", "NUEZ", "FRESA", "COCO",
+  "GALLETA", "CERVEZA", "HUEVO", "ARROZ",
 
   // Conceptos, Elementos & Acciones
   "SOMBRA", "SECRETO", "SILENCIO", "PELIGRO", "TRAMPA", "MISIÓN", "DESTINO",
   "SEÑAL", "BASE", "FUEGO", "HIELO", "VIENTO", "TRUENO", "NIEVE", "LUZ",
   "ORO", "PLATA", "HIERRO", "CRISTAL", "VENENO", "IMÁN", "LÁSER", "ENERGÍA",
-  "NOCHE", "SUEÑO", "TIEMPO", "CORAZÓN", "SUERTE", "FIESTA", "REVOLUCIÓN"
+  "NOCHE", "SUEÑO", "TIEMPO", "CORAZÓN", "SUERTE", "FIESTA", "REVOLUCIÓN",
+  "GUERRA", "PAZ", "MENTE", "ALMA", "FURIA", "MAGIA", "CAOS", "ORDEN",
+
+  // Deportes & Juegos
+  "FÚTBOL", "BOXEO", "SURF", "AJEDREZ", "CARRERA", "ARCO", "GOLFISTA",
+  "CAMPEÓN", "RAQUETA", "PENAL", "RING", "PODIO",
+
+  // Música & Arte
+  "PIANO", "VIOLÍN", "TAMBOR", "ÓPERA", "RITMO", "MELODÍA", "ACORDE",
+  "ESCULTURA", "SINFONÍA", "VERSO",
+
+  // Cuerpo & Salud
+  "HUESO", "CEREBRO", "SANGRE", "MÚSCULO", "NERVIO", "PULMÓN", "CICATRIZ",
+
+  // Tecnología
+  "ROBOT", "SATÉLITE", "CHIP", "VIRUS", "RED", "PANTALLA", "SERVIDOR",
+  "DRON", "MOTOR", "RADAR",
+
+  // Ropa & Accesorios
+  "CAPA", "ANILLO", "CASCO", "COLLAR", "GUANTE", "BOTA", "CINTURÓN",
 ];
 
 export const CS_WORDS_EN: string[] = [
@@ -44,18 +73,23 @@ export const CS_WORDS_EN: string[] = [
   "RIVER", "VOLCANO", "ISLAND", "MOON", "MARS", "SPACE", "PORT", "STATION",
   "PARIS", "TOKYO", "ROME", "EGYPT", "LONDON", "ALASKA", "BERLIN", "CARIBBEAN",
   "LIBRARY", "MUSEUM", "THEATER", "CINEMA", "BANK", "LAB", "FARM",
+  "CATHEDRAL", "LIGHTHOUSE", "PYRAMID", "GARDEN", "BORDER", "GRAVEYARD", "TUNNEL",
+  "PALACE", "STADIUM", "CIRCUS", "SQUARE",
 
   // Roles & Characters
   "SPY", "DOCTOR", "PILOT", "CHEF", "TEACHER", "DETECTIVE", "JUDGE",
   "ASTRONAUT", "FIREFIGHTER", "WIZARD", "REFEREE", "PIRATE", "NINJA", "KING",
   "AGENT", "SCIENTIST", "ARTIST", "SINGER", "SOLDIER", "POLICE",
   "ARCHITECT", "PHOTOGRAPHER", "SAILOR", "DIVER", "AMBASSADOR", "QUEEN",
+  "MONK", "CLOWN", "GLADIATOR", "PRIEST", "VAMPIRE", "GHOST",
 
   // Animals & Wildlife
   "TIGER", "WHALE", "EAGLE", "SNAKE", "WOLF", "FOX", "LION",
   "CROCODILE", "PANTHER", "OCTOPUS", "CROW", "DOLPHIN", "HORSE", "BEAR",
   "BAT", "SCORPION", "FLAMINGO", "HAWK", "SHARK", "PENGUIN",
   "DINOSAUR", "CHAMELEON", "ELEPHANT", "GIRAFFE", "KANGAROO", "SPIDER",
+  "TURTLE", "GORILLA", "JELLYFISH", "BEE", "BUTTERFLY", "OWL", "RAT",
+  "ANT", "TURKEY", "ZEBRA", "RHINO",
 
   // Items & Objects
   "KEY", "MIRROR", "MAP", "COMPASS", "TELESCOPE", "WATCH", "DIAMOND",
@@ -63,16 +97,39 @@ export const CS_WORDS_EN: string[] = [
   "CAMERA", "CODE", "STAMP", "BRIEFCASE", "ANTENNA", "BATTERY", "RADIO",
   "BOOK", "GUITAR", "PHONE", "COIN", "BELL", "BOTTLE", "CANDLE",
   "TRAIN", "SUBMARINE", "ROCKET", "HELICOPTER", "BICYCLE", "SHIP",
+  "DICE", "CHAIN", "LOCK", "SCISSORS", "HAMMER", "CHAIR", "FLAG",
+  "UMBRELLA", "PAINTING", "THRONE", "ARROW",
 
   // Food & Drinks
   "MANGO", "CHOCOLATE", "COCOA", "WINE", "LEMON", "COFFEE", "CHEESE",
   "APPLE", "BREAD", "PIZZA", "SUSHI", "HONEY", "TEA", "VANILLA", "SALT",
+  "CHERRY", "PEPPER", "CINNAMON", "BACON", "WALNUT", "STRAWBERRY", "COCONUT",
+  "COOKIE", "BEER", "EGG", "RICE",
 
   // Concepts & Elements
   "SHADOW", "SECRET", "SILENCE", "DANGER", "TRAP", "MISSION", "DESTINY",
   "SIGNAL", "BASE", "FIRE", "ICE", "WIND", "THUNDER", "SNOW", "LIGHT",
   "GOLD", "SILVER", "IRON", "CRYSTAL", "POISON", "MAGNET", "LASER", "ENERGY",
-  "NIGHT", "DREAM", "TIME", "HEART", "LUCK", "PARTY", "GHOST"
+  "NIGHT", "DREAM", "TIME", "HEART", "LUCK", "PARTY", "REVOLUTION",
+  "WAR", "PEACE", "MIND", "SOUL", "FURY", "MAGIC", "CHAOS", "ORDER",
+
+  // Sports & Games
+  "SOCCER", "BOXING", "SURF", "CHESS", "RACE", "BOW", "GOLFER",
+  "CHAMPION", "RACKET", "PENALTY", "RING", "PODIUM",
+
+  // Music & Art
+  "PIANO", "VIOLIN", "DRUM", "OPERA", "RHYTHM", "MELODY", "CHORD",
+  "SCULPTURE", "SYMPHONY", "VERSE",
+
+  // Body & Health
+  "BONE", "BRAIN", "BLOOD", "MUSCLE", "NERVE", "LUNG", "SCAR",
+
+  // Technology
+  "ROBOT", "SATELLITE", "CHIP", "VIRUS", "NETWORK", "SCREEN", "SERVER",
+  "DRONE", "ENGINE", "RADAR",
+
+  // Clothing & Accessories
+  "CAPE", "RING", "HELMET", "NECKLACE", "GLOVE", "BOOT", "BELT",
 ];
 
 // Deduplication

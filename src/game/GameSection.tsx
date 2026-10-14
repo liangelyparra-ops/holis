@@ -396,9 +396,22 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
   };
 
   // ─── Código Secreto helpers ───────────────────────────────────────
-  function buildCsBoard(lang: 'es' | 'en' = 'es'): CodigoSecretoCell[] {
+  function buildCsBoard(lang: 'es' | 'en' = 'es', prevUsedWords: string[] = []): { board: CodigoSecretoCell[]; newUsedWords: string[] } {
     const wordPool = lang === 'en' ? CS_WORDS_EN_CLEAN : CS_WORDS_ES_CLEAN;
-    const words = shuffleArray([...wordPool]).slice(0, 25);
+    // Filter out words already used in previous games
+    const usedSet = new Set(prevUsedWords);
+    let available = wordPool.filter(w => !usedSet.has(w));
+    let recycled = false;
+    // If not enough words left, recycle but exclude last game's words
+    // so consecutive games after reset are always different
+    if (available.length < 25) {
+      recycled = true;
+      const lastGameWords = new Set(prevUsedWords.slice(-25));
+      available = wordPool.filter(w => !lastGameWords.has(w));
+      // Fallback: if still not enough (shouldn't happen with 270+ words), use full pool
+      if (available.length < 25) available = [...wordPool];
+    }
+    const words = shuffleArray([...available]).slice(0, 25);
     const colorPool: Array<CodigoSecretoCell['color']> = [
       ...Array(9).fill('RED' as const),
       ...Array(8).fill('BLUE' as const),
@@ -406,7 +419,10 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
       'ASSASSIN' as const,
     ];
     const colors = shuffleArray(colorPool);
-    return words.map((word, i) => ({ word, color: colors[i], revealed: false }));
+    const board = words.map((word, i) => ({ word, color: colors[i], revealed: false }));
+    // When recycled, reset usedWords to only the current game's words
+    const newUsedWords = recycled ? words : [...prevUsedWords, ...words];
+    return { board, newUsedWords };
   }
 
   const updateCsLanguage = async (language: 'es' | 'en') => {
@@ -615,7 +631,8 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
     const cs = gameState.codigoSecreto;
     if (!cs) return;
     const lang = cs.language || 'es';
-    const board = buildCsBoard(lang);
+    const prevUsed = cs.usedWords || [];
+    const { board, newUsedWords } = buildCsBoard(lang, prevUsed);
     const wordsLeft = {
       red: board.filter(c => c.color === 'RED').length,
       blue: board.filter(c => c.color === 'BLUE').length,
@@ -626,6 +643,7 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
         codigoSecreto: {
           ...cs,
           board,
+          usedWords: newUsedWords,
           wordsLeft,
           currentTeam: 'RED',
           phase: 'SPYMASTER_CLUE',
@@ -765,7 +783,8 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
         : cs.teamBlue[0];
 
       const lang = cs.language || 'es';
-      const board = buildCsBoard(lang);
+      const prevUsed = cs.usedWords || [];
+      const { board, newUsedWords } = buildCsBoard(lang, prevUsed);
       const wordsLeft = {
         red: board.filter(c => c.color === 'RED').length,
         blue: board.filter(c => c.color === 'BLUE').length,
@@ -778,6 +797,7 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
             spymasterRed,
             spymasterBlue,
             board,
+            usedWords: newUsedWords,
             wordsLeft,
             currentTeam: 'RED',
             phase: 'SPYMASTER_CLUE',
