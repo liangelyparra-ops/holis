@@ -23,7 +23,7 @@ import {
   SkipForward,
   Globe
 } from 'lucide-react';
-import { doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, updateDoc, deleteField } from 'firebase/firestore';
 import { Toaster, toast } from 'sonner';
 import { Player, GameCard, GameState, DEFAULT_CARDS, CodigoSecretoCell, CodigoSecretoState } from '../types';
 import { CS_WORDS_ES_CLEAN, CS_WORDS_EN_CLEAN } from '../data/codigoSecretoWords';
@@ -354,16 +354,17 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
   };
 
   const updateMode = async (mode: 'PAPELITO' | 'HOLIS' | 'CODIGO_SECRETO') => {
-    const updates: Partial<GameState> = { mode };
+    const updates: any = { mode };
     if (mode === 'PAPELITO') {
       updates.cards = [];
       updates.currentRound = 1;
       updates.papelitosPerPlayer = 2;
       updates.papelitoTheme = 'free';
       updates.papelitoCustomTheme = '';
-      updates.codigoSecreto = undefined;
+      updates.codigoSecreto = deleteField();
     } else if (mode === 'CODIGO_SECRETO') {
       updates.cards = [];
+      updates.currentRound = deleteField();
       updates.codigoSecreto = {
         board: [],
         teamRed: [],
@@ -375,17 +376,20 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
         clueNumber: null,
         guessesLeft: 0,
         winner: null,
+        winnerReason: null,
         wordsLeft: { red: 9, blue: 8 },
         phase: 'TEAM_SELECT',
         language: 'es',
       };
     } else {
       updates.cards = shuffleArray(DEFAULT_CARDS);
-      updates.codigoSecreto = undefined;
+      updates.currentRound = deleteField();
+      updates.codigoSecreto = deleteField();
     }
     const gameRef = doc(db, 'games', GAME_ID);
     try {
       await updateDoc(gameRef, updates);
+      toast.success(`Modo cambiado a ${mode}`);
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`);
     }
@@ -514,7 +518,7 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
     let currentTeam = cs.currentTeam;
     let wordsLeft = { ...cs.wordsLeft };
     let winner = cs.winner;
-    let winnerReason: 'CARDS' | 'ASSASSIN' | undefined = undefined;
+    let winnerReason: 'CARDS' | 'ASSASSIN' | null = null;
     let guessesLeft = cs.guessesLeft - 1;
 
     if (cell.color === 'ASSASSIN') {
@@ -603,7 +607,7 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
           clueNumber: null,
           guessesLeft: 0,
           winner: null,
-          winnerReason: undefined,
+          winnerReason: null,
         },
       });
       playSound(SOUNDS.START);
@@ -624,8 +628,8 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
           clueNumber: null,
           guessesLeft: 0,
           winner: null,
-          winnerReason: undefined,
-        } : undefined,
+          winnerReason: null,
+        } : deleteField(),
       });
     } catch (err) { handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`); }
   };
@@ -755,7 +759,7 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
             clueNumber: null,
             guessesLeft: 0,
             winner: null,
-            winnerReason: undefined,
+            winnerReason: null,
           },
         });
         playSound(SOUNDS.START);
@@ -795,7 +799,7 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
         timer: 90,
         currentTurnPlayerId: order[0],
         turnOrder: order,
-        currentRound: gameState.mode === 'PAPELITO' ? 1 : undefined,
+        currentRound: gameState.mode === 'PAPELITO' ? 1 : deleteField(),
         isShowingWinner: false
       });
       playSound(SOUNDS.ROUND_START);
@@ -898,7 +902,7 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
         timer: 90,
         currentTurnPlayerId: order[0],
         turnOrder: order,
-        currentRound: gameState.mode === 'PAPELITO' ? 1 : undefined,
+        currentRound: gameState.mode === 'PAPELITO' ? 1 : deleteField(),
         isShowingWinner: false
       });
       playSound(SOUNDS.ROUND_START);
@@ -1071,21 +1075,21 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
               <div className="grid grid-cols-3 gap-2">
                 <button 
                   onClick={() => updateMode('PAPELITO')}
-                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'PAPELITO' ? 'bg-emerald-500/10 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-neutral-900 border-neutral-800 opacity-60'}`}
+                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 cursor-pointer hover:scale-102 active:scale-95 ${gameState.mode === 'PAPELITO' ? 'bg-emerald-500/10 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-neutral-900 border-neutral-800 opacity-60 hover:opacity-100'}`}
                 >
                   <Star size={20} className={gameState.mode === 'PAPELITO' ? 'text-emerald-500' : 'text-neutral-400'} />
                   <span className="text-[8px] font-black uppercase tracking-widest text-white">Papelito</span>
                 </button>
                 <button 
                   onClick={() => updateMode('HOLIS')}
-                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'HOLIS' ? 'bg-[#3C48C3]/10 border-[#3C48C3] shadow-[0_0_15px_rgba(60,72,195,0.3)]' : 'bg-neutral-900 border-neutral-800 opacity-60'}`}
+                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 cursor-pointer hover:scale-102 active:scale-95 ${gameState.mode === 'HOLIS' ? 'bg-[#3C48C3]/10 border-[#3C48C3] shadow-[0_0_15px_rgba(60,72,195,0.3)]' : 'bg-neutral-900 border-neutral-800 opacity-60 hover:opacity-100'}`}
                 >
                   <Flame size={20} className={gameState.mode === 'HOLIS' ? 'text-[#3C48C3]' : 'text-neutral-400'} />
                   <span className="text-[8px] font-black uppercase tracking-widest text-white">Holis</span>
                 </button>
                 <button 
                   onClick={() => updateMode('CODIGO_SECRETO')}
-                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${gameState.mode === 'CODIGO_SECRETO' ? 'bg-amber-500/10 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.3)]' : 'bg-neutral-900 border-neutral-800 opacity-60'}`}
+                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 cursor-pointer hover:scale-102 active:scale-95 ${gameState.mode === 'CODIGO_SECRETO' ? 'bg-amber-500/10 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.3)]' : 'bg-neutral-900 border-neutral-800 opacity-60 hover:opacity-100'}`}
                 >
                   <Shield size={20} className={gameState.mode === 'CODIGO_SECRETO' ? 'text-amber-500' : 'text-neutral-400'} />
                   <span className="text-[8px] font-black uppercase tracking-widest text-white">Código</span>

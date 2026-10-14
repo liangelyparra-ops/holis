@@ -28,14 +28,14 @@ export interface GameState {
   currentTurnPlayerId: string | null;
   readyCount: number;
   turnOrder: string[]; // List of player IDs in order
-  currentRound?: number; // For PAPELITO mode (1, 2, 3)
+  currentRound?: number | null; // For PAPELITO mode (1, 2, 3)
   papelitosPerPlayer?: number;
   papelitoTheme?: string; // 'libre' or 'custom'
   papelitoCustomTheme?: string; // The actual theme string if custom
   lastWinnerId?: string | null;
   lastWinnerName?: string | null;
   isShowingWinner?: boolean;
-  codigoSecreto?: CodigoSecretoState;
+  codigoSecreto?: CodigoSecretoState | null;
 }
 
 export interface CodigoSecretoCell {
@@ -55,7 +55,7 @@ export interface CodigoSecretoState {
   clueNumber: number | null;
   guessesLeft: number;
   winner: 'RED' | 'BLUE' | null;
-  winnerReason?: 'CARDS' | 'ASSASSIN';
+  winnerReason?: 'CARDS' | 'ASSASSIN' | null;
   wordsLeft: { red: number; blue: number };
   phase: 'TEAM_SELECT' | 'SPYMASTER_CLUE' | 'TEAM_GUESS' | 'GAME_OVER';
   language?: 'es' | 'en';
