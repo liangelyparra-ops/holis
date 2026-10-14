@@ -21,7 +21,8 @@ import {
   Shield,
   Swords,
   SkipForward,
-  Globe
+  Globe,
+  Share2
 } from 'lucide-react';
 import { doc, onSnapshot, setDoc, updateDoc, deleteField } from 'firebase/firestore';
 import { Toaster, toast } from 'sonner';
@@ -96,9 +97,10 @@ const SOUNDS = {
 
 interface GameSectionProps {
   onPlayerJoin?: (player: { name: string; avatar: string } | null) => void;
+  onStatusChange?: (status: string, isInRoom: boolean, roomId: string) => void;
 }
 
-export default function GameSection({ onPlayerJoin }: GameSectionProps) {
+export default function GameSection({ onPlayerJoin, onStatusChange }: GameSectionProps) {
   const ROOM_ID = getRoomId();
   const GAME_ID = ROOM_ID;
 
@@ -130,6 +132,14 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
 
   const soundCacheRef = useRef<Record<string, HTMLAudioElement>>({});
   const lastPlayedSoundRef = useRef<string | null>(null);
+
+  const isInRoom = Boolean(selectedNickname && gameState.status !== 'HOME');
+
+  useEffect(() => {
+    if (onStatusChange) {
+      onStatusChange(gameState.status, isInRoom, GAME_ID);
+    }
+  }, [gameState.status, isInRoom, GAME_ID, onStatusChange]);
 
   const playSound = (url: string) => {
     try {
@@ -351,6 +361,35 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
     url.searchParams.set('room', randomRoomId);
     window.history.pushState(null, '', url.toString());
     window.location.reload();
+  };
+
+  const shareRoom = async () => {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.get('room') && GAME_ID) {
+      url.searchParams.set('room', GAME_ID);
+    }
+    const shareUrl = url.toString();
+    const shareData = {
+      title: 'Holis Party Game',
+      text: '¡Únete a mi partida en Holis!',
+      url: shareUrl,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('¡Link copiado al portapapeles!');
+    } catch {
+      toast.error('No se pudo copiar el enlace');
+    }
   };
 
   const updateMode = async (mode: 'PAPELITO' | 'HOLIS' | 'CODIGO_SECRETO') => {
@@ -1105,6 +1144,13 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
               <HelpCircle size={14} />
             </button>
             <button 
+              onClick={shareRoom}
+              className="p-1 hover:bg-[#3C48C3]/20 rounded-full transition-all text-[#3C48C3]"
+              title="Compartir link de la partida"
+            >
+              <Share2 size={14} />
+            </button>
+            <button 
               onClick={resetGame}
               className="p-1 hover:bg-[#3C48C3]/20 rounded-full transition-all text-[#3C48C3]"
               title="Reset Room"
@@ -1465,6 +1511,14 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
                 <h3 className="text-[10px] font-black uppercase tracking-widest text-[#3C48C3]">Players in Room ({gameState.players.length})</h3>
                 <span className="text-[10px] font-mono text-neutral-500 font-bold uppercase select-text">{GAME_ID}</span>
               </div>
+
+              <button
+                onClick={shareRoom}
+                className="w-full py-2.5 px-3 rounded-xl bg-[#3C48C3]/15 hover:bg-[#3C48C3]/25 border border-[#3C48C3]/30 text-white text-xs font-headline font-bold flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 shadow-sm"
+              >
+                <Share2 size={15} className="text-[#3C48C3]" />
+                <span>Invitar amigos (Copiar link)</span>
+              </button>
               
               <div className="space-y-2.5 max-h-60 overflow-y-auto scrollbar-hide pr-1">
                 {gameState.players.map((p, idx) => (
