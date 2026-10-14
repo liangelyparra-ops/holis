@@ -480,17 +480,43 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
     } catch (err) { handleFirestoreError(err, OperationType.UPDATE, `games/${GAME_ID}`); }
   };
 
+  function normalizeWord(str: string): string {
+    return str
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
   const submitCsClue = async () => {
     if (!userId || !gameState.codigoSecreto || !csClueWord.trim()) return;
     const cs = gameState.codigoSecreto;
     const isSpymasterRed = cs.spymasterRed === userId && cs.currentTeam === 'RED';
     const isSpymasterBlue = cs.spymasterBlue === userId && cs.currentTeam === 'BLUE';
     if ((!isSpymasterRed && !isSpymasterBlue) || cs.phase !== 'SPYMASTER_CLUE') return;
+
+    const words = csClueWord.trim().split(/\s+/).filter(Boolean);
+    if (words.length > 1) {
+      toast.error('La pista debe ser una sola palabra');
+      return;
+    }
+
+    const cleanClue = normalizeWord(words[0]);
+    const boardMatch = cs.board.find(c => {
+      const bw = normalizeWord(c.word);
+      return bw === cleanClue || bw + 's' === cleanClue || bw + 'es' === cleanClue || cleanClue + 's' === bw || cleanClue + 'es' === bw;
+    });
+
+    if (boardMatch) {
+      toast.error(`"${boardMatch.word}" está en el tablero. No puedes usar palabras del tablero como pista.`);
+      return;
+    }
+
     try {
       await updateDoc(doc(db, 'games', GAME_ID), {
         codigoSecreto: {
           ...cs,
-          clueWord: csClueWord.trim().toUpperCase(),
+          clueWord: words[0].toUpperCase(),
           clueNumber: csClueNumber,
           guessesLeft: csClueNumber + 1,
           phase: 'TEAM_GUESS',
@@ -1546,45 +1572,72 @@ export default function GameSection({ onPlayerJoin }: GameSectionProps) {
         </div>
 
         {/* Active clue or spymaster input */}
-        {cs.phase === 'SPYMASTER_CLUE' && isMySpymasterTurn && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-full bg-[#111113] border border-amber-500/30 rounded-2xl p-4 space-y-3"
-          >
-            <p className="text-[9px] font-black uppercase tracking-widest text-amber-500 flex items-center gap-1.5">
-              <Eye size={12} /> Jefe de Espías — Da tu pista
-            </p>
-            <div className="flex gap-2 items-center">
-              <input
-                type="text"
-                value={csClueWord}
-                onChange={e => setCsClueWord(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && submitCsClue()}
-                placeholder="Una sola palabra..."
-                className="flex-1 bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm font-bold uppercase text-white focus:border-amber-500 outline-none transition-all"
-              />
-              <div className="flex gap-1">
-                {[1,2,3,4,5,6].map(n => (
-                  <button
-                    key={n}
-                    onClick={() => setCsClueNumber(n)}
-                    className={`w-7 h-7 rounded-lg text-xs font-black transition-all border ${
-                      csClueNumber === n ? 'bg-amber-500/20 border-amber-500 text-amber-400' : 'bg-neutral-900 border-neutral-700 text-neutral-400'
-                    }`}
-                  >{n}</button>
-                ))}
+        {cs.phase === 'SPYMASTER_CLUE' && isMySpymasterTurn && (() => {
+          const words = csClueWord.trim().split(/\s+/).filter(Boolean);
+          const isMultiWord = words.length > 1;
+          const cleanClue = words[0] ? normalizeWord(words[0]) : '';
+          const boardMatch = cleanClue ? cs.board.find(c => {
+            const bw = normalizeWord(c.word);
+            return bw === cleanClue || bw + 's' === cleanClue || bw + 'es' === cleanClue || cleanClue + 's' === bw || cleanClue + 'es' === bw;
+          }) : null;
+          const isInvalid = isMultiWord || Boolean(boardMatch) || !csClueWord.trim();
+
+          return (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="w-full bg-[#111113] border border-amber-500/30 rounded-2xl p-4 space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-[9px] font-black uppercase tracking-widest text-amber-500 flex items-center gap-1.5">
+                  <Eye size={12} /> Jefe de Espías — Da tu pista
+                </p>
+                <span className="text-[8px] text-neutral-500 font-mono">1 palabra + cantidad</span>
               </div>
-              <button
-                onClick={submitCsClue}
-                disabled={!csClueWord.trim()}
-                className="px-4 py-2 bg-amber-500 hover:brightness-110 active:scale-95 text-black font-headline font-black text-xs uppercase rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Dar pista
-              </button>
-            </div>
-          </motion.div>
-        )}
+              <div className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  value={csClueWord}
+                  onChange={e => setCsClueWord(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && !isInvalid && submitCsClue()}
+                  placeholder="Una sola palabra..."
+                  className={`flex-1 bg-neutral-900 border rounded-lg px-3 py-2 text-sm font-bold uppercase text-white outline-none transition-all ${
+                    boardMatch || isMultiWord ? 'border-red-500 text-red-300' : 'border-neutral-700 focus:border-amber-500'
+                  }`}
+                />
+                <div className="flex gap-1">
+                  {[1,2,3,4,5,6].map(n => (
+                    <button
+                      key={n}
+                      onClick={() => setCsClueNumber(n)}
+                      className={`w-7 h-7 rounded-lg text-xs font-black transition-all border ${
+                        csClueNumber === n ? 'bg-amber-500/20 border-amber-500 text-amber-400' : 'bg-neutral-900 border-neutral-700 text-neutral-400'
+                      }`}
+                    >{n}</button>
+                  ))}
+                </div>
+                <button
+                  onClick={submitCsClue}
+                  disabled={isInvalid}
+                  className="px-4 py-2 bg-amber-500 hover:brightness-110 active:scale-95 text-black font-headline font-black text-xs uppercase rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  Dar pista
+                </button>
+              </div>
+
+              {boardMatch && (
+                <p className="text-[10px] font-bold text-red-400 flex items-center gap-1 animate-pulse">
+                  ⚠️ "{boardMatch.word}" está en el tablero. No puedes usar palabras del tablero como pista.
+                </p>
+              )}
+              {isMultiWord && (
+                <p className="text-[10px] font-bold text-amber-400 flex items-center gap-1">
+                  ⚠️ La pista debe ser una sola palabra (sin espacios).
+                </p>
+              )}
+            </motion.div>
+          );
+        })()}
 
         {cs.phase === 'SPYMASTER_CLUE' && !isMySpymasterTurn && (
           <div className={`w-full text-center py-3 px-4 rounded-2xl bg-[#111113] border border-neutral-800`}>
