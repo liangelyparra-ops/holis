@@ -2,12 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
-  ExternalLink,
   Sparkles,
   Film,
   Image as ImageIcon,
-  Share2,
-  Check,
   Layers,
   Video,
   Volume2,
@@ -104,7 +101,6 @@ const ModalVideoPlayer: React.FC<{
 };
 
 export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose }) => {
-  const [copied, setCopied] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const assets = item ? getItemAssets(item) : [];
@@ -232,7 +228,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                   >
                     {/* Header info for this asset if multi-asset */}
                     {assets.length > 1 && (
-                      <div className="flex items-center justify-between gap-2 px-1">
+                      <div className="flex items-center gap-2 px-1">
                         <div className="flex items-center gap-2">
                           <span className="px-2 py-0.5 rounded-md bg-white/15 text-white text-[10px] font-mono font-bold">
                             ARCHIVO {idx + 1} DE {assets.length}
@@ -243,9 +239,6 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                             </span>
                           )}
                         </div>
-                        <span className="px-2 py-0.5 rounded-md bg-black/60 text-stone-300 text-[10px] font-mono border border-white/10">
-                          Formato: {asset.format}
-                        </span>
                       </div>
                     )}
 
@@ -298,15 +291,11 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
           {/* Details Column (Right Sidebar) */}
           <div className="lg:w-4/12 bg-white/[0.02] backdrop-blur-2xl p-6 sm:p-8 flex flex-col justify-between overflow-y-auto space-y-6 text-left">
             <div className="space-y-5">
-              {/* Category & Format Badges */}
+              {/* Category Badge only */}
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white border border-white/15 backdrop-blur-md">
                   <CategoryIcon className="w-3.5 h-3.5 text-emerald-400" />
                   {currentCat.label}
-                </span>
-
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono font-medium bg-black/70 text-stone-200 border border-white/10">
-                  Formato: {item.format || 'Multiformato'}
                 </span>
 
                 {assets.length > 1 && (
@@ -329,7 +318,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                 <p className="font-mono text-xs uppercase tracking-wider text-stone-400 font-semibold">
                   Concepto &amp; Proceso Creativo
                 </p>
-                <p className="font-sans text-sm sm:text-base text-stone-200 leading-relaxed">
+                <p className="font-sans text-sm sm:text-base text-stone-200 leading-relaxed whitespace-pre-line">
                   {item.description}
                 </p>
               </div>
@@ -364,28 +353,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
               </div>
             </div>
 
-            {/* Actions Footer */}
-            <div className="pt-6 border-t border-white/10 flex flex-wrap items-center gap-3">
-              {(item.rawUrl || item.url) && (
-                <a
-                  href={item.rawUrl || item.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white text-neutral-950 font-sans text-xs font-semibold hover:bg-stone-200 transition-colors shadow-lg"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  Abrir recurso original
-                </a>
-              )}
-              <button
-                type="button"
-                onClick={handleCopyLink}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-white/20 bg-white/10 text-white font-sans text-xs font-semibold hover:bg-white/20 transition-colors cursor-pointer backdrop-blur-md"
-              >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
-                {copied ? '¡Copiado!' : 'Copiar enlace'}
-              </button>
-            </div>
+
           </div>
         </motion.div>
       </div>

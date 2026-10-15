@@ -58,7 +58,13 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
   // Form state for adding or editing items
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<'MOTION' | 'IA' | 'KEY_VISUALS'>('MOTION');
+  const [categories, setCategories] = useState<string[]>(['MOTION']);
+  const [customCategoryInput, setCustomCategoryInput] = useState('');
+  const [availableCategories, setAvailableCategories] = useState<{ value: string; label: string }[]>([
+    { value: 'MOTION', label: 'Motion' },
+    { value: 'IA', label: 'IA' },
+    { value: 'KEY_VISUALS', label: 'Key Visuals' },
+  ]);
   const [toolsInput, setToolsInput] = useState('After Effects, Runway Gen-3, Midjourney');
   const [description, setDescription] = useState('');
   const [hookRationale, setHookRationale] = useState('');
@@ -80,7 +86,8 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
     setDescription('');
     setHookRationale('');
     setToolsInput('After Effects, Runway Gen-3, Midjourney');
-    setCategory('MOTION');
+    setCategories(['MOTION']);
+    setCustomCategoryInput('');
     setIsVisible(true);
     setAssetsList([{ id: `asset-${Date.now()}`, url: '', preferredType: 'video', format: '16:9', title: '' }]);
   };
@@ -146,7 +153,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
           return {
             ...item,
             title,
-            category,
+            category: categories[0] as any,
             tools: toolsArray.length ? toolsArray : ['Design', 'Motion'],
             description,
             hookRationale,
@@ -168,7 +175,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
       const newItem: MultimediaItem = {
         id: `item-${Date.now()}`,
         title,
-        category,
+        category: categories[0] as any,
         tools: toolsArray.length ? toolsArray : ['Creative Direction', 'AI'],
         description: description || 'Pieza multimedia creada para campañas digitales.',
         hookRationale: hookRationale || '',
@@ -192,7 +199,8 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
     setActiveTab('items');
     setEditingItemId(item.id);
     setTitle(item.title);
-    setCategory(normalizeCategory(item.category));
+    const norm = normalizeCategory(item.category);
+    setCategories([norm]);
     setToolsInput(item.tools.join(', '));
     setDescription(item.description);
     setHookRationale(item.hookRationale || '');
@@ -438,19 +446,83 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                   />
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <label className="block font-sans text-xs font-semibold text-neutral-800">
-                    Categoría
+                    Categorías (selecciona una o más)
                   </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-sans bg-white focus:outline-none focus:border-neutral-900"
-                  >
-                    <option value="MOTION">Motion</option>
-                    <option value="IA">IA</option>
-                    <option value="KEY_VISUALS">Key Visuals</option>
-                  </select>
+
+                  {/* Tag Checkboxes */}
+                  <div className="flex flex-wrap gap-2">
+                    {availableCategories.map((cat) => {
+                      const isSelected = categories.includes(cat.value);
+                      return (
+                        <button
+                          key={cat.value}
+                          type="button"
+                          onClick={() => {
+                            setCategories((prev) =>
+                              isSelected
+                                ? prev.filter((c) => c !== cat.value)
+                                : [...prev, cat.value]
+                            );
+                          }}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-neutral-900 text-white border-neutral-900 shadow-sm'
+                              : 'bg-white text-stone-600 border-stone-300 hover:border-neutral-600 hover:text-neutral-900'
+                          }`}
+                        >
+                          {isSelected && <Check className="w-3 h-3" />}
+                          {cat.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Add custom category */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="text"
+                      value={customCategoryInput}
+                      onChange={(e) => setCustomCategoryInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const trimmed = customCategoryInput.trim();
+                          if (!trimmed) return;
+                          const val = trimmed.toUpperCase().replace(/\s+/g, '_');
+                          if (!availableCategories.find((c) => c.value === val)) {
+                            setAvailableCategories((prev) => [...prev, { value: val, label: trimmed }]);
+                          }
+                          if (!categories.includes(val)) {
+                            setCategories((prev) => [...prev, val]);
+                          }
+                          setCustomCategoryInput('');
+                        }
+                      }}
+                      placeholder="Nueva categoría... (Enter para añadir)"
+                      className="flex-1 px-3 py-1.5 rounded-xl border border-stone-300 text-xs font-sans focus:outline-none focus:border-neutral-900 bg-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const trimmed = customCategoryInput.trim();
+                        if (!trimmed) return;
+                        const val = trimmed.toUpperCase().replace(/\s+/g, '_');
+                        if (!availableCategories.find((c) => c.value === val)) {
+                          setAvailableCategories((prev) => [...prev, { value: val, label: trimmed }]);
+                        }
+                        if (!categories.includes(val)) {
+                          setCategories((prev) => [...prev, val]);
+                        }
+                        setCustomCategoryInput('');
+                      }}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-sans text-xs font-semibold transition-colors cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Añadir
+                    </button>
+                  </div>
                 </div>
 
                 {/* Multi-Assets Section */}
@@ -773,9 +845,6 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                                     {itemAssets.length}
                                   </span>
                                 )}
-                                <span className="text-[10px] font-mono text-stone-500 bg-stone-100 px-1.5 py-0.2 rounded">
-                                  {primary.format}
-                                </span>
                               </div>
                             </div>
                           </div>

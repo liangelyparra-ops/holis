@@ -160,9 +160,6 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
                 {assets.length} assets
               </span>
             )}
-            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-medium tracking-wider bg-black/70 text-white/90 backdrop-blur-md border border-white/10">
-              {primaryAsset.format}
-            </span>
           </div>
         </div>
 
