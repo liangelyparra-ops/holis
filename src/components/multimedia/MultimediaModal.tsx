@@ -336,24 +336,37 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                     {/* Media Item Display */}
                     <div className="w-full flex items-center justify-center">
                       {isAssetDriveVideo ? (
-                        <div className="w-full aspect-video rounded-2xl overflow-hidden bg-black">
-                          <iframe
-                            src={asset.url}
-                            title={asset.title || item.title}
-                            allow="autoplay; fullscreen"
-                            allowFullScreen
-                            className="w-full h-full border-0"
-                          />
+                        <div className="relative w-fit max-w-full mx-auto rounded-2xl overflow-hidden group/drive flex items-center justify-center">
+                          <div className="w-[85vw] max-w-[960px] aspect-video max-h-[72vh] relative rounded-2xl overflow-hidden bg-black/90">
+                            <iframe
+                              src={asset.url.includes('?') ? `${asset.url}&autoplay=1` : `${asset.url}?autoplay=1`}
+                              title={asset.title || item.title}
+                              allow="autoplay; fullscreen"
+                              allowFullScreen
+                              className="w-full h-full border-0 rounded-2xl"
+                            />
+                            {/* Blocker overlay for Google Drive top-right pop-out (open in new tab) button */}
+                            <div
+                              className="absolute top-0 right-0 w-24 h-14 z-30 pointer-events-auto bg-transparent cursor-default"
+                              title="Reproductor de video"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                              }}
+                            />
+                          </div>
                         </div>
                       ) : isAssetEmbed ? (
-                        <div className="w-full aspect-video rounded-2xl overflow-hidden bg-black">
-                          <iframe
-                            src={asset.url}
-                            title={asset.title || item.title}
-                            allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-                            allowFullScreen
-                            className="w-full h-full border-0"
-                          />
+                        <div className="relative w-fit max-w-full mx-auto rounded-2xl overflow-hidden flex items-center justify-center">
+                          <div className="w-[85vw] max-w-[960px] aspect-video max-h-[72vh] relative rounded-2xl overflow-hidden bg-black/90">
+                            <iframe
+                              src={asset.url}
+                              title={asset.title || item.title}
+                              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+                              allowFullScreen
+                              className="w-full h-full border-0 rounded-2xl"
+                            />
+                          </div>
                         </div>
                       ) : isAssetVideo ? (
                         <ModalVideoPlayer asset={asset} index={idx} autoPlayInitial={idx === 0} />
