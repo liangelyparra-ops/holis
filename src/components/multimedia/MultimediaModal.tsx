@@ -129,21 +129,27 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
     };
   }, [item, onClose]);
 
+  const isClickScrollingRef = useRef(false);
+  const clickScrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (assets.length <= 1) return;
+    if (isClickScrollingRef.current) return;
     const container = e.currentTarget;
     const containerTop = container.scrollTop;
     
-    // Find which asset is currently at top
+    // Find which asset is currently in view
+    let currentIdx = 0;
     for (let i = 0; i < assets.length; i++) {
       const el = document.getElementById(`modal-asset-${i}`);
       if (el) {
         const top = el.offsetTop - container.offsetTop;
-        if (containerTop >= top - 80) {
-          setActiveAssetIndex(i);
+        if (containerTop >= top - 120) {
+          currentIdx = i;
         }
       }
     }
+    setActiveAssetIndex(currentIdx);
   };
 
   if (!item || assets.length === 0) return null;
@@ -166,6 +172,12 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
 
   const scrollToAsset = (index: number) => {
     setActiveAssetIndex(index);
+    isClickScrollingRef.current = true;
+    if (clickScrollTimeoutRef.current) clearTimeout(clickScrollTimeoutRef.current);
+    clickScrollTimeoutRef.current = setTimeout(() => {
+      isClickScrollingRef.current = false;
+    }, 800);
+
     const target = document.getElementById(`modal-asset-${index}`);
     if (target) {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -210,7 +222,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
           <div className="lg:w-8/12 flex-1 bg-black/40 flex flex-col overflow-hidden relative border-b lg:border-b-0 lg:border-r border-white/10">
             {/* Multi-Asset Top Quick Jump Navigation Bar - Slim Text Tabs */}
             {assets.length > 1 && (
-              <div className="px-5 bg-black/60 backdrop-blur-xl border-b border-white/10 flex items-center gap-6 overflow-x-auto scrollbar-none shrink-0 z-20 h-10">
+              <div className="px-6 bg-black/60 backdrop-blur-xl border-b border-white/10 flex items-center gap-7 overflow-x-auto scrollbar-none shrink-0 z-20 h-12">
                 {assets.map((asset, idx) => {
                   const isActive = activeAssetIndex === idx;
                   return (
@@ -218,7 +230,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                       key={asset.id || idx}
                       type="button"
                       onClick={() => scrollToAsset(idx)}
-                      className={`h-full flex items-center text-xs font-sans transition-all shrink-0 cursor-pointer border-b-2 relative ${
+                      className={`h-full flex items-center text-sm font-sans tracking-tight transition-all shrink-0 cursor-pointer border-b-2 relative ${
                         isActive
                           ? 'text-white font-semibold border-white'
                           : 'text-stone-400 font-normal hover:text-stone-200 border-transparent'
@@ -248,15 +260,6 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                     id={`modal-asset-${idx}`}
                     className="space-y-4 transition-all scroll-mt-6"
                   >
-                    {/* Header info for this asset if multi-asset */}
-                    {assets.length > 1 && asset.title && (
-                      <div className="flex items-center gap-2 px-1">
-                        <span className="text-white/90 font-sans text-xs sm:text-sm font-semibold truncate max-w-md">
-                          {asset.title}
-                        </span>
-                      </div>
-                    )}
-
                     {/* Media Item Display */}
                     <div className="w-full flex items-center justify-center">
                       {isAssetDriveVideo ? (
@@ -318,32 +321,24 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                   const iconName = getCategoryIconName(catKey);
 
                   let CatIcon = Tag;
-                  let iconColor = 'text-stone-300';
+                  if (iconName === 'film') CatIcon = Film;
+                  else if (iconName === 'sparkles') CatIcon = Sparkles;
+                  else if (iconName === 'image') CatIcon = ImageIcon;
+                  else if (iconName === 'box') CatIcon = Box;
+                  else if (iconName === 'palette') CatIcon = Palette;
+                  else if (iconName === 'globe') CatIcon = Globe;
 
-                  if (iconName === 'film') {
-                    CatIcon = Film;
-                    iconColor = 'text-violet-400';
-                  } else if (iconName === 'sparkles') {
-                    CatIcon = Sparkles;
-                    iconColor = 'text-emerald-400';
-                  } else if (iconName === 'image') {
-                    CatIcon = ImageIcon;
-                    iconColor = 'text-blue-400';
-                  } else if (iconName === 'box') {
-                    CatIcon = Box;
-                    iconColor = 'text-amber-400';
-                  } else if (iconName === 'palette') {
-                    CatIcon = Palette;
-                    iconColor = 'text-pink-400';
-                  } else if (iconName === 'globe') {
-                    CatIcon = Globe;
-                    iconColor = 'text-cyan-400';
-                  }
+                  const isIA = iconName === 'sparkles';
+                  const badgeClass = isIA
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40 shadow-xs'
+                    : 'bg-white/10 text-stone-200 border-white/15';
+
+                  const iconColor = isIA ? 'text-emerald-300' : 'text-stone-400';
 
                   return (
                     <span
                       key={catKey}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white border border-white/15 backdrop-blur-md"
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md ${badgeClass}`}
                     >
                       <CatIcon className={`w-3.5 h-3.5 ${iconColor}`} />
                       {label}

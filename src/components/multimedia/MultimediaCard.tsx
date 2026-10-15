@@ -47,29 +47,22 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
     const iconName = getCategoryIconName(cat);
 
     let icon = Tag;
-    let color = 'bg-stone-50 text-stone-700 border-stone-200';
+    if (iconName === 'film') icon = Film;
+    else if (iconName === 'sparkles') icon = Sparkles;
+    else if (iconName === 'image') icon = ImageIcon;
+    else if (iconName === 'box') icon = Box;
+    else if (iconName === 'palette') icon = Palette;
+    else if (iconName === 'globe') icon = Globe;
 
-    if (iconName === 'film') {
-      icon = Film;
-      color = 'bg-violet-50 text-violet-700 border-violet-200';
-    } else if (iconName === 'sparkles') {
-      icon = Sparkles;
-      color = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-    } else if (iconName === 'image') {
-      icon = ImageIcon;
-      color = 'bg-blue-50 text-blue-700 border-blue-200';
-    } else if (iconName === 'box') {
-      icon = Box;
-      color = 'bg-amber-50 text-amber-700 border-amber-200';
-    } else if (iconName === 'palette') {
-      icon = Palette;
-      color = 'bg-pink-50 text-pink-700 border-pink-200';
-    } else if (iconName === 'globe') {
-      icon = Globe;
-      color = 'bg-cyan-50 text-cyan-700 border-cyan-200';
-    }
+    // Solo el chip de IA lleva color
+    const isIA = iconName === 'sparkles';
+    const color = isIA
+      ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-xs'
+      : 'bg-white/90 text-stone-700 border-stone-200/90 shadow-2xs';
 
-    return { label, icon, color };
+    const iconColor = isIA ? 'text-emerald-600' : 'text-stone-500';
+
+    return { label, icon, color, iconColor };
   };
 
   // Format aspect ratio class based on primary asset format
@@ -173,7 +166,7 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
                   key={catKey}
                   className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border shadow-2xs backdrop-blur-md ${meta.color}`}
                 >
-                  <CatIcon className="w-3 h-3" />
+                  <CatIcon className={`w-3 h-3 ${meta.iconColor}`} />
                   {meta.label}
                 </span>
               );
