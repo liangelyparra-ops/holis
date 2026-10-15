@@ -433,10 +433,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
               </div>
 
               {/* Description */}
-              <div className="space-y-2">
-                <p className="font-mono text-xs uppercase tracking-wider text-stone-400 font-semibold">
-                  Concepto &amp; Proceso Creativo
-                </p>
+              <div>
                 <p className="font-sans text-sm sm:text-base text-stone-200 leading-relaxed whitespace-pre-line">
                   {item.description}
                 </p>
@@ -455,20 +452,15 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
               )}
 
               {/* Tools List */}
-              <div className="space-y-2">
-                <p className="font-mono text-xs uppercase tracking-wider text-stone-400 font-semibold">
-                  Herramientas &amp; Pipeline
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {item.tools.map((t) => (
-                    <span
-                      key={t}
-                      className="px-2.5 py-1 rounded-lg text-xs font-mono font-medium bg-white/10 text-stone-200 border border-white/10"
-                    >
-                      {t}
-                    </span>
-                  ))}
-                </div>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {item.tools.map((t) => (
+                  <span
+                    key={t}
+                    className="px-2.5 py-1 rounded-lg text-xs font-mono font-medium bg-white/10 text-stone-200 border border-white/10"
+                  >
+                    {t}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
