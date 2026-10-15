@@ -187,8 +187,8 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({
           />
         )}
 
-        {/* Top Badges Overlay */}
-        <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2 pointer-events-none">
+        {/* Top Badges Overlay - only visible on hover */}
+        <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <div className="flex flex-wrap items-center gap-1.5 max-w-[75%]">
             {itemCategories.map((catKey) => {
               const meta = getCategoryMeta(catKey);
