@@ -222,23 +222,17 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({
           </div>
         )}
 
-        {/* Hover Click prompt banner */}
-        <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-between text-white text-xs">
-          <span className="font-sans font-medium flex items-center gap-1.5">
-            Ver {assets.length > 1 ? `${assets.length} archivos` : 'detalle'} &amp; workflow <ExternalLink className="w-3 h-3" />
-          </span>
-        </div>
       </div>
 
-      {/* Card Content - Clean Title Bar */}
-      <div className="p-3.5 sm:p-4 bg-white flex items-center justify-between gap-3 border-t border-stone-100/90 shrink-0">
+      {/* Card Content - Compact Glass Title Bar */}
+      <div className="px-3 py-1.5 sm:px-3 sm:py-2 bg-white/85 backdrop-blur-md flex items-center justify-between gap-2 border-t border-stone-200/60 shrink-0">
         <div className="min-w-0 flex-1">
-          <h3 className="font-headline text-sm sm:text-base font-semibold text-neutral-900 group-hover:text-black tracking-tight leading-snug truncate">
+          <h3 className="font-headline text-[10px] sm:text-[11px] font-semibold text-neutral-800 group-hover:text-black tracking-tight leading-tight truncate">
             {item.title}
           </h3>
         </div>
         <div className="shrink-0 flex items-center text-stone-400 group-hover:text-neutral-900 transition-colors">
-          <ExternalLink className="w-3.5 h-3.5" />
+          <ExternalLink className="w-3 h-3" />
         </div>
       </div>
     </motion.article>
