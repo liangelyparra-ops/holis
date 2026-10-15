@@ -12,7 +12,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import type { MultimediaItem, MediaAsset } from '../../types/multimedia';
-import { normalizeCategory, getItemAssets } from '../../types/multimedia';
+import { normalizeCategory, getItemAssets, getItemCategories } from '../../types/multimedia';
 
 interface MultimediaModalProps {
   item: MultimediaItem | null;
@@ -292,12 +292,25 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
           {/* Details Column (Right Sidebar) */}
           <div className="lg:w-4/12 bg-white/[0.02] backdrop-blur-2xl p-6 sm:p-8 flex flex-col justify-between overflow-y-auto space-y-6 text-left">
             <div className="space-y-5">
-              {/* Category Badge only */}
+              {/* Category Badges */}
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white border border-white/15 backdrop-blur-md">
-                  <CategoryIcon className="w-3.5 h-3.5 text-emerald-400" />
-                  {currentCat.label}
-                </span>
+                {getItemCategories(item).map((catKey) => {
+                  const norm = normalizeCategory(catKey);
+                  const meta = categoryLabels[norm] || {
+                    label: catKey.charAt(0).toUpperCase() + catKey.slice(1).toLowerCase().replace(/_/g, ' '),
+                    icon: Sparkles,
+                  };
+                  const CatIcon = meta.icon;
+                  return (
+                    <span
+                      key={catKey}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white border border-white/15 backdrop-blur-md"
+                    >
+                      <CatIcon className="w-3.5 h-3.5 text-emerald-400" />
+                      {meta.label}
+                    </span>
+                  );
+                })}
 
                 {assets.length > 1 && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">

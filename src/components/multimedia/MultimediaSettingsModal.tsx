@@ -21,7 +21,7 @@ import {
   EyeOff,
 } from 'lucide-react';
 import type { MultimediaItem, MediaFormat, MediaAsset } from '../../types/multimedia';
-import { normalizeCategory, getItemAssets } from '../../types/multimedia';
+import { normalizeCategory, getItemAssets, getItemCategories } from '../../types/multimedia';
 import { parseMediaUrl, extractDriveFileId } from '../../utils/driveUrlHelper';
 import type { MultimediaSectionId } from '../../types/multimediaContent';
 
@@ -54,6 +54,27 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
 }) => {
   // Tab state: 'items' or 'page-editor'
   const [activeTab, setActiveTab] = useState<'items' | 'page-editor'>('items');
+
+  // Dynamically populate availableCategories from default categories + any category found in items
+  React.useEffect(() => {
+    const baseMap = new Map<string, string>([
+      ['MOTION', 'Motion'],
+      ['IA', 'IA'],
+      ['KEY_VISUALS', 'Key Visuals'],
+    ]);
+    items.forEach((it) => {
+      const cats = getItemCategories(it);
+      cats.forEach((c) => {
+        if (!baseMap.has(c)) {
+          const label = c.charAt(0).toUpperCase() + c.slice(1).toLowerCase().replace(/_/g, ' ');
+          baseMap.set(c, label);
+        }
+      });
+    });
+    setAvailableCategories(
+      Array.from(baseMap.entries()).map(([value, label]) => ({ value, label }))
+    );
+  }, [items]);
 
   // Form state for adding or editing items
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -146,6 +167,9 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
       .map((t) => t.trim())
       .filter(Boolean);
 
+    const finalCategories = categories.length > 0 ? categories : ['MOTION'];
+    const primaryCategory = (finalCategories[0] as any) || 'MOTION';
+
     if (editingItemId) {
       // Update existing item
       const updated = items.map((item) => {
@@ -153,7 +177,8 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
           return {
             ...item,
             title,
-            category: categories[0] as any,
+            category: primaryCategory,
+            categories: finalCategories,
             tools: toolsArray.length ? toolsArray : ['Design', 'Motion'],
             description,
             hookRationale,
@@ -175,7 +200,8 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
       const newItem: MultimediaItem = {
         id: `item-${Date.now()}`,
         title,
-        category: categories[0] as any,
+        category: primaryCategory,
+        categories: finalCategories,
         tools: toolsArray.length ? toolsArray : ['Creative Direction', 'AI'],
         description: description || 'Pieza multimedia creada para campañas digitales.',
         hookRationale: hookRationale || '',
@@ -199,8 +225,8 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
     setActiveTab('items');
     setEditingItemId(item.id);
     setTitle(item.title);
-    const norm = normalizeCategory(item.category);
-    setCategories([norm]);
+    const itemCats = getItemCategories(item);
+    setCategories(itemCats);
     setToolsInput(item.tools.join(', '));
     setDescription(item.description);
     setHookRationale(item.hookRationale || '');

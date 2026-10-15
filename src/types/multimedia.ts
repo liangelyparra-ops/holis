@@ -32,6 +32,7 @@ export interface MultimediaItem {
   id: string;
   title: string;
   category: AnyCategory;
+  categories?: string[];
   tools: string[];
   description: string;
   hookRationale?: string;
@@ -47,6 +48,13 @@ export interface MultimediaItem {
   driveFileId?: string;
   thumbnailUrl?: string;
   format?: MediaFormat;
+}
+
+export function getItemCategories(item: MultimediaItem): string[] {
+  if (Array.isArray(item.categories) && item.categories.length > 0) {
+    return item.categories;
+  }
+  return item.category ? [item.category] : ['MOTION'];
 }
 
 export function normalizeCategory(cat: string): 'MOTION' | 'IA' | 'KEY_VISUALS' {

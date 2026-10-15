@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Settings,
@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { MultimediaItem, MultimediaCategory } from '../../types/multimedia';
-import { normalizeCategory } from '../../types/multimedia';
+import { normalizeCategory, getItemCategories } from '../../types/multimedia';
 import type { MultimediaPageContent, MultimediaSectionId } from '../../types/multimediaContent';
 import { defaultMultimediaPageContent } from '../../types/multimediaContent';
 import { MultimediaCard } from './MultimediaCard';
@@ -61,11 +61,11 @@ const InlineEditable: React.FC<InlineEditableProps> = ({
     <Component
       contentEditable
       suppressContentEditableWarning
+      onInput={(e: React.FormEvent<HTMLElement>) => {
+        onChange(e.currentTarget.innerText);
+      }}
       onBlur={(e: React.FocusEvent<HTMLElement>) => {
-        const text = e.currentTarget.innerText.trim();
-        if (text && text !== value) {
-          onChange(text);
-        }
+        onChange(e.currentTarget.innerText);
       }}
       className={`${className} outline-dashed outline-2 outline-blue-400 hover:outline-blue-600 bg-blue-50/40 hover:bg-blue-100/50 rounded-lg px-2 py-0.5 cursor-text transition-all focus:outline-solid focus:outline-2 focus:outline-blue-600 focus:bg-white`}
       title="Haz clic para editar este texto directamente"
@@ -79,13 +79,18 @@ export const MultimediaDesignerPage: React.FC = () => {
   const [items, setItems] = useState<MultimediaItem[]>([]);
   const [pageContent, setPageContent] = useState<MultimediaPageContent>(defaultMultimediaPageContent);
   const [isLoadingItems, setIsLoadingItems] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<MultimediaCategory>('TODOS');
+  const [selectedCategory, setSelectedCategory] = useState<string>('TODOS');
   const [selectedItemForModal, setSelectedItemForModal] = useState<MultimediaItem | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const pageContentRef = useRef(pageContent);
+  useEffect(() => {
+    pageContentRef.current = pageContent;
+  }, [pageContent]);
 
   // Real-time synchronization — Firestore is the source of truth
   useEffect(() => {
@@ -101,6 +106,7 @@ export const MultimediaDesignerPage: React.FC = () => {
     const unsubscribeContent = subscribeToMultimediaPageContent((syncedContent) => {
       if (syncedContent) {
         setPageContent(syncedContent);
+        pageContentRef.current = syncedContent;
       }
     });
 
@@ -132,7 +138,13 @@ export const MultimediaDesignerPage: React.FC = () => {
   const handleSavePageContent = async () => {
     setIsSaving(true);
     try {
-      const cloudSaved = await saveMultimediaPageContentLive(pageContent);
+      // Blur any currently focused editable field to trigger change
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+      await new Promise((r) => setTimeout(r, 80));
+
+      const cloudSaved = await saveMultimediaPageContentLive(pageContentRef.current);
       if (cloudSaved) {
         toast.success('¡Página guardada y sincronizada en vivo en la nube!');
       } else {
@@ -177,14 +189,36 @@ export const MultimediaDesignerPage: React.FC = () => {
   const filteredItems = items.filter((item) => {
     if (item.hidden) return false;
     if (selectedCategory === 'TODOS') return true;
-    return normalizeCategory(item.category) === selectedCategory;
+    const itemCats = getItemCategories(item);
+    if (itemCats.includes(selectedCategory)) return true;
+    const normCats = itemCats.map((c) => normalizeCategory(c));
+    return normCats.includes(selectedCategory as any);
   });
 
-  const categoryTabs: { id: MultimediaCategory; label: string; icon: any }[] = [
+  // Collect any custom categories added across all items
+  const customCategories = useMemo(() => {
+    const list: string[] = [];
+    items.forEach((it) => {
+      if (it.hidden) return;
+      getItemCategories(it).forEach((cat) => {
+        if (!['MOTION', 'IA', 'KEY_VISUALS'].includes(cat) && !list.includes(cat)) {
+          list.push(cat);
+        }
+      });
+    });
+    return list;
+  }, [items]);
+
+  const categoryTabs: { id: string; label: string; icon: any }[] = [
     { id: 'TODOS', label: 'Todos', icon: Layers },
     { id: 'MOTION', label: 'Motion', icon: Film },
     { id: 'IA', label: 'IA', icon: Sparkles },
     { id: 'KEY_VISUALS', label: 'Key Visuals', icon: ImageIcon },
+    ...customCategories.map((c) => ({
+      id: c,
+      label: c.charAt(0).toUpperCase() + c.slice(1).toLowerCase().replace(/_/g, ' '),
+      icon: Sparkles,
+    })),
   ];
 
   const getSectionTitle = (id: MultimediaSectionId) => {
