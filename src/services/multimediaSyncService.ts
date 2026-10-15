@@ -99,8 +99,10 @@ export async function saveMultimediaItemsLive(items: MultimediaItem[]): Promise<
  * Subscribes to page content from Firestore.
  */
 export function subscribeToMultimediaPageContent(
-  onUpdate: (content: MultimediaPageContent) => void
+  onUpdate: (content: MultimediaPageContent) => void,
+  onLoadingChange?: (loading: boolean) => void
 ): () => void {
+  onLoadingChange?.(true);
   const docRef = doc(db, 'games', CONTENT_DOC_PATH);
 
   // Immediate fetch
@@ -116,10 +118,12 @@ export function subscribeToMultimediaPageContent(
       } else {
         onUpdate(defaultMultimediaPageContent);
       }
+      onLoadingChange?.(false);
     })
     .catch((err) => {
       console.warn('[Content] getDoc failed:', err.message);
       onUpdate(defaultMultimediaPageContent);
+      onLoadingChange?.(false);
     });
 
   // Realtime listener
@@ -132,9 +136,11 @@ export function subscribeToMultimediaPageContent(
           onUpdate({ ...defaultMultimediaPageContent, ...data.content });
         }
       }
+      onLoadingChange?.(false);
     },
     (error) => {
       console.warn('[Content] onSnapshot error:', error.message);
+      onLoadingChange?.(false);
     }
   );
 

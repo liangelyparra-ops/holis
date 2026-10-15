@@ -83,6 +83,7 @@ export const MultimediaDesignerPage: React.FC = () => {
   const [items, setItems] = useState<MultimediaItem[]>([]);
   const [pageContent, setPageContent] = useState<MultimediaPageContent>(defaultMultimediaPageContent);
   const [isLoadingItems, setIsLoadingItems] = useState(true);
+  const [isLoadingContent, setIsLoadingContent] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('TODOS');
   const [selectedItemForModal, setSelectedItemForModal] = useState<MultimediaItem | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -107,12 +108,15 @@ export const MultimediaDesignerPage: React.FC = () => {
       (loading) => setIsLoadingItems(loading)
     );
 
-    const unsubscribeContent = subscribeToMultimediaPageContent((syncedContent) => {
-      if (syncedContent) {
-        setPageContent(syncedContent);
-        pageContentRef.current = syncedContent;
-      }
-    });
+    const unsubscribeContent = subscribeToMultimediaPageContent(
+      (syncedContent) => {
+        if (syncedContent) {
+          setPageContent(syncedContent);
+          pageContentRef.current = syncedContent;
+        }
+      },
+      (loading) => setIsLoadingContent(loading)
+    );
 
     return () => {
       unsubscribeItems();
@@ -561,24 +565,7 @@ export const MultimediaDesignerPage: React.FC = () => {
         </div>
 
         {/* Cards Grid */}
-        {isLoadingItems ? (
-          /* Loading skeleton while Firestore data arrives */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="rounded-2xl border border-stone-200 overflow-hidden animate-pulse"
-              >
-                <div className="aspect-video bg-stone-200" />
-                <div className="p-4 space-y-2">
-                  <div className="h-4 bg-stone-200 rounded-md w-3/4" />
-                  <div className="h-3 bg-stone-100 rounded-md w-full" />
-                  <div className="h-3 bg-stone-100 rounded-md w-2/3" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : filteredItems.length === 0 ? (
+        {filteredItems.length === 0 ? (
           <div className="py-16 text-center border-2 border-dashed border-stone-200 rounded-3xl space-y-3">
             <p className="font-sans text-sm text-stone-600">
               No hay piezas en la categoría seleccionada.
@@ -971,6 +958,136 @@ export const MultimediaDesignerPage: React.FC = () => {
         return renderContactSection(index);
     }
   };
+
+  const isLoading = isLoadingItems || isLoadingContent;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#fafafa] text-neutral-900 font-body selection:bg-neutral-200">
+        {/* Header Skeleton */}
+        <header className="sticky top-0 z-40 w-full border-b border-stone-200/80 bg-white/80 backdrop-blur-xl transition-all">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-20 bg-stone-200 rounded-md animate-pulse" />
+              <div className="h-4 w-28 bg-stone-100 rounded-full animate-pulse" />
+            </div>
+            <div className="h-8 w-28 bg-stone-100 rounded-xl animate-pulse" />
+          </div>
+        </header>
+
+        {/* Main Content Skeleton */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-8 py-10 sm:py-16 space-y-16 text-left">
+          {/* Hero Section Skeleton */}
+          <section className="relative space-y-6">
+            <div className="h-6 w-36 bg-stone-200 rounded-full animate-pulse" />
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-8 space-y-5">
+                <div className="space-y-3">
+                  <div className="h-10 sm:h-14 bg-stone-200 rounded-2xl animate-pulse w-4/5" />
+                  <div className="h-10 sm:h-14 bg-stone-200 rounded-2xl animate-pulse w-3/5" />
+                </div>
+                <div className="space-y-2 pt-2">
+                  <div className="h-4 bg-stone-100 rounded-md animate-pulse w-full" />
+                  <div className="h-4 bg-stone-100 rounded-md animate-pulse w-11/12" />
+                  <div className="h-4 bg-stone-100 rounded-md animate-pulse w-4/5" />
+                </div>
+              </div>
+
+              {/* Quick Skills / Toolkit Box Skeleton */}
+              <div className="lg:col-span-4 bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/90 shadow-sm space-y-5">
+                <div className="h-3 w-28 bg-stone-200 rounded animate-pulse" />
+
+                <div className="space-y-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="space-y-1.5 border-t border-stone-100 pt-3 first:border-0 first:pt-0"
+                    >
+                      <div className="h-3.5 w-32 bg-stone-200 rounded animate-pulse" />
+                      <div className="h-3 w-full bg-stone-100 rounded animate-pulse" />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-2">
+                  <div className="h-10 w-full bg-stone-200 rounded-xl animate-pulse" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Gallery Section Skeleton */}
+          <section className="relative space-y-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-stone-200 pb-5">
+              <div className="space-y-2">
+                <div className="h-3 w-32 bg-stone-200 rounded animate-pulse" />
+                <div className="h-8 w-64 bg-stone-200 rounded-xl animate-pulse" />
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="h-7 w-20 bg-stone-100 rounded-full animate-pulse" />
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl border border-stone-200 overflow-hidden animate-pulse bg-white shadow-2xs"
+                >
+                  <div className="aspect-video bg-stone-200" />
+                  <div className="p-4 space-y-2.5">
+                    <div className="h-4 bg-stone-200 rounded-md w-3/4" />
+                    <div className="h-3 bg-stone-100 rounded-md w-full" />
+                    <div className="h-3 bg-stone-100 rounded-md w-2/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Methodology Section Skeleton */}
+          <section className="relative bg-white rounded-3xl p-8 sm:p-12 border border-stone-200/90 shadow-xs space-y-8">
+            <div className="space-y-2 max-w-2xl">
+              <div className="h-3 w-28 bg-stone-200 rounded animate-pulse" />
+              <div className="h-8 w-72 bg-stone-200 rounded-xl animate-pulse" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="space-y-2.5 p-5 rounded-2xl bg-stone-50 border border-stone-200/60 animate-pulse"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-stone-200" />
+                  <div className="h-4 w-36 bg-stone-200 rounded-md" />
+                  <div className="space-y-1 pt-1">
+                    <div className="h-3 bg-stone-100 rounded w-full" />
+                    <div className="h-3 bg-stone-100 rounded w-5/6" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Contact Section Skeleton */}
+          <section className="relative bg-gradient-to-br from-neutral-900 to-neutral-950 text-white rounded-3xl p-8 sm:p-12 shadow-md space-y-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="h-3 w-24 bg-neutral-800 rounded animate-pulse" />
+              <div className="h-8 sm:h-10 w-4/5 bg-neutral-800 rounded-xl animate-pulse" />
+              <div className="h-4 w-2/3 bg-neutral-800 rounded-md animate-pulse pt-2" />
+            </div>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <div className="h-10 w-36 bg-neutral-800 rounded-xl animate-pulse" />
+              <div className="h-10 w-36 bg-neutral-800 rounded-xl animate-pulse" />
+            </div>
+          </section>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#fafafa] text-neutral-900 font-body selection:bg-neutral-200">
