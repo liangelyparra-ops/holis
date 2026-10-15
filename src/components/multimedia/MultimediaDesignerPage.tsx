@@ -801,11 +801,6 @@ export const MultimediaDesignerPage: React.FC = () => {
             </p>
           </div>
         </div>
-
-        {/* Trayectoria / Career Timeline */}
-        <div className="pt-4 border-t border-stone-200/80">
-          <CareerTimeline className="!my-2 !px-0" />
-        </div>
       </section>
     );
   };
@@ -962,7 +957,15 @@ export const MultimediaDesignerPage: React.FC = () => {
       case 'methodology':
         return renderMethodologySection(index);
       case 'contact':
-        return renderContactSection(index);
+        return (
+          <React.Fragment key="contact-with-timeline">
+            {/* Trayectoria / Career Timeline sin fondo entre Cómo Trabajo y Hablemos */}
+            <div className="w-full">
+              <CareerTimeline className="!my-0 !px-0" />
+            </div>
+            {renderContactSection(index)}
+          </React.Fragment>
+        );
     }
   };
 

@@ -45,10 +45,14 @@ export const CareerTimeline: React.FC<{ className?: string }> = ({ className = '
           font: inherit;
           color: inherit;
         }
-        .lp-timeline h2 {
+        .lp-timeline .lp-timeline-heading {
           margin: 0 0 1.5rem;
-          font-size: 1.15rem;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+          font-size: 0.75rem;
           font-weight: 700;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: rgb(120 113 108); /* stone-500 */
         }
         .lp-timeline ol {
           list-style: none;
@@ -108,7 +112,7 @@ export const CareerTimeline: React.FC<{ className?: string }> = ({ className = '
         }
       `}</style>
 
-      <h2 id="lp-timeline-title">Trayectoria</h2>
+      <h2 id="lp-timeline-title" className="lp-timeline-heading">Trayectoria</h2>
       <ol>
         {defaultTimelineItems.map((item, idx) => (
           <li key={idx}>
