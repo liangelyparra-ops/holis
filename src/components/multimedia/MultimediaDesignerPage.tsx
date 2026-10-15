@@ -32,6 +32,7 @@ import { MultimediaCard } from './MultimediaCard';
 import { MultimediaModal } from './MultimediaModal';
 import { MultimediaSettingsModal } from './MultimediaSettingsModal';
 import { MultimediaAuthModal } from './MultimediaAuthModal';
+import { CareerTimeline } from '../portfolio/CareerTimeline';
 import {
   subscribeToMultimediaItems,
   saveMultimediaItemsLive,
@@ -799,6 +800,11 @@ export const MultimediaDesignerPage: React.FC = () => {
               />
             </p>
           </div>
+        </div>
+
+        {/* Trayectoria / Career Timeline */}
+        <div className="pt-4 border-t border-stone-200/80">
+          <CareerTimeline className="!my-2 !px-0" />
         </div>
       </section>
     );

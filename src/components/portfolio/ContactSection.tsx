@@ -1,6 +1,7 @@
 import React from 'react';
 import { Download, Linkedin, Mail, MessageCircle } from 'lucide-react';
 import { portfolioContent } from '../../data/portfolioContent';
+import { CareerTimeline } from './CareerTimeline';
 
 export const ContactSection: React.FC = () => {
   return (
@@ -33,6 +34,9 @@ export const ContactSection: React.FC = () => {
           </p>
         </div>
       </section>
+
+      {/* Trayectoria / Timeline */}
+      <CareerTimeline className="!my-0 !px-0" />
 
       <section id="contact" className="custom-glass border border-neutral-200/60 rounded-3xl p-6 sm:p-10 lg:p-12 shadow-xs" aria-labelledby="contact-heading">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-end">
