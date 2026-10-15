@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Play, Sparkles, Video, Image as ImageIcon, ExternalLink, Film, Layers } from 'lucide-react';
 import type { MultimediaItem, MediaAsset } from '../../types/multimedia';
@@ -12,6 +12,8 @@ interface MultimediaCardProps {
 
 export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, index }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   const assets = getItemAssets(item);
   const primaryAsset: MediaAsset = assets[0] || {
     id: 'fallback',
@@ -20,6 +22,23 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
     format: '16:9',
   };
   const isVideo = primaryAsset.mediaType === 'video' || primaryAsset.mediaType === 'drive_video' || primaryAsset.mediaType === 'embed';
+
+  // Automatically play video on hover, pause when hover ends
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (isHovered) {
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Handled browser policies gracefully
+        });
+      }
+    } else {
+      video.pause();
+    }
+  }, [isHovered]);
 
   const normalized = normalizeCategory(item.category);
 
@@ -67,12 +86,13 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
       <div className={`relative w-full ${getAspectRatioClass()} bg-neutral-900 overflow-hidden`}>
         {primaryAsset.mediaType === 'video' ? (
           <video
+            ref={videoRef}
             src={primaryAsset.url}
             poster={primaryAsset.thumbnailUrl}
             muted
             loop
             playsInline
-            autoPlay={isHovered}
+            preload="metadata"
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
         ) : primaryAsset.mediaType === 'drive_video' ? (
@@ -146,10 +166,10 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
           </div>
         </div>
 
-        {/* Play Icon Indicator overlay for direct video */}
+        {/* Play Icon Indicator overlay for direct video - fades out while playing on hover */}
         {isVideo && primaryAsset.mediaType === 'video' && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300 opacity-90 group-hover:opacity-100">
-            <div className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-md text-neutral-950 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+          <div className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-all duration-300 ${isHovered ? 'opacity-0 scale-90' : 'opacity-90 scale-100'}`}>
+            <div className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-md text-neutral-950 flex items-center justify-center shadow-lg">
               <Play className="w-5 h-5 fill-current ml-0.5" />
             </div>
           </div>
@@ -158,7 +178,7 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
         {/* Hover Click prompt banner */}
         <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-between text-white text-xs">
           <span className="font-sans font-medium flex items-center gap-1">
-            Ver {assets.length > 1 ? `${assets.length} assets` : 'detalle'} &amp; workflow <ExternalLink className="w-3 h-3" />
+            Ver {assets.length > 1 ? `${assets.length} archivos (scroll)` : 'detalle'} &amp; workflow <ExternalLink className="w-3 h-3" />
           </span>
         </div>
       </div>

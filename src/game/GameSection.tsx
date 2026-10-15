@@ -135,6 +135,27 @@ export default function GameSection({ onPlayerJoin, onStatusChange }: GameSectio
 
   const isInRoom = Boolean(selectedNickname && gameState.status !== 'HOME');
 
+  const prevModeRef = useRef<string | null>(null);
+  const hasAutoOpenedCsRef = useRef<boolean>(false);
+
+  // Auto-open instructions modal for Código Secreto:
+  // 1. When switching to Código Secreto mode (locally or synced from host/other player)
+  // 2. When entering the room for the first time if mode is already Código Secreto
+  useEffect(() => {
+    if (gameState.mode === 'CODIGO_SECRETO') {
+      if (isInRoom && !hasAutoOpenedCsRef.current) {
+        hasAutoOpenedCsRef.current = true;
+        setShowInstructions(true);
+      }
+      if (prevModeRef.current !== null && prevModeRef.current !== 'CODIGO_SECRETO') {
+        setShowInstructions(true);
+      }
+    } else {
+      hasAutoOpenedCsRef.current = false;
+    }
+    prevModeRef.current = gameState.mode;
+  }, [isInRoom, gameState.mode]);
+
   useEffect(() => {
     if (onStatusChange) {
       onStatusChange(gameState.status, isInRoom, GAME_ID);
@@ -348,6 +369,9 @@ export default function GameSection({ onPlayerJoin, onStatusChange }: GameSectio
         status: 'LOBBY'
       });
       setSelectedNickname(tempNickname.trim());
+      if (gameState.mode === 'CODIGO_SECRETO') {
+        setShowInstructions(true);
+      }
       playSound(SOUNDS.JOIN);
       toast.success(`Welcome ${tempNickname.trim()}! 🎈`);
     } catch (err) {
@@ -393,6 +417,9 @@ export default function GameSection({ onPlayerJoin, onStatusChange }: GameSectio
   };
 
   const updateMode = async (mode: 'PAPELITO' | 'HOLIS' | 'CODIGO_SECRETO') => {
+    if (mode === 'CODIGO_SECRETO') {
+      setShowInstructions(true);
+    }
     const updates: any = { mode };
     if (mode === 'PAPELITO') {
       updates.cards = [];
@@ -1180,7 +1207,10 @@ export default function GameSection({ onPlayerJoin, onStatusChange }: GameSectio
                   <span className="text-[8px] font-black uppercase tracking-widest text-white">Holis</span>
                 </button>
                 <button 
-                  onClick={() => updateMode('CODIGO_SECRETO')}
+                  onClick={() => {
+                    updateMode('CODIGO_SECRETO');
+                    setShowInstructions(true);
+                  }}
                   className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 cursor-pointer hover:scale-102 active:scale-95 ${gameState.mode === 'CODIGO_SECRETO' ? 'bg-amber-500/10 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.3)]' : 'bg-neutral-900 border-neutral-800 opacity-60 hover:opacity-100'}`}
                 >
                   <Shield size={20} className={gameState.mode === 'CODIGO_SECRETO' ? 'text-amber-500' : 'text-neutral-400'} />
@@ -1642,6 +1672,14 @@ export default function GameSection({ onPlayerJoin, onStatusChange }: GameSectio
           <div className="flex items-center gap-3">
             <span className="text-red-400 font-headline font-black text-xs">🔴 {cs.wordsLeft.red}</span>
             <span className="text-blue-400 font-headline font-black text-xs">🔵 {cs.wordsLeft.blue}</span>
+            <button
+              onClick={() => setShowInstructions(true)}
+              className="p-1 rounded-lg bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-amber-400 hover:border-amber-500/50 transition-all cursor-pointer"
+              title="Cómo jugar / Reglas"
+              aria-label="Cómo jugar Código Secreto"
+            >
+              <HelpCircle size={14} />
+            </button>
           </div>
         </div>
 

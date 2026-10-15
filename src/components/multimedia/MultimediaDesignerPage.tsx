@@ -6,43 +6,106 @@ import {
   Film,
   Video,
   Image as ImageIcon,
-  Box,
   Layers,
-  ArrowLeft,
   Share2,
   Check,
   Send,
   Linkedin,
   MessageCircle,
-  Plus,
   Compass,
+  ArrowUp,
+  ArrowDown,
+  Save,
+  RotateCcw,
+  X,
+  Edit3,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { MultimediaItem, MultimediaCategory } from '../../types/multimedia';
 import { multimediaInitialItems } from '../../data/multimediaInitialItems';
 import { normalizeCategory } from '../../types/multimedia';
+import type { MultimediaPageContent, MultimediaSectionId } from '../../types/multimediaContent';
+import { defaultMultimediaPageContent } from '../../types/multimediaContent';
 import { MultimediaCard } from './MultimediaCard';
 import { MultimediaModal } from './MultimediaModal';
 import { MultimediaSettingsModal } from './MultimediaSettingsModal';
 import { MultimediaAuthModal } from './MultimediaAuthModal';
-import { subscribeToMultimediaItems, saveMultimediaItemsLive } from '../../services/multimediaSyncService';
+import {
+  subscribeToMultimediaItems,
+  saveMultimediaItemsLive,
+  subscribeToMultimediaPageContent,
+  saveMultimediaPageContentLive,
+} from '../../services/multimediaSyncService';
+
+// Inline Editable Component
+interface InlineEditableProps {
+  value: string;
+  onChange: (val: string) => void;
+  isEditMode: boolean;
+  className?: string;
+  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'p' | 'span';
+}
+
+const InlineEditable: React.FC<InlineEditableProps> = ({
+  value,
+  onChange,
+  isEditMode,
+  className = '',
+  as = 'span',
+}) => {
+  const Component = as as any;
+
+  if (!isEditMode) {
+    return <Component className={className}>{value}</Component>;
+  }
+
+  return (
+    <Component
+      contentEditable
+      suppressContentEditableWarning
+      onBlur={(e: React.FocusEvent<HTMLElement>) => {
+        const text = e.currentTarget.innerText.trim();
+        if (text && text !== value) {
+          onChange(text);
+        }
+      }}
+      className={`${className} outline-dashed outline-2 outline-blue-400 hover:outline-blue-600 bg-blue-50/40 hover:bg-blue-100/50 rounded-lg px-2 py-0.5 cursor-text transition-all focus:outline-solid focus:outline-2 focus:outline-blue-600 focus:bg-white`}
+      title="Haz clic para editar este texto directamente"
+    >
+      {value}
+    </Component>
+  );
+};
 
 export const MultimediaDesignerPage: React.FC = () => {
   const [items, setItems] = useState<MultimediaItem[]>(multimediaInitialItems);
+  const [pageContent, setPageContent] = useState<MultimediaPageContent>(defaultMultimediaPageContent);
   const [selectedCategory, setSelectedCategory] = useState<MultimediaCategory>('TODOS');
   const [selectedItemForModal, setSelectedItemForModal] = useState<MultimediaItem | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Real-time synchronization: loads cached items immediately and connects to live Firestore
+  // Real-time synchronization for items
   useEffect(() => {
-    const unsubscribe = subscribeToMultimediaItems((syncedItems) => {
+    const unsubscribeItems = subscribeToMultimediaItems((syncedItems) => {
       if (syncedItems && syncedItems.length > 0) {
         setItems(syncedItems);
       }
     });
-    return () => unsubscribe();
+
+    const unsubscribeContent = subscribeToMultimediaPageContent((syncedContent) => {
+      if (syncedContent) {
+        setPageContent(syncedContent);
+      }
+    });
+
+    return () => {
+      unsubscribeItems();
+      unsubscribeContent();
+    };
   }, []);
 
   const handleGearClick = () => {
@@ -54,7 +117,6 @@ export const MultimediaDesignerPage: React.FC = () => {
     }
   };
 
-  // Sync state to both Firestore (for all live visitors) and localStorage
   const handleUpdateItems = async (newItems: MultimediaItem[]) => {
     setItems(newItems);
     const cloudSaved = await saveMultimediaItemsLive(newItems);
@@ -63,6 +125,43 @@ export const MultimediaDesignerPage: React.FC = () => {
     } else {
       toast.success('Galería guardada localmente');
     }
+  };
+
+  const handleSavePageContent = async () => {
+    setIsSaving(true);
+    try {
+      const cloudSaved = await saveMultimediaPageContentLive(pageContent);
+      if (cloudSaved) {
+        toast.success('¡Página guardada y sincronizada en vivo en la nube!');
+      } else {
+        toast.success('¡Página guardada localmente!');
+      }
+      setIsEditMode(false);
+    } catch (err) {
+      toast.error('Error al guardar cambios');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleResetPageContent = async () => {
+    if (window.confirm('¿Deseas restaurar todos los textos y el orden original de las secciones?')) {
+      setPageContent(defaultMultimediaPageContent);
+      await saveMultimediaPageContentLive(defaultMultimediaPageContent);
+      toast.success('Textos y secciones restaurados a valores originales');
+    }
+  };
+
+  const handleMoveSection = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= pageContent.sectionsOrder.length) return;
+    const newOrder = [...pageContent.sectionsOrder];
+    const [moved] = newOrder.splice(index, 1);
+    newOrder.splice(targetIndex, 0, moved);
+    setPageContent((prev) => ({
+      ...prev,
+      sectionsOrder: newOrder,
+    }));
   };
 
   const handleCopyPageUrl = () => {
@@ -85,8 +184,782 @@ export const MultimediaDesignerPage: React.FC = () => {
     { id: 'KEY_VISUALS', label: 'Key Visuals', icon: ImageIcon },
   ];
 
+  const getSectionTitle = (id: MultimediaSectionId) => {
+    switch (id) {
+      case 'hero':
+        return 'Hero / Presentación Principal';
+      case 'gallery':
+        return 'Galería / Portfolio Showcase';
+      case 'methodology':
+        return 'Cómo Trabajo / Metodología';
+      case 'contact':
+        return 'Contacto & Banner Final';
+    }
+  };
+
+  // Render individual sections
+  const renderHeroSection = (sectionIndex: number) => {
+    return (
+      <section
+        key="hero"
+        className={`relative space-y-6 transition-all duration-300 ${
+          isEditMode
+            ? 'p-6 sm:p-8 rounded-3xl border-2 border-dashed border-blue-400/80 bg-blue-50/20 shadow-md'
+            : ''
+        }`}
+      >
+        {isEditMode && (
+          <div className="flex items-center justify-between p-3 bg-neutral-900 text-white rounded-2xl shadow-lg border border-neutral-700 mb-6">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse" />
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-blue-300">
+                Sección {sectionIndex + 1} de {pageContent.sectionsOrder.length}:
+              </span>
+              <span className="font-sans text-xs font-semibold text-white">
+                {getSectionTitle('hero')}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                disabled={sectionIndex === 0}
+                onClick={() => handleMoveSection(sectionIndex, 'up')}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-xs font-mono transition-colors cursor-pointer"
+                title="Subir sección"
+              >
+                <ArrowUp className="w-3.5 h-3.5" />
+                Subir
+              </button>
+              <button
+                type="button"
+                disabled={sectionIndex === pageContent.sectionsOrder.length - 1}
+                onClick={() => handleMoveSection(sectionIndex, 'down')}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-xs font-mono transition-colors cursor-pointer"
+                title="Bajar sección"
+              >
+                <ArrowDown className="w-3.5 h-3.5" />
+                Bajar
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono font-bold tracking-wider uppercase text-neutral-800 bg-neutral-100 border border-neutral-200 shadow-3xs">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <InlineEditable
+            value={pageContent.hero.badge}
+            onChange={(val) =>
+              setPageContent((prev) => ({ ...prev, hero: { ...prev.hero, badge: val } }))
+            }
+            isEditMode={isEditMode}
+            as="span"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="lg:col-span-8 space-y-5">
+            <h1 className="font-headline text-3xl sm:text-5xl lg:text-6xl font-light text-neutral-950 tracking-[-0.03em] leading-[1.08]">
+              <InlineEditable
+                value={pageContent.hero.headline}
+                onChange={(val) =>
+                  setPageContent((prev) => ({ ...prev, hero: { ...prev.hero, headline: val } }))
+                }
+                isEditMode={isEditMode}
+                as="span"
+              />
+            </h1>
+            <p className="font-sans text-base sm:text-lg text-stone-700 leading-relaxed max-w-3xl">
+              <InlineEditable
+                value={pageContent.hero.description}
+                onChange={(val) =>
+                  setPageContent((prev) => ({ ...prev, hero: { ...prev.hero, description: val } }))
+                }
+                isEditMode={isEditMode}
+                as="span"
+              />
+            </p>
+          </div>
+
+          {/* Quick Skills & Toolkit Pillar Box */}
+          <div className="lg:col-span-4 bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/90 shadow-sm space-y-5">
+            <p className="font-mono text-xs uppercase tracking-widest text-stone-500 font-bold">
+              <InlineEditable
+                value={pageContent.hero.toolkitTitle}
+                onChange={(val) =>
+                  setPageContent((prev) => ({ ...prev, hero: { ...prev.hero, toolkitTitle: val } }))
+                }
+                isEditMode={isEditMode}
+                as="span"
+              />
+            </p>
+
+            <div className="space-y-4 text-xs font-sans">
+              <div>
+                <p className="font-semibold text-neutral-900 mb-1.5 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <InlineEditable
+                    value={pageContent.hero.aiTitle}
+                    onChange={(val) =>
+                      setPageContent((prev) => ({ ...prev, hero: { ...prev.hero, aiTitle: val } }))
+                    }
+                    isEditMode={isEditMode}
+                    as="span"
+                  />
+                </p>
+                <p className="text-stone-600 leading-relaxed">
+                  <InlineEditable
+                    value={pageContent.hero.aiDesc}
+                    onChange={(val) =>
+                      setPageContent((prev) => ({ ...prev, hero: { ...prev.hero, aiDesc: val } }))
+                    }
+                    isEditMode={isEditMode}
+                    as="span"
+                  />
+                </p>
+              </div>
+
+              <div className="border-t border-stone-100 pt-3">
+                <p className="font-semibold text-neutral-900 mb-1.5 flex items-center gap-1.5">
+                  <Film className="w-3.5 h-3.5 text-violet-600 shrink-0" />
+                  <InlineEditable
+                    value={pageContent.hero.motionTitle}
+                    onChange={(val) =>
+                      setPageContent((prev) => ({ ...prev, hero: { ...prev.hero, motionTitle: val } }))
+                    }
+                    isEditMode={isEditMode}
+                    as="span"
+                  />
+                </p>
+                <p className="text-stone-600 leading-relaxed">
+                  <InlineEditable
+                    value={pageContent.hero.motionDesc}
+                    onChange={(val) =>
+                      setPageContent((prev) => ({ ...prev, hero: { ...prev.hero, motionDesc: val } }))
+                    }
+                    isEditMode={isEditMode}
+                    as="span"
+                  />
+                </p>
+              </div>
+
+              <div className="border-t border-stone-100 pt-3">
+                <p className="font-semibold text-neutral-900 mb-1.5 flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <InlineEditable
+                    value={pageContent.hero.designTitle}
+                    onChange={(val) =>
+                      setPageContent((prev) => ({ ...prev, hero: { ...prev.hero, designTitle: val } }))
+                    }
+                    isEditMode={isEditMode}
+                    as="span"
+                  />
+                </p>
+                <p className="text-stone-600 leading-relaxed">
+                  <InlineEditable
+                    value={pageContent.hero.designDesc}
+                    onChange={(val) =>
+                      setPageContent((prev) => ({ ...prev, hero: { ...prev.hero, designDesc: val } }))
+                    }
+                    isEditMode={isEditMode}
+                    as="span"
+                  />
+                </p>
+              </div>
+
+              <div className="border-t border-stone-100 pt-3">
+                <p className="font-semibold text-neutral-900 mb-1.5 flex items-center gap-1.5">
+                  <Compass className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                  <InlineEditable
+                    value={pageContent.hero.locationTitle}
+                    onChange={(val) =>
+                      setPageContent((prev) => ({ ...prev, hero: { ...prev.hero, locationTitle: val } }))
+                    }
+                    isEditMode={isEditMode}
+                    as="span"
+                  />
+                </p>
+                <p className="text-stone-600 leading-relaxed">
+                  <InlineEditable
+                    value={pageContent.hero.locationDesc}
+                    onChange={(val) =>
+                      setPageContent((prev) => ({ ...prev, hero: { ...prev.hero, locationDesc: val } }))
+                    }
+                    isEditMode={isEditMode}
+                    as="span"
+                  />
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <a
+                href="mailto:liangelyp@gmail.com"
+                className="w-full py-3 rounded-xl bg-neutral-950 text-white font-sans text-xs font-semibold hover:bg-black transition-colors flex items-center justify-center gap-2 shadow-xs"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <InlineEditable
+                  value={pageContent.hero.contactBtnText}
+                  onChange={(val) =>
+                    setPageContent((prev) => ({ ...prev, hero: { ...prev.hero, contactBtnText: val } }))
+                  }
+                  isEditMode={isEditMode}
+                  as="span"
+                />
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  const renderGallerySection = (sectionIndex: number) => {
+    return (
+      <section
+        key="gallery"
+        id="galeria"
+        className={`relative space-y-8 scroll-mt-20 transition-all duration-300 ${
+          isEditMode
+            ? 'p-6 sm:p-8 rounded-3xl border-2 border-dashed border-blue-400/80 bg-blue-50/20 shadow-md'
+            : ''
+        }`}
+      >
+        {isEditMode && (
+          <div className="flex items-center justify-between p-3 bg-neutral-900 text-white rounded-2xl shadow-lg border border-neutral-700 mb-6">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse" />
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-blue-300">
+                Sección {sectionIndex + 1} de {pageContent.sectionsOrder.length}:
+              </span>
+              <span className="font-sans text-xs font-semibold text-white">
+                {getSectionTitle('gallery')}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                disabled={sectionIndex === 0}
+                onClick={() => handleMoveSection(sectionIndex, 'up')}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-xs font-mono transition-colors cursor-pointer"
+                title="Subir sección"
+              >
+                <ArrowUp className="w-3.5 h-3.5" />
+                Subir
+              </button>
+              <button
+                type="button"
+                disabled={sectionIndex === pageContent.sectionsOrder.length - 1}
+                onClick={() => handleMoveSection(sectionIndex, 'down')}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-xs font-mono transition-colors cursor-pointer"
+                title="Bajar sección"
+              >
+                <ArrowDown className="w-3.5 h-3.5" />
+                Bajar
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-stone-200 pb-5">
+          <div className="space-y-1.5">
+            <p className="font-mono text-xs uppercase tracking-widest text-stone-500 font-bold">
+              <InlineEditable
+                value={pageContent.gallery.badge}
+                onChange={(val) =>
+                  setPageContent((prev) => ({ ...prev, gallery: { ...prev.gallery, badge: val } }))
+                }
+                isEditMode={isEditMode}
+                as="span"
+              />{' '}
+              ({filteredItems.length} piezas)
+            </p>
+            <h2 className="font-headline text-2xl sm:text-3xl font-light text-neutral-950 tracking-tight">
+              <InlineEditable
+                value={pageContent.gallery.title}
+                onChange={(val) =>
+                  setPageContent((prev) => ({ ...prev, gallery: { ...prev.gallery, title: val } }))
+                }
+                isEditMode={isEditMode}
+                as="span"
+              />
+            </h2>
+          </div>
+
+          {/* Category Filter Pills */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {categoryTabs.map((tab) => {
+              const isActive = selectedCategory === tab.id;
+              const TabIcon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setSelectedCategory(tab.id)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-sans transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-neutral-950 text-white font-semibold shadow-xs'
+                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-neutral-950 font-medium'
+                  }`}
+                >
+                  <TabIcon className="w-3 h-3" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Cards Grid */}
+        {filteredItems.length === 0 ? (
+          <div className="py-16 text-center border-2 border-dashed border-stone-200 rounded-3xl space-y-3">
+            <p className="font-sans text-sm text-stone-600">
+              No hay piezas en la categoría seleccionada.
+            </p>
+            <button
+              type="button"
+              onClick={() => setSelectedCategory('TODOS')}
+              className="text-xs font-semibold text-neutral-900 underline cursor-pointer"
+            >
+              Ver todas las piezas
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {filteredItems.map((item, index) => (
+              <MultimediaCard
+                key={item.id}
+                item={item}
+                index={index}
+                onClick={() => setSelectedItemForModal(item)}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+    );
+  };
+
+  const renderMethodologySection = (sectionIndex: number) => {
+    return (
+      <section
+        key="methodology"
+        className={`relative bg-white rounded-3xl p-8 sm:p-12 border border-stone-200/90 shadow-xs space-y-8 transition-all duration-300 ${
+          isEditMode
+            ? 'border-2 border-dashed border-blue-400/80 bg-blue-50/20 shadow-md'
+            : ''
+        }`}
+      >
+        {isEditMode && (
+          <div className="flex items-center justify-between p-3 bg-neutral-900 text-white rounded-2xl shadow-lg border border-neutral-700 mb-6">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse" />
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-blue-300">
+                Sección {sectionIndex + 1} de {pageContent.sectionsOrder.length}:
+              </span>
+              <span className="font-sans text-xs font-semibold text-white">
+                {getSectionTitle('methodology')}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                disabled={sectionIndex === 0}
+                onClick={() => handleMoveSection(sectionIndex, 'up')}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-xs font-mono transition-colors cursor-pointer"
+                title="Subir sección"
+              >
+                <ArrowUp className="w-3.5 h-3.5" />
+                Subir
+              </button>
+              <button
+                type="button"
+                disabled={sectionIndex === pageContent.sectionsOrder.length - 1}
+                onClick={() => handleMoveSection(sectionIndex, 'down')}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-xs font-mono transition-colors cursor-pointer"
+                title="Bajar sección"
+              >
+                <ArrowDown className="w-3.5 h-3.5" />
+                Bajar
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-2 max-w-2xl">
+          <p className="font-mono text-xs uppercase tracking-widest text-stone-500 font-bold">
+            <InlineEditable
+              value={pageContent.methodology.badge}
+              onChange={(val) =>
+                setPageContent((prev) => ({
+                  ...prev,
+                  methodology: { ...prev.methodology, badge: val },
+                }))
+              }
+              isEditMode={isEditMode}
+              as="span"
+            />
+          </p>
+          <h3 className="font-headline text-2xl sm:text-3xl font-light text-neutral-950 tracking-tight">
+            <InlineEditable
+              value={pageContent.methodology.title}
+              onChange={(val) =>
+                setPageContent((prev) => ({
+                  ...prev,
+                  methodology: { ...prev.methodology, title: val },
+                }))
+              }
+              isEditMode={isEditMode}
+              as="span"
+            />
+          </h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-left">
+          {/* Card 1 */}
+          <div className="space-y-2.5 p-5 rounded-2xl bg-stone-50 border border-stone-200/60">
+            <span className="w-8 h-8 rounded-xl bg-violet-100 text-violet-800 flex items-center justify-center font-mono font-bold text-xs">
+              <InlineEditable
+                value={pageContent.methodology.card1Num}
+                onChange={(val) =>
+                  setPageContent((prev) => ({
+                    ...prev,
+                    methodology: { ...prev.methodology, card1Num: val },
+                  }))
+                }
+                isEditMode={isEditMode}
+                as="span"
+              />
+            </span>
+            <h4 className="font-headline text-base font-semibold text-neutral-900">
+              <InlineEditable
+                value={pageContent.methodology.card1Title}
+                onChange={(val) =>
+                  setPageContent((prev) => ({
+                    ...prev,
+                    methodology: { ...prev.methodology, card1Title: val },
+                  }))
+                }
+                isEditMode={isEditMode}
+                as="span"
+              />
+            </h4>
+            <p className="font-sans text-xs sm:text-sm text-stone-600 leading-relaxed">
+              <InlineEditable
+                value={pageContent.methodology.card1Desc}
+                onChange={(val) =>
+                  setPageContent((prev) => ({
+                    ...prev,
+                    methodology: { ...prev.methodology, card1Desc: val },
+                  }))
+                }
+                isEditMode={isEditMode}
+                as="span"
+              />
+            </p>
+          </div>
+
+          {/* Card 2 */}
+          <div className="space-y-2.5 p-5 rounded-2xl bg-stone-50 border border-stone-200/60">
+            <span className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-mono font-bold text-xs">
+              <InlineEditable
+                value={pageContent.methodology.card2Num}
+                onChange={(val) =>
+                  setPageContent((prev) => ({
+                    ...prev,
+                    methodology: { ...prev.methodology, card2Num: val },
+                  }))
+                }
+                isEditMode={isEditMode}
+                as="span"
+              />
+            </span>
+            <h4 className="font-headline text-base font-semibold text-neutral-900">
+              <InlineEditable
+                value={pageContent.methodology.card2Title}
+                onChange={(val) =>
+                  setPageContent((prev) => ({
+                    ...prev,
+                    methodology: { ...prev.methodology, card2Title: val },
+                  }))
+                }
+                isEditMode={isEditMode}
+                as="span"
+              />
+            </h4>
+            <p className="font-sans text-xs sm:text-sm text-stone-600 leading-relaxed">
+              <InlineEditable
+                value={pageContent.methodology.card2Desc}
+                onChange={(val) =>
+                  setPageContent((prev) => ({
+                    ...prev,
+                    methodology: { ...prev.methodology, card2Desc: val },
+                  }))
+                }
+                isEditMode={isEditMode}
+                as="span"
+              />
+            </p>
+          </div>
+
+          {/* Card 3 */}
+          <div className="space-y-2.5 p-5 rounded-2xl bg-stone-50 border border-stone-200/60">
+            <span className="w-8 h-8 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center font-mono font-bold text-xs">
+              <InlineEditable
+                value={pageContent.methodology.card3Num}
+                onChange={(val) =>
+                  setPageContent((prev) => ({
+                    ...prev,
+                    methodology: { ...prev.methodology, card3Num: val },
+                  }))
+                }
+                isEditMode={isEditMode}
+                as="span"
+              />
+            </span>
+            <h4 className="font-headline text-base font-semibold text-neutral-900">
+              <InlineEditable
+                value={pageContent.methodology.card3Title}
+                onChange={(val) =>
+                  setPageContent((prev) => ({
+                    ...prev,
+                    methodology: { ...prev.methodology, card3Title: val },
+                  }))
+                }
+                isEditMode={isEditMode}
+                as="span"
+              />
+            </h4>
+            <p className="font-sans text-xs sm:text-sm text-stone-600 leading-relaxed">
+              <InlineEditable
+                value={pageContent.methodology.card3Desc}
+                onChange={(val) =>
+                  setPageContent((prev) => ({
+                    ...prev,
+                    methodology: { ...prev.methodology, card3Desc: val },
+                  }))
+                }
+                isEditMode={isEditMode}
+                as="span"
+              />
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  const renderContactSection = (sectionIndex: number) => {
+    return (
+      <section
+        key="contact"
+        className={`relative p-8 sm:p-12 rounded-3xl bg-neutral-950 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6 transition-all duration-300 ${
+          isEditMode
+            ? 'border-2 border-dashed border-blue-400/80 shadow-md ring-4 ring-blue-500/10'
+            : ''
+        }`}
+      >
+        {isEditMode && (
+          <div className="w-full flex items-center justify-between p-3 bg-neutral-900 text-white rounded-2xl shadow-lg border border-neutral-700 mb-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse" />
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-blue-300">
+                Sección {sectionIndex + 1} de {pageContent.sectionsOrder.length}:
+              </span>
+              <span className="font-sans text-xs font-semibold text-white">
+                {getSectionTitle('contact')}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                disabled={sectionIndex === 0}
+                onClick={() => handleMoveSection(sectionIndex, 'up')}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-xs font-mono transition-colors cursor-pointer"
+                title="Subir sección"
+              >
+                <ArrowUp className="w-3.5 h-3.5" />
+                Subir
+              </button>
+              <button
+                type="button"
+                disabled={sectionIndex === pageContent.sectionsOrder.length - 1}
+                onClick={() => handleMoveSection(sectionIndex, 'down')}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none text-xs font-mono transition-colors cursor-pointer"
+                title="Bajar sección"
+              >
+                <ArrowDown className="w-3.5 h-3.5" />
+                Bajar
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <span className="px-3 py-1 rounded-full text-[11px] font-mono tracking-wider uppercase bg-white/10 text-white/90 border border-white/20">
+            <InlineEditable
+              value={pageContent.contact.badge}
+              onChange={(val) =>
+                setPageContent((prev) => ({ ...prev, contact: { ...prev.contact, badge: val } }))
+              }
+              isEditMode={isEditMode}
+              as="span"
+            />
+          </span>
+          <h3 className="font-headline text-2xl sm:text-3xl font-semibold tracking-tight">
+            <InlineEditable
+              value={pageContent.contact.title}
+              onChange={(val) =>
+                setPageContent((prev) => ({ ...prev, contact: { ...prev.contact, title: val } }))
+              }
+              isEditMode={isEditMode}
+              as="span"
+            />
+          </h3>
+          <p className="font-sans text-sm text-white/70 max-w-xl">
+            <InlineEditable
+              value={pageContent.contact.description}
+              onChange={(val) =>
+                setPageContent((prev) => ({
+                  ...prev,
+                  contact: { ...prev.contact, description: val },
+                }))
+              }
+              isEditMode={isEditMode}
+              as="span"
+            />
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <a
+            href="https://wa.me/5491136593866?text=Hola%20Lia!%20Vi%20tu%20portafolio%20multimedia%20y%20me%20gustar%C3%ADa%20conversar."
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-sans text-sm font-semibold transition-colors shadow-lg"
+          >
+            <MessageCircle className="w-4 h-4" />
+            <InlineEditable
+              value={pageContent.contact.whatsappText}
+              onChange={(val) =>
+                setPageContent((prev) => ({
+                  ...prev,
+                  contact: { ...prev.contact, whatsappText: val },
+                }))
+              }
+              isEditMode={isEditMode}
+              as="span"
+            />
+          </a>
+          <a
+            href="mailto:liangelyp@gmail.com"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-stone-100 text-neutral-950 font-sans text-sm font-semibold transition-colors shadow-lg"
+          >
+            <Send className="w-4 h-4" />
+            <InlineEditable
+              value={pageContent.contact.emailText}
+              onChange={(val) =>
+                setPageContent((prev) => ({
+                  ...prev,
+                  contact: { ...prev.contact, emailText: val },
+                }))
+              }
+              isEditMode={isEditMode}
+              as="span"
+            />
+          </a>
+          <a
+            href="https://www.linkedin.com/in/liangely-diseno-grafico/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-sans text-sm font-medium transition-colors"
+          >
+            <Linkedin className="w-4 h-4" />
+            <InlineEditable
+              value={pageContent.contact.linkedinText}
+              onChange={(val) =>
+                setPageContent((prev) => ({
+                  ...prev,
+                  contact: { ...prev.contact, linkedinText: val },
+                }))
+              }
+              isEditMode={isEditMode}
+              as="span"
+            />
+          </a>
+        </div>
+      </section>
+    );
+  };
+
+  const renderSectionById = (sectionId: MultimediaSectionId, index: number) => {
+    switch (sectionId) {
+      case 'hero':
+        return renderHeroSection(index);
+      case 'gallery':
+        return renderGallerySection(index);
+      case 'methodology':
+        return renderMethodologySection(index);
+      case 'contact':
+        return renderContactSection(index);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#fafafa] text-neutral-900 font-body selection:bg-neutral-200">
+      {/* Sticky Floating Control Bar when in Visual Edit Mode */}
+      <AnimatePresence>
+        {isEditMode && (
+          <motion.div
+            initial={{ opacity: 0, y: -40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -40 }}
+            className="sticky top-0 z-50 w-full bg-neutral-950/90 text-white backdrop-blur-xl border-b border-blue-500/40 shadow-xl px-4 py-3"
+          >
+            <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-ping" />
+                <span className="font-mono text-xs font-bold uppercase tracking-wider text-blue-300">
+                  Modo Editor Visual Activo
+                </span>
+                <span className="hidden md:inline text-stone-300 text-xs font-sans">
+                  · Haz clic directamente en cualquier texto para editarlo. Usa las flechas ▲ ▼ para reordenar secciones.
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSavePageContent}
+                  disabled={isSaving}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-sans text-xs font-bold shadow-md transition-all cursor-pointer"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>{isSaving ? 'Guardando...' : 'Guardar Cambios'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleResetPageContent}
+                  title="Restaurar textos y orden original"
+                  className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-mono transition-colors cursor-pointer"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Restaurar</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsEditMode(false)}
+                  className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-mono transition-colors cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>Salir</span>
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Subtle Top Navigation for this specific page */}
       <header className="sticky top-0 z-40 w-full border-b border-stone-200/80 bg-white/80 backdrop-blur-xl transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
@@ -112,244 +985,14 @@ export const MultimediaDesignerPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Container */}
+      {/* Main Container: Dynamic Sections in Custom Order */}
       <main className="max-w-7xl mx-auto px-4 sm:px-8 py-10 sm:py-16 space-y-16 text-left">
-        {/* Hero Section */}
-        <section className="space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono font-bold tracking-wider uppercase text-neutral-800 bg-neutral-100 border border-neutral-200 shadow-3xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            Multimedia Designer · AI, Motion &amp; Content
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            <div className="lg:col-span-8 space-y-5">
-              <h1 className="font-headline text-3xl sm:text-5xl lg:text-6xl font-light text-neutral-950 tracking-[-0.03em] leading-[1.08]">
-                Creatividad visual impulsada por <span className="font-semibold text-neutral-950">Inteligencia Artificial</span>, <span className="font-semibold">Motion Graphics</span> y contenido de alto impacto.
-              </h1>
-              <p className="font-sans text-base sm:text-lg text-stone-700 leading-relaxed max-w-3xl">
-                Diseñadora multimedia con formación sólida en diseño gráfico y dirección de arte. Especializada en la conceptualización de <strong>key visuals</strong>, producción audiovisual para <strong>paid media y redes sociales</strong>, integración de herramientas de <strong>IA generativa</strong> en el pipeline creativo y desarrollo de piezas en <strong>3D y animación</strong>.
-              </p>
-            </div>
-
-            {/* Quick Skills & Toolkit Pillar Box */}
-            <div className="lg:col-span-4 bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/90 shadow-sm space-y-5">
-              <p className="font-mono text-xs uppercase tracking-widest text-stone-500 font-bold">
-                Stack Creativo &amp; Producción
-              </p>
-
-              <div className="space-y-4 text-xs font-sans">
-                <div>
-                  <p className="font-semibold text-neutral-900 mb-1.5 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                    IA Generativa &amp; Workflows
-                  </p>
-                  <p className="text-stone-600 leading-relaxed">
-                    Midjourney, Runway Gen-3, Kling, Luma Dream Machine, Stable Diffusion, Photoshop AI / Generative Fill, Magnific, ElevenLabs.
-                  </p>
-                </div>
-
-                <div className="border-t border-stone-100 pt-3">
-                  <p className="font-semibold text-neutral-900 mb-1.5 flex items-center gap-1.5">
-                    <Film className="w-3.5 h-3.5 text-violet-600" />
-                    Motion &amp; Video
-                  </p>
-                  <p className="text-stone-600 leading-relaxed">
-                    After Effects, Premiere Pro, Animate, Kinetic Typography, Micro-animaciones, edición rítmica y sound design.
-                  </p>
-                </div>
-
-                <div className="border-t border-stone-100 pt-3">
-                  <p className="font-semibold text-neutral-900 mb-1.5 flex items-center gap-1.5">
-                    <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
-                    Diseño, Key Visuals &amp; 3D
-                  </p>
-                  <p className="text-stone-600 leading-relaxed">
-                    Photoshop, Illustrator, Figma, Blender 3D, Spline, adaptaciones multiformato (9:16, 1:1, 16:9).
-                  </p>
-                </div>
-
-                <div className="border-t border-stone-100 pt-3">
-                  <p className="font-semibold text-neutral-900 mb-1.5 flex items-center gap-1.5">
-                    <Compass className="w-3.5 h-3.5 text-amber-600" />
-                    Ubicación &amp; Modalidad
-                  </p>
-                  <p className="text-stone-600 leading-relaxed">
-                    Buenos Aires (Palermo / CABA) · Modalidad Híbrida / Remota · Disponibilidad Inmediata.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <a
-                  href="mailto:liangelyp@gmail.com"
-                  className="w-full py-3 rounded-xl bg-neutral-950 text-white font-sans text-xs font-semibold hover:bg-black transition-colors flex items-center justify-center gap-2 shadow-xs"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  Contactar a Lia Parra
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Selected Work & Media Showcase Section */}
-        <section id="galeria" className="space-y-8 scroll-mt-20">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-stone-200 pb-5">
-            <div className="space-y-1.5">
-              <p className="font-mono text-xs uppercase tracking-widest text-stone-500 font-bold">
-                Portfolio Showcase ({filteredItems.length} piezas)
-              </p>
-              <h2 className="font-headline text-2xl sm:text-3xl font-light text-neutral-950 tracking-tight">
-                Piezas audiovisuales, conceptos y adaptaciones.
-              </h2>
-            </div>
-
-            {/* Category Filter Pills */}
-            <div className="flex flex-wrap items-center gap-1.5">
-              {categoryTabs.map((tab) => {
-                const isActive = selectedCategory === tab.id;
-                const TabIcon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setSelectedCategory(tab.id)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-sans transition-all cursor-pointer ${
-                      isActive
-                        ? 'bg-neutral-950 text-white font-semibold shadow-xs'
-                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-neutral-950 font-medium'
-                    }`}
-                  >
-                    <TabIcon className="w-3 h-3" />
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Cards Grid */}
-          {filteredItems.length === 0 ? (
-            <div className="py-16 text-center border-2 border-dashed border-stone-200 rounded-3xl space-y-3">
-              <p className="font-sans text-sm text-stone-600">
-                No hay piezas en la categoría seleccionada.
-              </p>
-              <button
-                type="button"
-                onClick={() => setSelectedCategory('TODOS')}
-                className="text-xs font-semibold text-neutral-900 underline cursor-pointer"
-              >
-                Ver todas las piezas
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {filteredItems.map((item, index) => (
-                <MultimediaCard
-                  key={item.id}
-                  item={item}
-                  index={index}
-                  onClick={() => setSelectedItemForModal(item)}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Methodology & Creative Mindset */}
-        <section className="bg-white rounded-3xl p-8 sm:p-12 border border-stone-200/90 shadow-xs space-y-8">
-          <div className="space-y-2 max-w-2xl">
-            <p className="font-mono text-xs uppercase tracking-widest text-stone-500 font-bold">
-              Cómo trabajo
-            </p>
-            <h3 className="font-headline text-2xl sm:text-3xl font-light text-neutral-950 tracking-tight">
-              Velocidad de ejecución con criterio visual y entendimiento de métricas.
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-left">
-            <div className="space-y-2.5 p-5 rounded-2xl bg-stone-50 border border-stone-200/60">
-              <span className="w-8 h-8 rounded-xl bg-violet-100 text-violet-800 flex items-center justify-center font-mono font-bold text-xs">
-                01
-              </span>
-              <h4 className="font-headline text-base font-semibold text-neutral-900">
-                Hooks de 3 Segundos &amp; Retención
-              </h4>
-              <p className="font-sans text-xs sm:text-sm text-stone-600 leading-relaxed">
-                Diseño cada pieza pensando en los códigos específicos de cada plataforma (Reels, TikTok, Shorts). Pattern interrupts, tipografía de lectura rápida y ritmo audiovisual para frenar el scroll.
-              </p>
-            </div>
-
-            <div className="space-y-2.5 p-5 rounded-2xl bg-stone-50 border border-stone-200/60">
-              <span className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-mono font-bold text-xs">
-                02
-              </span>
-              <h4 className="font-headline text-base font-semibold text-neutral-900">
-                IA Integrada al Pipeline Real
-              </h4>
-              <p className="font-sans text-xs sm:text-sm text-stone-600 leading-relaxed">
-                La IA no reemplaza la dirección de arte: la potencia. Utilizo modelos generativos para explorar conceptos a alta velocidad, generar footage único y acelerar iteraciones manteniendo consistencia de marca.
-              </p>
-            </div>
-
-            <div className="space-y-2.5 p-5 rounded-2xl bg-stone-50 border border-stone-200/60">
-              <span className="w-8 h-8 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center font-mono font-bold text-xs">
-                03
-              </span>
-              <h4 className="font-headline text-base font-semibold text-neutral-900">
-                Adaptabilidad Omnicanal
-              </h4>
-              <p className="font-sans text-xs sm:text-sm text-stone-600 leading-relaxed">
-                Capacidad de tomar un concepto visual y transformarlo de forma coherente en adaptaciones 9:16 vertical, 1:1 feed, 16:9 paid ads y piezas de email marketing sin perder fuerza estética.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Contact Footer Banner */}
-        <section className="p-8 sm:p-12 rounded-3xl bg-neutral-950 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <span className="px-3 py-1 rounded-full text-[11px] font-mono tracking-wider uppercase bg-white/10 text-white/90 border border-white/20">
-              Hablemos
-            </span>
-            <h3 className="font-headline text-2xl sm:text-3xl font-semibold tracking-tight">
-              ¿Hablamos sobre tu próximo proyecto o campaña?
-            </h3>
-            <p className="font-sans text-sm text-white/70 max-w-xl">
-              Disponible para sumarme en modalidad híbrida o remota y liderar proyectos de alto impacto visual, motion graphics y campañas creativas.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <a
-              href="https://wa.me/5491136593866?text=Hola%20Lia!%20Vi%20tu%20portafolio%20multimedia%20y%20me%20gustar%C3%ADa%20conversar."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-sans text-sm font-semibold transition-colors shadow-lg"
-            >
-              <MessageCircle className="w-4 h-4" />
-              WhatsApp
-            </a>
-            <a
-              href="mailto:liangelyp@gmail.com"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-stone-100 text-neutral-950 font-sans text-sm font-semibold transition-colors shadow-lg"
-            >
-              <Send className="w-4 h-4" />
-              Enviar Email
-            </a>
-            <a
-              href="https://www.linkedin.com/in/liangely-diseno-grafico/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-sans text-sm font-medium transition-colors"
-            >
-              <Linkedin className="w-4 h-4" />
-              LinkedIn
-            </a>
-          </div>
-        </section>
+        {pageContent.sectionsOrder.map((sectionId, index) =>
+          renderSectionById(sectionId, index)
+        )}
       </main>
 
-      {/* Floating Settings Gear Button (⚙️ Ruedita muy disimulada abajo) */}
+      {/* Floating Settings Gear Button (⚙️ Ruedita discreta abajo a la derecha) */}
       <div className="fixed bottom-3 right-3 z-30">
         <button
           type="button"
@@ -384,6 +1027,12 @@ export const MultimediaDesignerPage: React.FC = () => {
         onClose={() => setIsSettingsOpen(false)}
         items={items}
         onUpdateItems={handleUpdateItems}
+        onEnterEditMode={() => setIsEditMode(true)}
+        sectionsOrder={pageContent.sectionsOrder}
+        onUpdateSectionsOrder={(newOrder) =>
+          setPageContent((prev) => ({ ...prev, sectionsOrder: newOrder }))
+        }
+        onResetPageContent={handleResetPageContent}
       />
     </div>
   );
