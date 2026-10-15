@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { MultimediaItem, MultimediaCategory } from '../../types/multimedia';
-import { multimediaInitialItems } from '../../data/multimediaInitialItems';
 import { normalizeCategory } from '../../types/multimedia';
 import type { MultimediaPageContent, MultimediaSectionId } from '../../types/multimediaContent';
 import { defaultMultimediaPageContent } from '../../types/multimediaContent';
@@ -77,8 +76,9 @@ const InlineEditable: React.FC<InlineEditableProps> = ({
 };
 
 export const MultimediaDesignerPage: React.FC = () => {
-  const [items, setItems] = useState<MultimediaItem[]>(multimediaInitialItems);
+  const [items, setItems] = useState<MultimediaItem[]>([]);
   const [pageContent, setPageContent] = useState<MultimediaPageContent>(defaultMultimediaPageContent);
+  const [isLoadingItems, setIsLoadingItems] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<MultimediaCategory>('TODOS');
   const [selectedItemForModal, setSelectedItemForModal] = useState<MultimediaItem | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -87,13 +87,16 @@ export const MultimediaDesignerPage: React.FC = () => {
   const [copiedLink, setCopiedLink] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Real-time synchronization for items
+  // Real-time synchronization — Firestore is the source of truth
   useEffect(() => {
-    const unsubscribeItems = subscribeToMultimediaItems((syncedItems) => {
-      if (syncedItems && syncedItems.length > 0) {
-        setItems(syncedItems);
-      }
-    });
+    const unsubscribeItems = subscribeToMultimediaItems(
+      (syncedItems) => {
+        if (syncedItems && syncedItems.length > 0) {
+          setItems(syncedItems);
+        }
+      },
+      (loading) => setIsLoadingItems(loading)
+    );
 
     const unsubscribeContent = subscribeToMultimediaPageContent((syncedContent) => {
       if (syncedContent) {
@@ -501,7 +504,24 @@ export const MultimediaDesignerPage: React.FC = () => {
         </div>
 
         {/* Cards Grid */}
-        {filteredItems.length === 0 ? (
+        {isLoadingItems ? (
+          /* Loading skeleton while Firestore data arrives */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-2xl border border-stone-200 overflow-hidden animate-pulse"
+              >
+                <div className="aspect-video bg-stone-200" />
+                <div className="p-4 space-y-2">
+                  <div className="h-4 bg-stone-200 rounded-md w-3/4" />
+                  <div className="h-3 bg-stone-100 rounded-md w-full" />
+                  <div className="h-3 bg-stone-100 rounded-md w-2/3" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredItems.length === 0 ? (
           <div className="py-16 text-center border-2 border-dashed border-stone-200 rounded-3xl space-y-3">
             <p className="font-sans text-sm text-stone-600">
               No hay piezas en la categoría seleccionada.
