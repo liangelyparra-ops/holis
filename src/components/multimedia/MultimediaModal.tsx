@@ -472,17 +472,6 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
               </div>
             </div>
           </div>
-
-          {/* Modal Footer (matching CaseStudyModal) */}
-          <div className="px-6 sm:px-10 py-4 border-t border-white/10 bg-white/[0.03] backdrop-blur-md flex justify-end shrink-0">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-xl bg-white/10 hover:bg-white/20 px-5 py-2.5 text-xs sm:text-sm font-semibold text-white transition-colors border border-white/15 cursor-pointer"
-            >
-              Cerrar
-            </button>
-          </div>
         </motion.div>
       </div>
     </AnimatePresence>
