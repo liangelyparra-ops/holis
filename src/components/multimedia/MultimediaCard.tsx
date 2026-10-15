@@ -222,17 +222,16 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({
           </div>
         )}
 
-      </div>
-
-      {/* Card Content - Compact Glass Title Bar */}
-      <div className="px-3 py-1.5 sm:px-3 sm:py-2 bg-white/85 backdrop-blur-md flex items-center justify-between gap-2 border-t border-stone-200/60 shrink-0">
-        <div className="min-w-0 flex-1">
-          <h3 className="font-headline text-[10px] sm:text-[11px] font-semibold text-neutral-800 group-hover:text-black tracking-tight leading-tight truncate">
-            {item.title}
-          </h3>
-        </div>
-        <div className="shrink-0 flex items-center text-stone-400 group-hover:text-neutral-900 transition-colors">
-          <ExternalLink className="w-3 h-3" />
+        {/* Title Overlay: Gradient from black at bottom to transparent at top with white text */}
+        <div className="absolute bottom-0 inset-x-0 pt-10 pb-3 px-3 sm:px-3.5 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex items-center justify-between gap-2 pointer-events-none">
+          <div className="min-w-0 flex-1">
+            <h3 className="font-headline text-[10px] sm:text-[11px] font-semibold text-white tracking-tight leading-tight truncate drop-shadow-sm">
+              {item.title}
+            </h3>
+          </div>
+          <div className="shrink-0 flex items-center text-white/60 group-hover:text-white transition-colors">
+            <ExternalLink className="w-3 h-3" />
+          </div>
         </div>
       </div>
     </motion.article>
