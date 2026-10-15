@@ -41,6 +41,13 @@ export interface MultimediaItem {
   createdAt: number;
   assets?: MediaAsset[];
 
+  // Per-item layout configuration for multiple assets
+  showTabs?: boolean;
+  assetsLayout?: 'stacked' | 'grid-2' | 'grid-3' | 'grid-auto';
+  assetsGap?: 'compact' | 'normal' | 'spacious';
+  mediaFit?: 'contain' | 'cover';
+  maxMediaHeight?: 'full' | 'medium' | 'compact';
+
   // Legacy single asset fields for backward compatibility
   mediaType?: MediaType;
   url?: string;

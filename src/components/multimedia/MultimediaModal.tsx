@@ -114,7 +114,10 @@ const ModalVideoPlayer: React.FC<{
   asset: MediaAsset;
   index?: number;
   autoPlayInitial?: boolean;
-}> = ({ asset }) => {
+  mediaFit?: 'contain' | 'cover';
+  maxHeightClass?: string;
+  isGrid?: boolean;
+}> = ({ asset, mediaFit = 'contain', maxHeightClass = 'max-h-[72vh]', isGrid = false }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -184,7 +187,7 @@ const ModalVideoPlayer: React.FC<{
   return (
     <div
       onClick={togglePlay}
-      className="relative w-fit max-w-full mx-auto rounded-2xl overflow-hidden group/player flex items-center justify-center cursor-pointer select-none"
+      className={`relative ${isGrid ? 'w-full' : 'w-fit max-w-full'} mx-auto rounded-2xl overflow-hidden group/player flex items-center justify-center cursor-pointer select-none`}
     >
       <video
         ref={videoRef}
@@ -194,7 +197,7 @@ const ModalVideoPlayer: React.FC<{
         loop
         playsInline
         preload="auto"
-        className="max-w-full max-h-[72vh] w-auto h-auto object-contain block rounded-2xl"
+        className={`w-full ${maxHeightClass} ${mediaFit === 'cover' ? 'object-cover' : 'object-contain'} block rounded-2xl`}
         onTimeUpdate={handleTimeUpdate}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
@@ -403,8 +406,8 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
             </button>
           </div>
 
-          {/* Multi-Asset Quick Jump Tabs (if multiple assets exist) */}
-          {assets.length > 1 && (
+          {/* Multi-Asset Quick Jump Tabs (if multiple assets exist and showTabs is not false) */}
+          {assets.length > 1 && item.showTabs !== false && (
             <div className="px-6 sm:px-10 bg-black/40 backdrop-blur-md border-b border-white/10 flex items-center gap-6 overflow-x-auto scrollbar-none shrink-0 z-20 h-12">
               {assets.map((asset, idx) => {
                 const isActive = activeAssetIndex === idx;
@@ -433,79 +436,140 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
             className="flex-1 min-h-0 overflow-y-auto px-6 sm:px-10 md:px-14 py-8 sm:py-10 space-y-8 scrollbar-thin scrollbar-thumb-white/20 hover:scrollbar-thumb-white/40 text-left"
           >
             {/* Media Area (centers media and preserves aspect ratio seamlessly) */}
-            <div className="space-y-8">
-              {assets.map((asset, idx) => {
-                const isAssetVideo = asset.mediaType === 'video';
-                const isAssetDriveVideo = asset.mediaType === 'drive_video';
-                const isAssetEmbed = asset.mediaType === 'embed';
-
-                return (
-                  <div
-                    key={asset.id || idx}
-                    id={`modal-asset-${idx}`}
-                    className="space-y-4 transition-all scroll-mt-6"
-                  >
-                    <div className="w-full flex items-center justify-center">
-                      {isAssetDriveVideo ? (
-                        <div className="relative w-full max-w-4xl mx-auto rounded-2xl overflow-hidden group/drive flex items-center justify-center bg-black/80 border border-white/10 shadow-lg">
-                          <div className="w-full aspect-video max-h-[68vh] relative rounded-2xl overflow-hidden">
-                            <iframe
-                              src={asset.url.includes('?') ? `${asset.url}&autoplay=1` : `${asset.url}?autoplay=1`}
-                              title={asset.title || item.title}
-                              allow="autoplay; fullscreen"
-                              allowFullScreen
-                              className="w-full h-full border-0 rounded-2xl"
-                            />
-                            {/* Blocker overlay for Google Drive top-right pop-out button */}
-                            <div
-                              className="absolute top-0 right-0 w-24 h-14 z-30 pointer-events-auto bg-transparent cursor-default"
-                              title="Reproductor de video"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ) : isAssetEmbed ? (
-                        <div className="relative w-full max-w-4xl mx-auto rounded-2xl overflow-hidden flex items-center justify-center bg-black/80 border border-white/10 shadow-lg">
-                          <div className="w-full aspect-video max-h-[68vh] relative rounded-2xl overflow-hidden">
-                            <iframe
-                              src={asset.url}
-                              title={asset.title || item.title}
-                              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-                              allowFullScreen
-                              className="w-full h-full border-0 rounded-2xl"
-                            />
-                          </div>
-                        </div>
-                      ) : isAssetVideo ? (
-                        <ModalVideoPlayer asset={asset} index={idx} autoPlayInitial={idx === 0} />
-                      ) : (
-                        <div className="relative w-full max-w-4xl mx-auto rounded-2xl overflow-hidden bg-black/40 border border-white/10 flex items-center justify-center shadow-lg">
-                          <img
-                            src={asset.url}
-                            alt={asset.title || item.title}
-                            loading="lazy"
-                            className="w-full max-h-[68vh] object-contain transition-transform duration-500 hover:scale-[1.01]"
-                            onError={(e) => {
-                              if (asset.thumbnailUrl && asset.thumbnailUrl !== asset.url) {
-                                (e.target as HTMLImageElement).src = asset.thumbnailUrl;
-                              }
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Subtle divider between multiple assets */}
-                    {assets.length > 1 && idx < assets.length - 1 && (
-                      <div className="pt-6 border-b border-white/[0.08]" />
-                    )}
-                  </div>
+            {(() => {
+              // Layout calculation
+              const rawLayout = item.assetsLayout || 'stacked';
+              // Grid Auto heuristic: if rawLayout is 'grid-auto', detect if all assets are vertical (9:16 or 4:5)
+              let effectiveLayout = rawLayout;
+              if (rawLayout === 'grid-auto') {
+                const allVertical = assets.length > 1 && assets.every(
+                  (a) => a.format === '9:16' || a.format === '4:5'
                 );
-              })}
-            </div>
+                if (allVertical) {
+                  effectiveLayout = assets.length === 2 ? 'grid-2' : 'grid-3';
+                } else {
+                  effectiveLayout = 'stacked';
+                }
+              }
+
+              const isGrid = effectiveLayout === 'grid-2' || effectiveLayout === 'grid-3';
+
+              // Gap class
+              const gapClass =
+                item.assetsGap === 'compact'
+                  ? isGrid ? 'gap-3' : 'space-y-4'
+                  : item.assetsGap === 'spacious'
+                  ? isGrid ? 'gap-8' : 'space-y-12'
+                  : isGrid ? 'gap-5' : 'space-y-8'; // normal
+
+              // Grid class
+              const gridClass = isGrid
+                ? effectiveLayout === 'grid-2'
+                  ? `grid grid-cols-1 sm:grid-cols-2 ${gapClass}`
+                  : `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 ${gapClass}`
+                : gapClass;
+
+              // Max height styling class
+              const maxHeightClass =
+                item.maxMediaHeight === 'compact'
+                  ? 'max-h-[50vh]'
+                  : item.maxMediaHeight === 'medium'
+                  ? 'max-h-[62vh]'
+                  : 'max-h-[72vh]'; // full default
+
+              const iframeMaxHeight =
+                item.maxMediaHeight === 'compact'
+                  ? 'max-h-[46vh]'
+                  : item.maxMediaHeight === 'medium'
+                  ? 'max-h-[58vh]'
+                  : 'max-h-[68vh]';
+
+              const mediaFit = item.mediaFit || 'contain';
+
+              return (
+                <div className={gridClass}>
+                  {assets.map((asset, idx) => {
+                    const isAssetVideo = asset.mediaType === 'video';
+                    const isAssetDriveVideo = asset.mediaType === 'drive_video';
+                    const isAssetEmbed = asset.mediaType === 'embed';
+                    const isVertical = asset.format === '9:16' || asset.format === '4:5';
+
+                    return (
+                      <div
+                        key={asset.id || idx}
+                        id={`modal-asset-${idx}`}
+                        className={`${isGrid ? 'w-full' : 'space-y-4'} transition-all scroll-mt-6`}
+                      >
+                        <div className="w-full flex items-center justify-center">
+                          {isAssetDriveVideo ? (
+                            <div className={`relative w-full ${isGrid ? 'max-w-full' : 'max-w-4xl'} mx-auto rounded-2xl overflow-hidden group/drive flex items-center justify-center bg-black/80 border border-white/10 shadow-lg`}>
+                              <div className={`w-full ${isVertical ? 'aspect-[9/16]' : 'aspect-video'} ${iframeMaxHeight} relative rounded-2xl overflow-hidden`}>
+                                <iframe
+                                  src={asset.url.includes('?') ? `${asset.url}&autoplay=1` : `${asset.url}?autoplay=1`}
+                                  title={asset.title || item.title}
+                                  allow="autoplay; fullscreen"
+                                  allowFullScreen
+                                  className="w-full h-full border-0 rounded-2xl"
+                                />
+                                {/* Blocker overlay for Google Drive top-right pop-out button */}
+                                <div
+                                  className="absolute top-0 right-0 w-24 h-14 z-30 pointer-events-auto bg-transparent cursor-default"
+                                  title="Reproductor de video"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          ) : isAssetEmbed ? (
+                            <div className={`relative w-full ${isGrid ? 'max-w-full' : 'max-w-4xl'} mx-auto rounded-2xl overflow-hidden flex items-center justify-center bg-black/80 border border-white/10 shadow-lg`}>
+                              <div className={`w-full ${isVertical ? 'aspect-[9/16]' : 'aspect-video'} ${iframeMaxHeight} relative rounded-2xl overflow-hidden`}>
+                                <iframe
+                                  src={asset.url}
+                                  title={asset.title || item.title}
+                                  allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+                                  allowFullScreen
+                                  className="w-full h-full border-0 rounded-2xl"
+                                />
+                              </div>
+                            </div>
+                          ) : isAssetVideo ? (
+                            <ModalVideoPlayer
+                              asset={asset}
+                              index={idx}
+                              autoPlayInitial={idx === 0}
+                              mediaFit={mediaFit}
+                              maxHeightClass={maxHeightClass}
+                              isGrid={isGrid}
+                            />
+                          ) : (
+                            <div className={`relative w-full ${isGrid ? 'max-w-full' : 'max-w-4xl'} mx-auto rounded-2xl overflow-hidden bg-black/40 border border-white/10 flex items-center justify-center shadow-lg`}>
+                              <img
+                                src={asset.url}
+                                alt={asset.title || item.title}
+                                loading="lazy"
+                                className={`w-full ${maxHeightClass} ${mediaFit === 'cover' ? 'object-cover' : 'object-contain'} ${isVertical ? 'aspect-[9/16]' : ''} transition-transform duration-500 hover:scale-[1.01]`}
+                                onError={(e) => {
+                                  if (asset.thumbnailUrl && asset.thumbnailUrl !== asset.url) {
+                                    (e.target as HTMLImageElement).src = asset.thumbnailUrl;
+                                  }
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Subtle divider between multiple assets when in stacked mode */}
+                        {!isGrid && assets.length > 1 && idx < assets.length - 1 && (
+                          <div className="pt-6 border-b border-white/[0.08]" />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
 
             {/* Integrated Details Section */}
             <div className="space-y-6 pt-4 border-t border-white/10 max-w-4xl">

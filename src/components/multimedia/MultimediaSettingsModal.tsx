@@ -24,6 +24,7 @@ import {
   Globe,
   Eye,
   EyeOff,
+  LayoutGrid,
 } from 'lucide-react';
 import type { MultimediaItem, MediaFormat, MediaAsset } from '../../types/multimedia';
 import { normalizeCategory, getItemAssets, getItemCategories, getCategoryIconName } from '../../types/multimedia';
@@ -102,6 +103,13 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
     { id: 'asset-1', url: '', preferredType: 'video', format: '16:9', title: '', thumbnailUrl: '' },
   ]);
 
+  // Per-item layout states for multiple assets
+  const [showTabs, setShowTabs] = useState<boolean>(true);
+  const [assetsLayout, setAssetsLayout] = useState<'stacked' | 'grid-2' | 'grid-3' | 'grid-auto'>('stacked');
+  const [assetsGap, setAssetsGap] = useState<'compact' | 'normal' | 'spacious'>('normal');
+  const [mediaFit, setMediaFit] = useState<'contain' | 'cover'>('contain');
+  const [maxMediaHeight, setMaxMediaHeight] = useState<'full' | 'medium' | 'compact'>('full');
+
   // Drag and drop state for items
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -116,6 +124,11 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
     setCategories(['MOTION']);
     setCustomCategoryInput('');
     setIsVisible(true);
+    setShowTabs(true);
+    setAssetsLayout('stacked');
+    setAssetsGap('normal');
+    setMediaFit('contain');
+    setMaxMediaHeight('full');
     setAssetsList([{ id: `asset-${Date.now()}`, url: '', preferredType: 'video', format: '16:9', title: '', thumbnailUrl: '' }]);
   };
 
@@ -191,6 +204,11 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
             hookRationale,
             hidden: !isVisible,
             assets: parsedAssets,
+            showTabs,
+            assetsLayout,
+            assetsGap,
+            mediaFit,
+            maxMediaHeight,
             mediaType: primary.mediaType,
             url: primary.url,
             rawUrl: primary.rawUrl,
@@ -215,6 +233,11 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
         hidden: !isVisible,
         createdAt: Date.now(),
         assets: parsedAssets,
+        showTabs,
+        assetsLayout,
+        assetsGap,
+        mediaFit,
+        maxMediaHeight,
         mediaType: primary.mediaType,
         url: primary.url,
         rawUrl: primary.rawUrl,
@@ -238,6 +261,11 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
     setDescription(item.description);
     setHookRationale(item.hookRationale || '');
     setIsVisible(!item.hidden);
+    setShowTabs(item.showTabs !== false);
+    setAssetsLayout(item.assetsLayout || 'stacked');
+    setAssetsGap(item.assetsGap || 'normal');
+    setMediaFit(item.mediaFit || 'contain');
+    setMaxMediaHeight(item.maxMediaHeight || 'full');
 
     const itemAssets = getItemAssets(item);
     setAssetsList(
@@ -710,6 +738,117 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                     + Añadir otro asset a esta entrada
                   </button>
                 </div>
+
+                {/* Per-item Layout Settings (shown when there are multiple assets or for layout customization) */}
+                {assetsList.length > 1 && (
+                  <div className="p-4 rounded-2xl bg-neutral-50/80 border border-stone-200/80 space-y-3.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <LayoutGrid className="w-4 h-4 text-neutral-700" />
+                        <h4 className="font-sans text-xs font-bold text-neutral-900 uppercase tracking-wider">
+                          Configuración de Layout ({assetsList.length} assets)
+                        </h4>
+                      </div>
+                      <span className="text-[10px] text-stone-500 font-sans">Específico para este item</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                      {/* Grid / Layout selector */}
+                      <div className="space-y-1">
+                        <label className="block font-sans text-[11px] font-semibold text-neutral-700">
+                          Disposición en pantalla
+                        </label>
+                        <select
+                          value={assetsLayout}
+                          onChange={(e) => setAssetsLayout(e.target.value as any)}
+                          className="w-full px-3 py-1.5 rounded-xl border border-stone-300 text-xs font-sans bg-white focus:outline-none focus:border-neutral-900"
+                        >
+                          <option value="stacked">Apilados verticalmente (1 col)</option>
+                          <option value="grid-2">Cuadrícula 2 columnas</option>
+                          <option value="grid-3">Cuadrícula 3 columnas</option>
+                          <option value="grid-auto">Grid Auto (detectar verticales)</option>
+                        </select>
+                        <p className="text-[10px] text-stone-500 font-sans">
+                          {assetsLayout === 'grid-auto'
+                            ? 'Detecta si todos son 9:16 y los pone uno al lado del otro.'
+                            : assetsLayout === 'stacked'
+                            ? 'Muestra cada asset uno debajo del otro a ancho completo.'
+                            : 'Muestra los assets uno al lado del otro en filas.'}
+                        </p>
+                      </div>
+
+                      {/* Show / Hide Tabs toggle */}
+                      <div className="space-y-1">
+                        <label className="block font-sans text-[11px] font-semibold text-neutral-700">
+                          Pestañas de navegación rápida
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setShowTabs(!showTabs)}
+                          className={`w-full px-3 py-1.5 rounded-xl border text-xs font-sans font-medium flex items-center justify-between transition-colors ${
+                            showTabs
+                              ? 'bg-neutral-900 text-white border-neutral-900'
+                              : 'bg-white text-stone-600 border-stone-300 hover:border-neutral-500'
+                          }`}
+                        >
+                          <span>{showTabs ? '✓ Pestañas visibles' : 'Pestañas ocultas'}</span>
+                          <span className="text-[10px] opacity-75">
+                            {showTabs ? 'Mostrar tabs' : 'Ocultar tabs'}
+                          </span>
+                        </button>
+                        <p className="text-[10px] text-stone-500 font-sans">
+                          {showTabs
+                            ? 'Muestra tabs arriba para saltar entre assets.'
+                            : 'Útil cuando ya se ven todos juntos en cuadrícula.'}
+                        </p>
+                      </div>
+
+                      {/* Spacing / Gap */}
+                      <div className="space-y-1">
+                        <label className="block font-sans text-[11px] font-semibold text-neutral-700">
+                          Espaciado entre assets
+                        </label>
+                        <select
+                          value={assetsGap}
+                          onChange={(e) => setAssetsGap(e.target.value as any)}
+                          className="w-full px-3 py-1.5 rounded-xl border border-stone-300 text-xs font-sans bg-white focus:outline-none focus:border-neutral-900"
+                        >
+                          <option value="compact">Compacto (pequeño)</option>
+                          <option value="normal">Normal (balanceado)</option>
+                          <option value="spacious">Espacioso (generoso)</option>
+                        </select>
+                      </div>
+
+                      {/* Media Fit & Max Height */}
+                      <div className="space-y-1">
+                        <label className="block font-sans text-[11px] font-semibold text-neutral-700">
+                          Ajuste y Altura
+                        </label>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          <select
+                            value={mediaFit}
+                            onChange={(e) => setMediaFit(e.target.value as any)}
+                            className="w-full px-2 py-1.5 rounded-xl border border-stone-300 text-xs font-sans bg-white focus:outline-none focus:border-neutral-900"
+                            title="Ajuste de imagen/video"
+                          >
+                            <option value="contain">Contain (completo)</option>
+                            <option value="cover">Cover (llenar)</option>
+                          </select>
+                          <select
+                            value={maxMediaHeight}
+                            onChange={(e) => setMaxMediaHeight(e.target.value as any)}
+                            className="w-full px-2 py-1.5 rounded-xl border border-stone-300 text-xs font-sans bg-white focus:outline-none focus:border-neutral-900"
+                            title="Altura máxima"
+                          >
+                            <option value="full">Alto completo</option>
+                            <option value="medium">Alto medio</option>
+                            <option value="compact">Compacto</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Tools */}
                 <div className="space-y-1 pt-2 border-t border-stone-200">
