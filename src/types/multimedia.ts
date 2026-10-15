@@ -36,6 +36,7 @@ export interface MultimediaItem {
   description: string;
   hookRationale?: string;
   featured?: boolean;
+  hidden?: boolean;
   createdAt: number;
   assets?: MediaAsset[];
 

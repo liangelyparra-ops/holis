@@ -7,7 +7,6 @@ import {
   GripVertical,
   ArrowUp,
   ArrowDown,
-  RotateCcw,
   Link as LinkIcon,
   Video,
   Image as ImageIcon,
@@ -18,11 +17,12 @@ import {
   Edit3,
   Sliders,
   Sparkles,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import type { MultimediaItem, MediaFormat, MediaAsset } from '../../types/multimedia';
 import { normalizeCategory, getItemAssets } from '../../types/multimedia';
 import { parseMediaUrl, extractDriveFileId } from '../../utils/driveUrlHelper';
-import { multimediaInitialItems } from '../../data/multimediaInitialItems';
 import type { MultimediaSectionId } from '../../types/multimediaContent';
 
 interface MultimediaSettingsModalProps {
@@ -33,7 +33,6 @@ interface MultimediaSettingsModalProps {
   onEnterEditMode: () => void;
   sectionsOrder: MultimediaSectionId[];
   onUpdateSectionsOrder: (order: MultimediaSectionId[]) => void;
-  onResetPageContent: () => void;
 }
 
 interface AssetInputState {
@@ -52,7 +51,6 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
   onEnterEditMode,
   sectionsOrder,
   onUpdateSectionsOrder,
-  onResetPageContent,
 }) => {
   // Tab state: 'items' or 'page-editor'
   const [activeTab, setActiveTab] = useState<'items' | 'page-editor'>('items');
@@ -64,6 +62,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
   const [toolsInput, setToolsInput] = useState('After Effects, Runway Gen-3, Midjourney');
   const [description, setDescription] = useState('');
   const [hookRationale, setHookRationale] = useState('');
+  const [isVisible, setIsVisible] = useState(true);
 
   // Multi-asset state
   const [assetsList, setAssetsList] = useState<AssetInputState[]>([
@@ -82,6 +81,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
     setHookRationale('');
     setToolsInput('After Effects, Runway Gen-3, Midjourney');
     setCategory('MOTION');
+    setIsVisible(true);
     setAssetsList([{ id: `asset-${Date.now()}`, url: '', preferredType: 'video', format: '16:9', title: '' }]);
   };
 
@@ -150,6 +150,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
             tools: toolsArray.length ? toolsArray : ['Design', 'Motion'],
             description,
             hookRationale,
+            hidden: !isVisible,
             assets: parsedAssets,
             mediaType: primary.mediaType,
             url: primary.url,
@@ -171,6 +172,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
         tools: toolsArray.length ? toolsArray : ['Creative Direction', 'AI'],
         description: description || 'Pieza multimedia creada para campañas digitales.',
         hookRationale: hookRationale || '',
+        hidden: !isVisible,
         createdAt: Date.now(),
         assets: parsedAssets,
         mediaType: primary.mediaType,
@@ -194,6 +196,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
     setToolsInput(item.tools.join(', '));
     setDescription(item.description);
     setHookRationale(item.hookRationale || '');
+    setIsVisible(!item.hidden);
 
     const itemAssets = getItemAssets(item);
     setAssetsList(
@@ -208,10 +211,25 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
   };
 
   const handleDeleteItem = (id: string) => {
-    if (window.confirm('¿Seguro que deseas eliminar esta pieza de la galería?')) {
+    if (window.confirm('¿Seguro que deseas eliminar esta pieza permanentemente de la galería?')) {
       onUpdateItems(items.filter((item) => item.id !== id));
       if (editingItemId === id) resetForm();
     }
+  };
+
+  // Toggle item visibility without deleting it
+  const handleToggleVisibility = (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const updated = items.map((item) => {
+      if (item.id === id) {
+        return {
+          ...item,
+          hidden: !item.hidden,
+        };
+      }
+      return item;
+    });
+    onUpdateItems(updated);
   };
 
   const handleMove = (index: number, direction: 'up' | 'down') => {
@@ -277,13 +295,6 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
     setDragOverIndex(null);
   };
 
-  const handleRestoreDefaults = () => {
-    if (window.confirm('¿Deseas restaurar las piezas de muestra recomendadas?')) {
-      onUpdateItems(multimediaInitialItems);
-      resetForm();
-    }
-  };
-
   const handleCopyDirectLink = () => {
     const currentUrl = window.location.origin + window.location.pathname + '#multimedia';
     navigator.clipboard.writeText(currentUrl);
@@ -295,6 +306,8 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
     onClose();
     onEnterEditMode();
   };
+
+  const visibleItemsCount = items.filter((i) => !i.hidden).length;
 
   if (!isOpen) return null;
 
@@ -326,7 +339,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
               </h2>
             </div>
             <p className="font-sans text-xs text-stone-600">
-              Administra los videos, entra en modo edición visual o reordena las secciones de la página.
+              Administra los videos, su visibilidad (mostrar/ocultar), o reordena las secciones de la página.
             </p>
           </div>
 
@@ -372,7 +385,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
             }`}
           >
             <Video className="w-4 h-4" />
-            Piezas de la Galería ({items.length})
+            Piezas de la Galería ({visibleItemsCount} visibles / {items.length} total)
           </button>
 
           <button
@@ -459,7 +472,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                     </button>
                   </div>
 
-                  <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
+                  <div className="space-y-3 max-h-[340px] overflow-y-auto pr-1">
                     {assetsList.map((asset, index) => {
                       const isDrive = asset.url ? !!extractDriveFileId(asset.url) : false;
                       return (
@@ -520,7 +533,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                                     : 'text-stone-600 hover:bg-stone-50'
                                 }`}
                               >
-                                <Video className="w-3 h-3" />
+                                <Video className="w-3.5 h-3.5" />
                                 Video
                               </button>
                               <button
@@ -532,7 +545,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                                     : 'text-stone-600 hover:bg-stone-50'
                                 }`}
                               >
-                                <ImageIcon className="w-3 h-3" />
+                                <ImageIcon className="w-3.5 h-3.5" />
                                 Imagen
                               </button>
                             </div>
@@ -612,6 +625,45 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                   />
                 </div>
 
+                {/* Visibility Switch (Show/Hide without deleting) */}
+                <div className="flex items-center justify-between p-3.5 rounded-2xl bg-stone-50 border border-stone-200">
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
+                        isVisible
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-stone-200 text-stone-600'
+                      }`}
+                    >
+                      {isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    </div>
+                    <div>
+                      <p className="font-sans text-xs font-semibold text-neutral-900">
+                        {isVisible ? 'Visible en el portafolio' : 'Oculto del portafolio'}
+                      </p>
+                      <p className="font-sans text-[11px] text-stone-500">
+                        {isVisible
+                          ? 'Esta pieza se muestra activamente en la galería pública.'
+                          : 'No se muestra en la web pública (se conserva guardada aquí).'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsVisible(!isVisible)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer shrink-0 ${
+                      isVisible ? 'bg-emerald-500' : 'bg-stone-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-xs transition-transform ${
+                        isVisible ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
                 {/* Submit Button */}
                 <button
                   type="submit"
@@ -623,32 +675,22 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
               </form>
             </div>
 
-            {/* Right Column: Drag and Drop Reordering List */}
+            {/* Right Column: Items Manager with Visibility Toggles */}
             <div className="lg:col-span-5 space-y-4 flex flex-col justify-between">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-headline text-sm font-bold uppercase tracking-wider text-neutral-900">
-                      🔀 Orden de las Piezas ({items.length})
+                      🔀 Casos &amp; Visibilidad ({items.length})
                     </h3>
                     <p className="font-sans text-[11px] text-stone-500">
-                      Arrastra las tarjetas o usa las flechas para ordenar.
+                      Activa o desactiva el ojo 👁️ para mostrar u ocultar casos sin borrarlos.
                     </p>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={handleRestoreDefaults}
-                    title="Restaurar ejemplos originales"
-                    className="inline-flex items-center gap-1 text-[11px] text-stone-500 hover:text-stone-900 underline cursor-pointer"
-                  >
-                    <RotateCcw className="w-3 h-3" />
-                    Restablecer
-                  </button>
                 </div>
 
-                {/* Items List with Drag and Drop */}
-                <div className="space-y-2 max-h-[540px] overflow-y-auto pr-1">
+                {/* Items List with Drag & Drop and Visibility Toggles */}
+                <div className="space-y-2 max-h-[560px] overflow-y-auto pr-1">
                   {items.length === 0 ? (
                     <div className="p-8 text-center border-2 border-dashed border-stone-200 rounded-2xl space-y-2">
                       <AlertCircle className="w-8 h-8 text-stone-400 mx-auto" />
@@ -663,6 +705,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                       const isOver = dragOverIndex === index;
                       const itemAssets = getItemAssets(item);
                       const primary: MediaAsset = itemAssets[0] || { id: 'fallback', url: '', mediaType: 'image', format: '16:9' };
+                      const isItemHidden = Boolean(item.hidden);
 
                       return (
                         <div
@@ -676,6 +719,8 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                               ? 'border-neutral-950 bg-stone-100 scale-[1.01]'
                               : isDragging
                               ? 'opacity-40 border-dashed border-stone-400'
+                              : isItemHidden
+                              ? 'bg-stone-50/70 border-dashed border-stone-300 opacity-75 hover:opacity-100'
                               : 'bg-white border-stone-200 hover:border-stone-400 shadow-2xs'
                           }`}
                         >
@@ -694,7 +739,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                                 <img
                                   src={primary.thumbnailUrl || primary.url}
                                   alt={item.title}
-                                  className="w-full h-full object-cover"
+                                  className={`w-full h-full object-cover ${isItemHidden ? 'grayscale' : ''}`}
                                 />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-white/50 text-[10px]">
@@ -705,12 +750,25 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
 
                             {/* Title & Tag */}
                             <div className="min-w-0 flex-1">
-                              <p className="font-headline text-xs font-semibold text-neutral-900 truncate">
+                              <p className={`font-headline text-xs font-semibold truncate ${isItemHidden ? 'text-stone-600 line-through' : 'text-neutral-900'}`}>
                                 {item.title}
                               </p>
                               <div className="flex items-center gap-1.5 mt-0.5">
+                                {/* Visibility Badge */}
+                                {isItemHidden ? (
+                                  <span className="text-[10px] font-mono font-bold text-amber-800 bg-amber-50 border border-amber-200/90 px-1.5 py-0.2 rounded flex items-center gap-1">
+                                    <EyeOff className="w-2.5 h-2.5" />
+                                    Oculto
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/90 px-1.5 py-0.2 rounded flex items-center gap-1">
+                                    <Eye className="w-2.5 h-2.5" />
+                                    Visible
+                                  </span>
+                                )}
+
                                 {itemAssets.length > 1 && (
-                                  <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded flex items-center gap-1">
+                                  <span className="text-[10px] font-mono font-bold text-stone-700 bg-stone-100 border border-stone-200 px-1.5 py-0.2 rounded flex items-center gap-1">
                                     <Layers className="w-2.5 h-2.5" />
                                     {itemAssets.length}
                                   </span>
@@ -718,19 +776,26 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                                 <span className="text-[10px] font-mono text-stone-500 bg-stone-100 px-1.5 py-0.2 rounded">
                                   {primary.format}
                                 </span>
-                                <span className="text-[10px] font-sans text-stone-500 truncate">
-                                  {normalizeCategory(item.category) === 'MOTION'
-                                    ? 'Motion'
-                                    : normalizeCategory(item.category) === 'IA'
-                                    ? 'IA'
-                                    : 'Key Visuals'}
-                                </span>
                               </div>
                             </div>
                           </div>
 
-                          {/* Action Buttons: Arrows, Edit, Delete */}
+                          {/* Action Buttons: Visibility Toggle, Arrows, Edit, Delete */}
                           <div className="flex items-center gap-1 shrink-0">
+                            {/* Eye Visibility Toggle Button */}
+                            <button
+                              type="button"
+                              onClick={(e) => handleToggleVisibility(item.id, e)}
+                              className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
+                                isItemHidden
+                                  ? 'text-stone-400 hover:text-emerald-700 hover:bg-emerald-50'
+                                  : 'text-emerald-600 hover:text-stone-500 hover:bg-stone-100'
+                              }`}
+                              title={isItemHidden ? 'Mostrar este caso en el portafolio' : 'Ocultar este caso sin borrar'}
+                            >
+                              {isItemHidden ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                            </button>
+
                             <button
                               type="button"
                               disabled={index === 0}
@@ -760,7 +825,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                               type="button"
                               onClick={() => handleDeleteItem(item.id)}
                               className="w-7 h-7 rounded-lg text-rose-500 hover:bg-rose-50 flex items-center justify-center cursor-pointer"
-                              title="Eliminar"
+                              title="Eliminar permanentemente"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -774,7 +839,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
 
               {/* Bottom info alert */}
               <div className="p-3 bg-stone-100 rounded-2xl text-[11px] font-sans text-stone-600 flex items-center justify-between">
-                <span>💾 Se sincroniza en vivo en la nube (Firestore).</span>
+                <span>💾 Los cambios se guardan y sincronizan en vivo.</span>
                 <button
                   type="button"
                   onClick={onClose}
@@ -815,24 +880,13 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
 
             {/* Sections Reordering Section */}
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-200 pb-3">
-                <div>
-                  <h3 className="font-headline text-base font-bold text-neutral-950">
-                    Reordenar Secciones de la Página
-                  </h3>
-                  <p className="font-sans text-xs text-stone-500">
-                    Cambia el orden en el que se visualizan los bloques de la página en tiempo real.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={onResetPageContent}
-                  className="inline-flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-900 underline cursor-pointer"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  Restaurar textos y orden original
-                </button>
+              <div className="border-b border-stone-200 pb-3">
+                <h3 className="font-headline text-base font-bold text-neutral-950">
+                  Reordenar Secciones de la Página
+                </h3>
+                <p className="font-sans text-xs text-stone-500">
+                  Cambia el orden en el que se visualizan los bloques de la página en tiempo real.
+                </p>
               </div>
 
               <div className="space-y-3">

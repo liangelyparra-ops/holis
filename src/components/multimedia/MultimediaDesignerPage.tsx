@@ -16,7 +16,6 @@ import {
   ArrowUp,
   ArrowDown,
   Save,
-  RotateCcw,
   X,
   Edit3,
 } from 'lucide-react';
@@ -144,14 +143,6 @@ export const MultimediaDesignerPage: React.FC = () => {
     }
   };
 
-  const handleResetPageContent = async () => {
-    if (window.confirm('¿Deseas restaurar todos los textos y el orden original de las secciones?')) {
-      setPageContent(defaultMultimediaPageContent);
-      await saveMultimediaPageContentLive(defaultMultimediaPageContent);
-      toast.success('Textos y secciones restaurados a valores originales');
-    }
-  };
-
   const handleMoveSection = (index: number, direction: 'up' | 'down') => {
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= pageContent.sectionsOrder.length) return;
@@ -173,6 +164,7 @@ export const MultimediaDesignerPage: React.FC = () => {
   };
 
   const filteredItems = items.filter((item) => {
+    if (item.hidden) return false;
     if (selectedCategory === 'TODOS') return true;
     return normalizeCategory(item.category) === selectedCategory;
   });
@@ -938,16 +930,6 @@ export const MultimediaDesignerPage: React.FC = () => {
 
                 <button
                   type="button"
-                  onClick={handleResetPageContent}
-                  title="Restaurar textos y orden original"
-                  className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-mono transition-colors cursor-pointer"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Restaurar</span>
-                </button>
-
-                <button
-                  type="button"
                   onClick={() => setIsEditMode(false)}
                   className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-mono transition-colors cursor-pointer"
                 >
@@ -1032,7 +1014,6 @@ export const MultimediaDesignerPage: React.FC = () => {
         onUpdateSectionsOrder={(newOrder) =>
           setPageContent((prev) => ({ ...prev, sectionsOrder: newOrder }))
         }
-        onResetPageContent={handleResetPageContent}
       />
     </div>
   );
