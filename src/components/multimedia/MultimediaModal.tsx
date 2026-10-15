@@ -10,9 +10,13 @@ import {
   Volume2,
   VolumeX,
   ChevronDown,
+  Tag,
+  Box,
+  Palette,
+  Globe,
 } from 'lucide-react';
 import type { MultimediaItem, MediaAsset } from '../../types/multimedia';
-import { normalizeCategory, getItemAssets, getItemCategories, getCategoryDisplay } from '../../types/multimedia';
+import { normalizeCategory, getItemAssets, getItemCategories, getCategoryDisplay, getCategoryIconName } from '../../types/multimedia';
 
 interface MultimediaModalProps {
   item: MultimediaItem | null;
@@ -311,17 +315,37 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
               <div className="flex flex-wrap items-center gap-2">
                 {getItemCategories(item).map((catKey) => {
                   const { key, label } = getCategoryDisplay(catKey);
-                  let CatIcon = Sparkles;
-                  if (key === 'MOTION') CatIcon = Film;
-                  else if (key === 'IA') CatIcon = Sparkles;
-                  else if (key === 'KEY_VISUALS') CatIcon = ImageIcon;
+                  const iconName = getCategoryIconName(catKey);
+
+                  let CatIcon = Tag;
+                  let iconColor = 'text-stone-300';
+
+                  if (iconName === 'film') {
+                    CatIcon = Film;
+                    iconColor = 'text-violet-400';
+                  } else if (iconName === 'sparkles') {
+                    CatIcon = Sparkles;
+                    iconColor = 'text-emerald-400';
+                  } else if (iconName === 'image') {
+                    CatIcon = ImageIcon;
+                    iconColor = 'text-blue-400';
+                  } else if (iconName === 'box') {
+                    CatIcon = Box;
+                    iconColor = 'text-amber-400';
+                  } else if (iconName === 'palette') {
+                    CatIcon = Palette;
+                    iconColor = 'text-pink-400';
+                  } else if (iconName === 'globe') {
+                    CatIcon = Globe;
+                    iconColor = 'text-cyan-400';
+                  }
 
                   return (
                     <span
                       key={catKey}
                       className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white border border-white/15 backdrop-blur-md"
                     >
-                      <CatIcon className="w-3.5 h-3.5 text-emerald-400" />
+                      <CatIcon className={`w-3.5 h-3.5 ${iconColor}`} />
                       {label}
                     </span>
                   );

@@ -64,6 +64,29 @@ export function normalizeCategory(cat: string): string {
   return cat;
 }
 
+export function getCategoryIconName(cat: string): 'film' | 'sparkles' | 'image' | 'box' | 'palette' | 'globe' | 'tag' {
+  const norm = (cat || '').trim().toUpperCase();
+  if (norm === 'IA' || norm === 'AI' || norm.includes('INTELIGENCIA') || norm.includes('GENERATIV')) {
+    return 'sparkles';
+  }
+  if (norm === 'MOTION' || norm.includes('VIDEO') || norm.includes('REEL') || norm.includes('ANIMAT')) {
+    return 'film';
+  }
+  if (norm === 'KEY_VISUALS' || norm.includes('PHOTO') || norm.includes('FOTO') || norm.includes('IMAGE') || norm.includes('POSTER')) {
+    return 'image';
+  }
+  if (norm.includes('3D') || norm.includes('RENDER') || norm.includes('MODEL')) {
+    return 'box';
+  }
+  if (norm.includes('BRAND') || norm.includes('DISEN') || norm.includes('DISEÑ') || norm.includes('LOGO') || norm.includes('IDENTI')) {
+    return 'palette';
+  }
+  if (norm.includes('WEB') || norm.includes('UI') || norm.includes('UX') || norm.includes('APP') || norm.includes('SITE')) {
+    return 'globe';
+  }
+  return 'tag';
+}
+
 export function getCategoryDisplay(cat: string): { key: string; label: string } {
   const raw = (cat || '').trim();
   if (raw === 'MOTION' || raw === 'MOTION_VIDEO' || raw === 'SOCIAL_HOOKS') {

@@ -17,11 +17,16 @@ import {
   Edit3,
   Sliders,
   Sparkles,
+  Film,
+  Tag,
+  Box,
+  Palette,
+  Globe,
   Eye,
   EyeOff,
 } from 'lucide-react';
 import type { MultimediaItem, MediaFormat, MediaAsset } from '../../types/multimedia';
-import { normalizeCategory, getItemAssets, getItemCategories } from '../../types/multimedia';
+import { normalizeCategory, getItemAssets, getItemCategories, getCategoryIconName } from '../../types/multimedia';
 import { parseMediaUrl, extractDriveFileId } from '../../utils/driveUrlHelper';
 import type { MultimediaSectionId } from '../../types/multimediaContent';
 
@@ -481,6 +486,15 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                   <div className="flex flex-wrap gap-2">
                     {availableCategories.map((cat) => {
                       const isSelected = categories.includes(cat.value);
+                      const iconName = getCategoryIconName(cat.value);
+                      let CatIcon = Tag;
+                      if (iconName === 'film') CatIcon = Film;
+                      else if (iconName === 'sparkles') CatIcon = Sparkles;
+                      else if (iconName === 'image') CatIcon = ImageIcon;
+                      else if (iconName === 'box') CatIcon = Box;
+                      else if (iconName === 'palette') CatIcon = Palette;
+                      else if (iconName === 'globe') CatIcon = Globe;
+
                       return (
                         <button
                           key={cat.value}
@@ -498,8 +512,12 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                               : 'bg-white text-stone-600 border-stone-300 hover:border-neutral-600 hover:text-neutral-900'
                           }`}
                         >
-                          {isSelected && <Check className="w-3 h-3" />}
-                          {cat.label}
+                          {isSelected ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          ) : (
+                            <CatIcon className="w-3.5 h-3.5 text-stone-400" />
+                          )}
+                          <span>{cat.label}</span>
                         </button>
                       );
                     })}

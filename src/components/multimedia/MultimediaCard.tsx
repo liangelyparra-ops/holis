@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Play, Sparkles, Video, Image as ImageIcon, ExternalLink, Film, Layers } from 'lucide-react';
+import { Play, Sparkles, Video, Image as ImageIcon, ExternalLink, Film, Layers, Tag, Box, Palette, Globe } from 'lucide-react';
 import type { MultimediaItem, MediaAsset } from '../../types/multimedia';
-import { normalizeCategory, getItemAssets, getItemCategories, getCategoryDisplay } from '../../types/multimedia';
+import { normalizeCategory, getItemAssets, getItemCategories, getCategoryDisplay, getCategoryIconName } from '../../types/multimedia';
 
 interface MultimediaCardProps {
   item: MultimediaItem;
@@ -44,20 +44,32 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
 
   const getCategoryMeta = (cat: string) => {
     const { key, label } = getCategoryDisplay(cat);
-    if (key === 'MOTION') {
-      return { label, icon: Film, color: 'bg-violet-50 text-violet-700 border-violet-200' };
+    const iconName = getCategoryIconName(cat);
+
+    let icon = Tag;
+    let color = 'bg-stone-50 text-stone-700 border-stone-200';
+
+    if (iconName === 'film') {
+      icon = Film;
+      color = 'bg-violet-50 text-violet-700 border-violet-200';
+    } else if (iconName === 'sparkles') {
+      icon = Sparkles;
+      color = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    } else if (iconName === 'image') {
+      icon = ImageIcon;
+      color = 'bg-blue-50 text-blue-700 border-blue-200';
+    } else if (iconName === 'box') {
+      icon = Box;
+      color = 'bg-amber-50 text-amber-700 border-amber-200';
+    } else if (iconName === 'palette') {
+      icon = Palette;
+      color = 'bg-pink-50 text-pink-700 border-pink-200';
+    } else if (iconName === 'globe') {
+      icon = Globe;
+      color = 'bg-cyan-50 text-cyan-700 border-cyan-200';
     }
-    if (key === 'IA') {
-      return { label, icon: Sparkles, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
-    }
-    if (key === 'KEY_VISUALS') {
-      return { label, icon: ImageIcon, color: 'bg-blue-50 text-blue-700 border-blue-200' };
-    }
-    return {
-      label,
-      icon: Sparkles,
-      color: 'bg-stone-50 text-stone-700 border-stone-200',
-    };
+
+    return { label, icon, color };
   };
 
   // Format aspect ratio class based on primary asset format

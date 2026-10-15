@@ -18,10 +18,14 @@ import {
   Save,
   X,
   Edit3,
+  Tag,
+  Box,
+  Palette,
+  Globe,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { MultimediaItem, MultimediaCategory } from '../../types/multimedia';
-import { normalizeCategory, getItemCategories, getCategoryDisplay } from '../../types/multimedia';
+import { normalizeCategory, getItemCategories, getCategoryDisplay, getCategoryIconName } from '../../types/multimedia';
 import type { MultimediaPageContent, MultimediaSectionId } from '../../types/multimediaContent';
 import { defaultMultimediaPageContent } from '../../types/multimediaContent';
 import { MultimediaCard } from './MultimediaCard';
@@ -214,11 +218,22 @@ export const MultimediaDesignerPage: React.FC = () => {
     { id: 'MOTION', label: 'Motion', icon: Film },
     { id: 'IA', label: 'IA', icon: Sparkles },
     { id: 'KEY_VISUALS', label: 'Key Visuals', icon: ImageIcon },
-    ...customCategories.map((c) => ({
-      id: c,
-      label: getCategoryDisplay(c).label,
-      icon: Sparkles,
-    })),
+    ...customCategories.map((c) => {
+      const iconName = getCategoryIconName(c);
+      let TabIcon = Tag;
+      if (iconName === 'film') TabIcon = Film;
+      else if (iconName === 'sparkles') TabIcon = Sparkles;
+      else if (iconName === 'image') TabIcon = ImageIcon;
+      else if (iconName === 'box') TabIcon = Box;
+      else if (iconName === 'palette') TabIcon = Palette;
+      else if (iconName === 'globe') TabIcon = Globe;
+
+      return {
+        id: c,
+        label: getCategoryDisplay(c).label,
+        icon: TabIcon,
+      };
+    }),
   ];
 
   const getSectionTitle = (id: MultimediaSectionId) => {
