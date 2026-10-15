@@ -36,17 +36,18 @@ const defaultTimelineItems: TimelineItem[] = [
 
 export const CareerTimeline: React.FC<{ className?: string }> = ({ className = '' }) => {
   return (
-    <section className={`lp-timeline ${className}`} aria-labelledby="lp-timeline-title">
+    <section className={`lp-timeline w-full ${className}`} aria-labelledby="lp-timeline-title">
       <style>{`
         .lp-timeline {
-          max-width: 960px;
-          margin: 3rem auto;
-          padding: 0 1.25rem;
+          width: 100%;
+          max-width: 100%;
+          margin: 2.5rem 0;
+          padding: 0;
           font: inherit;
           color: inherit;
         }
         .lp-timeline .lp-timeline-heading {
-          margin: 0 0 1.5rem;
+          margin: 0 0 1.75rem;
           font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
           font-size: 0.75rem;
           font-weight: 700;
@@ -59,55 +60,71 @@ export const CareerTimeline: React.FC<{ className?: string }> = ({ className = '
           margin: 0;
           padding: 0;
           display: flex;
-          gap: 1.25rem;
-          border-top: 1px solid currentColor;
+          gap: 2rem;
+          border-top: 1px solid rgba(120, 113, 108, 0.35);
         }
         .lp-timeline li {
           position: relative;
           flex: 1;
-          padding-top: 1rem;
+          padding-top: 1.25rem;
         }
         .lp-timeline li::before {
           content: "";
           position: absolute;
-          top: -4.5px;
+          top: -4px;
           left: 0;
-          width: 8px;
-          height: 8px;
+          width: 7px;
+          height: 7px;
           border-radius: 50%;
           background: currentColor;
+          opacity: 0.8;
         }
-        .lp-timeline time {
-          display: block;
-          font-size: .75rem;
-          opacity: .6;
+        .lp-timeline .lp-timeline-header {
+          display: flex;
+          align-items: baseline;
+          flex-wrap: wrap;
+          gap: 0.4rem 0.5rem;
+          margin-bottom: 0.35rem;
         }
         .lp-timeline h3 {
-          margin: .2rem 0 .15rem;
-          font-size: .9rem;
+          margin: 0;
+          font-size: 0.925rem;
           font-weight: 600;
-          line-height: 1.3;
+          line-height: 1.25;
+          color: inherit;
+        }
+        .lp-timeline time {
+          display: inline-block;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+          font-size: 0.7rem;
+          opacity: 0.6;
+          letter-spacing: -0.01em;
+          white-space: nowrap;
         }
         .lp-timeline p {
           margin: 0;
-          font-size: .8rem;
+          font-size: 0.725rem;
           line-height: 1.45;
-          opacity: .8;
+          opacity: 0.65;
+          max-width: 220px;
         }
-        @media (max-width: 700px) {
+        @media (max-width: 820px) {
           .lp-timeline ol {
             flex-direction: column;
-            gap: 1.25rem;
+            gap: 1.5rem;
             border-top: 0;
-            border-left: 1px solid currentColor;
+            border-left: 1px solid rgba(120, 113, 108, 0.35);
             padding-left: 1.25rem;
           }
           .lp-timeline li {
             padding-top: 0;
           }
           .lp-timeline li::before {
-            top: .3em;
-            left: calc(-1.25rem - 4.5px);
+            top: 0.25em;
+            left: calc(-1.25rem - 4px);
+          }
+          .lp-timeline p {
+            max-width: 100%;
           }
         }
       `}</style>
@@ -116,8 +133,10 @@ export const CareerTimeline: React.FC<{ className?: string }> = ({ className = '
       <ol>
         {defaultTimelineItems.map((item, idx) => (
           <li key={idx}>
-            <time>{item.period}</time>
-            <h3>{item.role}</h3>
+            <div className="lp-timeline-header">
+              <h3>{item.role}</h3>
+              <time>{item.period}</time>
+            </div>
             <p>{item.description}</p>
           </li>
         ))}
