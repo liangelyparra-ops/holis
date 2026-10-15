@@ -259,69 +259,105 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-hidden">
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 md:p-6 overflow-hidden"
+        onClick={onClose}
+      >
         {/* Backdrop with Deep Glassmorphism */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose}
           className="fixed inset-0 bg-neutral-950/80 backdrop-blur-2xl"
         />
 
-        {/* Modal Window: Extra Large & High-End Glass Effect */}
+        {/* Modal Window: Integrated, more compact, adapting to content */}
         <motion.div
           initial={{ opacity: 0, scale: 0.96, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 15 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="relative w-[96vw] max-w-[1420px] h-[92vh] max-h-[94vh] flex flex-col lg:flex-row bg-neutral-950/85 backdrop-blur-3xl rounded-3xl overflow-hidden shadow-[0_30px_90px_rgba(0,0,0,0.85)] border border-white/20 z-10 text-white"
+          onClick={(e) => e.stopPropagation()}
+          className="relative w-full max-w-3xl max-h-[90vh] flex flex-col bg-neutral-950/90 backdrop-blur-3xl rounded-3xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.85)] border border-white/15 z-10 text-white"
         >
           {/* Subtle Glass Highlights */}
           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none z-30" />
-          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            aria-label="Cerrar modal"
-            className="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-all backdrop-blur-md border border-white/20 shadow-lg cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {/* Modal Header: Category Badges & Close Button */}
+          <div className="flex items-center justify-between gap-3 px-5 sm:px-6 py-4 border-b border-white/10 bg-white/[0.02] backdrop-blur-md shrink-0 z-20">
+            <div className="flex flex-wrap items-center gap-2">
+              {getItemCategories(item).map((catKey) => {
+                const { label } = getCategoryDisplay(catKey);
+                const iconName = getCategoryIconName(catKey);
 
-          {/* Media Area (Left/Main - Scrollable when multi-asset) */}
-          <div className="lg:w-8/12 flex-1 bg-black/40 flex flex-col overflow-hidden relative border-b lg:border-b-0 lg:border-r border-white/10">
-            {/* Multi-Asset Top Quick Jump Navigation Bar - Slim Text Tabs */}
-            {assets.length > 1 && (
-              <div className="px-6 bg-black/60 backdrop-blur-xl border-b border-white/10 flex items-center gap-7 overflow-x-auto scrollbar-none shrink-0 z-20 h-12">
-                {assets.map((asset, idx) => {
-                  const isActive = activeAssetIndex === idx;
-                  return (
-                    <button
-                      key={asset.id || idx}
-                      type="button"
-                      onClick={() => scrollToAsset(idx)}
-                      className={`h-full flex items-center text-sm font-sans tracking-tight transition-all shrink-0 cursor-pointer border-b-2 relative ${
-                        isActive
-                          ? 'text-white font-semibold border-white'
-                          : 'text-stone-400 font-normal hover:text-stone-200 border-transparent'
-                      }`}
-                    >
-                      {asset.title || asset.format}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+                let CatIcon = Tag;
+                if (iconName === 'film') CatIcon = Film;
+                else if (iconName === 'sparkles') CatIcon = Sparkles;
+                else if (iconName === 'image') CatIcon = ImageIcon;
+                else if (iconName === 'box') CatIcon = Box;
+                else if (iconName === 'palette') CatIcon = Palette;
+                else if (iconName === 'globe') CatIcon = Globe;
 
-            {/* Scrollable Media Feed */}
-            <div
-              ref={scrollContainerRef}
-              onScroll={handleScroll}
-              className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-10 scrollbar-thin scrollbar-thumb-white/20 hover:scrollbar-thumb-white/40"
+                const isIA = iconName === 'sparkles';
+                const badgeClass = isIA
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40 shadow-xs'
+                  : 'bg-white/10 text-stone-200 border-white/15';
+
+                const iconColor = isIA ? 'text-emerald-300' : 'text-stone-400';
+
+                return (
+                  <span
+                    key={catKey}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md ${badgeClass}`}
+                  >
+                    <CatIcon className={`w-3.5 h-3.5 ${iconColor}`} />
+                    {label}
+                  </span>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={onClose}
+              type="button"
+              aria-label="Cerrar modal"
+              className="shrink-0 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all backdrop-blur-md border border-white/20 shadow-md cursor-pointer"
             >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Multi-Asset Quick Jump Tabs (if multiple assets exist) */}
+          {assets.length > 1 && (
+            <div className="px-6 bg-black/40 backdrop-blur-xl border-b border-white/10 flex items-center gap-6 overflow-x-auto scrollbar-none shrink-0 z-20 h-11">
+              {assets.map((asset, idx) => {
+                const isActive = activeAssetIndex === idx;
+                return (
+                  <button
+                    key={asset.id || idx}
+                    type="button"
+                    onClick={() => scrollToAsset(idx)}
+                    className={`h-full flex items-center text-xs sm:text-sm font-sans tracking-tight transition-all shrink-0 cursor-pointer border-b-2 relative ${
+                      isActive
+                        ? 'text-white font-semibold border-white'
+                        : 'text-stone-400 font-normal hover:text-stone-200 border-transparent'
+                    }`}
+                  >
+                    {asset.title || asset.format}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Integrated Scrollable Body */}
+          <div
+            ref={scrollContainerRef}
+            onScroll={handleScroll}
+            className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-7 space-y-7 scrollbar-thin scrollbar-thumb-white/20 hover:scrollbar-thumb-white/40 text-left"
+          >
+            {/* Media Area (adjusts nicely to media size) */}
+            <div className="space-y-6">
               {assets.map((asset, idx) => {
                 const isAssetVideo = asset.mediaType === 'video';
                 const isAssetDriveVideo = asset.mediaType === 'drive_video';
@@ -331,13 +367,12 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                   <div
                     key={asset.id || idx}
                     id={`modal-asset-${idx}`}
-                    className="space-y-4 transition-all scroll-mt-6"
+                    className="space-y-3 transition-all scroll-mt-6"
                   >
-                    {/* Media Item Display */}
                     <div className="w-full flex items-center justify-center">
                       {isAssetDriveVideo ? (
-                        <div className="relative w-fit max-w-full mx-auto rounded-2xl overflow-hidden group/drive flex items-center justify-center">
-                          <div className="w-[85vw] max-w-[960px] aspect-video max-h-[72vh] relative rounded-2xl overflow-hidden bg-black/90">
+                        <div className="relative w-full max-w-full mx-auto rounded-2xl overflow-hidden group/drive flex items-center justify-center bg-black/90 border border-white/10">
+                          <div className="w-full aspect-video max-h-[60vh] relative rounded-2xl overflow-hidden">
                             <iframe
                               src={asset.url.includes('?') ? `${asset.url}&autoplay=1` : `${asset.url}?autoplay=1`}
                               title={asset.title || item.title}
@@ -357,8 +392,8 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                           </div>
                         </div>
                       ) : isAssetEmbed ? (
-                        <div className="relative w-fit max-w-full mx-auto rounded-2xl overflow-hidden flex items-center justify-center">
-                          <div className="w-[85vw] max-w-[960px] aspect-video max-h-[72vh] relative rounded-2xl overflow-hidden bg-black/90">
+                        <div className="relative w-full max-w-full mx-auto rounded-2xl overflow-hidden flex items-center justify-center bg-black/90 border border-white/10">
+                          <div className="w-full aspect-video max-h-[60vh] relative rounded-2xl overflow-hidden">
                             <iframe
                               src={asset.url}
                               title={asset.title || item.title}
@@ -371,12 +406,12 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                       ) : isAssetVideo ? (
                         <ModalVideoPlayer asset={asset} index={idx} autoPlayInitial={idx === 0} />
                       ) : (
-                        <div className="relative w-full rounded-2xl overflow-hidden bg-black/40 flex items-center justify-center">
+                        <div className="relative w-full rounded-2xl overflow-hidden bg-black/40 border border-white/10 flex items-center justify-center">
                           <img
                             src={asset.url}
                             alt={asset.title || item.title}
                             loading="lazy"
-                            className="w-full max-h-[70vh] object-contain transition-transform duration-500 hover:scale-[1.02]"
+                            className="w-full max-h-[60vh] object-contain transition-transform duration-500 hover:scale-[1.01]"
                             onError={(e) => {
                               if (asset.thumbnailUrl && asset.thumbnailUrl !== asset.url) {
                                 (e.target as HTMLImageElement).src = asset.thumbnailUrl;
@@ -387,52 +422,17 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                       )}
                     </div>
 
-                    {/* Thin subtle divider between assets */}
+                    {/* Thin subtle divider between multiple assets */}
                     {assets.length > 1 && idx < assets.length - 1 && (
-                      <div className="pt-8 border-b border-white/[0.08]" />
+                      <div className="pt-6 border-b border-white/[0.08]" />
                     )}
                   </div>
                 );
               })}
             </div>
-          </div>
 
-          {/* Details Column (Right Sidebar) */}
-          <div className="lg:w-4/12 bg-white/[0.02] backdrop-blur-2xl p-6 sm:p-8 flex flex-col justify-between overflow-y-auto space-y-6 text-left">
-            <div className="space-y-5">
-              {/* Category Badges */}
-              <div className="flex flex-wrap items-center gap-2">
-                {getItemCategories(item).map((catKey) => {
-                  const { key, label } = getCategoryDisplay(catKey);
-                  const iconName = getCategoryIconName(catKey);
-
-                  let CatIcon = Tag;
-                  if (iconName === 'film') CatIcon = Film;
-                  else if (iconName === 'sparkles') CatIcon = Sparkles;
-                  else if (iconName === 'image') CatIcon = ImageIcon;
-                  else if (iconName === 'box') CatIcon = Box;
-                  else if (iconName === 'palette') CatIcon = Palette;
-                  else if (iconName === 'globe') CatIcon = Globe;
-
-                  const isIA = iconName === 'sparkles';
-                  const badgeClass = isIA
-                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40 shadow-xs'
-                    : 'bg-white/10 text-stone-200 border-white/15';
-
-                  const iconColor = isIA ? 'text-emerald-300' : 'text-stone-400';
-
-                  return (
-                    <span
-                      key={catKey}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md ${badgeClass}`}
-                    >
-                      <CatIcon className={`w-3.5 h-3.5 ${iconColor}`} />
-                      {label}
-                    </span>
-                  );
-                })}
-              </div>
-
+            {/* Integrated Details Section */}
+            <div className="space-y-5 pt-2 border-t border-white/10">
               {/* Title */}
               <div>
                 <h2 className="font-headline text-2xl sm:text-3xl font-light text-white tracking-tight leading-tight">
@@ -479,8 +479,6 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                 </div>
               </div>
             </div>
-
-
           </div>
         </motion.div>
       </div>
