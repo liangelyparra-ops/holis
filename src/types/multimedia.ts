@@ -57,10 +57,32 @@ export function getItemCategories(item: MultimediaItem): string[] {
   return item.category ? [item.category] : ['MOTION'];
 }
 
-export function normalizeCategory(cat: string): 'MOTION' | 'IA' | 'KEY_VISUALS' {
+export function normalizeCategory(cat: string): string {
   if (cat === 'MOTION' || cat === 'MOTION_VIDEO' || cat === 'SOCIAL_HOOKS') return 'MOTION';
   if (cat === 'IA' || cat === 'AI_GENERATIVO') return 'IA';
-  return 'KEY_VISUALS';
+  if (cat === 'KEY_VISUALS' || cat === 'KEY_VISUAL_PAID') return 'KEY_VISUALS';
+  return cat;
+}
+
+export function getCategoryDisplay(cat: string): { key: string; label: string } {
+  const raw = (cat || '').trim();
+  if (raw === 'MOTION' || raw === 'MOTION_VIDEO' || raw === 'SOCIAL_HOOKS') {
+    return { key: 'MOTION', label: 'Motion' };
+  }
+  if (raw === 'IA' || raw === 'AI_GENERATIVO') {
+    return { key: 'IA', label: 'IA' };
+  }
+  if (raw === 'KEY_VISUALS' || raw === 'KEY_VISUAL_PAID') {
+    return { key: 'KEY_VISUALS', label: 'Key Visuals' };
+  }
+  // Custom tag: format preserving original word casing
+  const label = raw.includes('_')
+    ? raw.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
+    : raw.length <= 4
+    ? raw.toUpperCase()
+    : raw.charAt(0).toUpperCase() + raw.slice(1);
+
+  return { key: raw, label };
 }
 
 export function getItemAssets(item: MultimediaItem): MediaAsset[] {

@@ -12,7 +12,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import type { MultimediaItem, MediaAsset } from '../../types/multimedia';
-import { normalizeCategory, getItemAssets, getItemCategories } from '../../types/multimedia';
+import { normalizeCategory, getItemAssets, getItemCategories, getCategoryDisplay } from '../../types/multimedia';
 
 interface MultimediaModalProps {
   item: MultimediaItem | null;
@@ -295,29 +295,22 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
               {/* Category Badges */}
               <div className="flex flex-wrap items-center gap-2">
                 {getItemCategories(item).map((catKey) => {
-                  const norm = normalizeCategory(catKey);
-                  const meta = categoryLabels[norm] || {
-                    label: catKey.charAt(0).toUpperCase() + catKey.slice(1).toLowerCase().replace(/_/g, ' '),
-                    icon: Sparkles,
-                  };
-                  const CatIcon = meta.icon;
+                  const { key, label } = getCategoryDisplay(catKey);
+                  let CatIcon = Sparkles;
+                  if (key === 'MOTION') CatIcon = Film;
+                  else if (key === 'IA') CatIcon = Sparkles;
+                  else if (key === 'KEY_VISUALS') CatIcon = ImageIcon;
+
                   return (
                     <span
                       key={catKey}
                       className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white border border-white/15 backdrop-blur-md"
                     >
                       <CatIcon className="w-3.5 h-3.5 text-emerald-400" />
-                      {meta.label}
+                      {label}
                     </span>
                   );
                 })}
-
-                {assets.length > 1 && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                    <Layers className="w-3 h-3" />
-                    {assets.length} Archivos (Scroll)
-                  </span>
-                )}
               </div>
 
               {/* Title */}

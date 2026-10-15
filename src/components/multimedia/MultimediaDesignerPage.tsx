@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { MultimediaItem, MultimediaCategory } from '../../types/multimedia';
-import { normalizeCategory, getItemCategories } from '../../types/multimedia';
+import { normalizeCategory, getItemCategories, getCategoryDisplay } from '../../types/multimedia';
 import type { MultimediaPageContent, MultimediaSectionId } from '../../types/multimediaContent';
 import { defaultMultimediaPageContent } from '../../types/multimediaContent';
 import { MultimediaCard } from './MultimediaCard';
@@ -216,7 +216,7 @@ export const MultimediaDesignerPage: React.FC = () => {
     { id: 'KEY_VISUALS', label: 'Key Visuals', icon: ImageIcon },
     ...customCategories.map((c) => ({
       id: c,
-      label: c.charAt(0).toUpperCase() + c.slice(1).toLowerCase().replace(/_/g, ' '),
+      label: getCategoryDisplay(c).label,
       icon: Sparkles,
     })),
   ];

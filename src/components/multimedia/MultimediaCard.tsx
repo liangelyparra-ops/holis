@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Play, Sparkles, Video, Image as ImageIcon, ExternalLink, Film, Layers } from 'lucide-react';
 import type { MultimediaItem, MediaAsset } from '../../types/multimedia';
-import { normalizeCategory, getItemAssets, getItemCategories } from '../../types/multimedia';
+import { normalizeCategory, getItemAssets, getItemCategories, getCategoryDisplay } from '../../types/multimedia';
 
 interface MultimediaCardProps {
   item: MultimediaItem;
@@ -43,16 +43,20 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
   const itemCategories = getItemCategories(item);
 
   const getCategoryMeta = (cat: string) => {
-    const normalized = normalizeCategory(cat);
-    const categoryLabels: Record<string, { label: string; icon: any; color: string }> = {
-      MOTION: { label: 'Motion', icon: Film, color: 'bg-violet-50 text-violet-700 border-violet-200' },
-      IA: { label: 'IA', icon: Sparkles, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-      KEY_VISUALS: { label: 'Key Visuals', icon: ImageIcon, color: 'bg-blue-50 text-blue-700 border-blue-200' },
-    };
-    return categoryLabels[normalized] || {
-      label: cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase().replace(/_/g, ' '),
+    const { key, label } = getCategoryDisplay(cat);
+    if (key === 'MOTION') {
+      return { label, icon: Film, color: 'bg-violet-50 text-violet-700 border-violet-200' };
+    }
+    if (key === 'IA') {
+      return { label, icon: Sparkles, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+    }
+    if (key === 'KEY_VISUALS') {
+      return { label, icon: ImageIcon, color: 'bg-blue-50 text-blue-700 border-blue-200' };
+    }
+    return {
+      label,
       icon: Sparkles,
-      color: 'bg-neutral-100 text-neutral-800 border-neutral-200',
+      color: 'bg-stone-50 text-stone-700 border-stone-200',
     };
   };
 
@@ -147,8 +151,8 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
         )}
 
         {/* Top Badges Overlay */}
-        <div className="absolute top-3 left-3 right-3 flex items-start justify-between pointer-events-none gap-2">
-          <div className="flex flex-wrap items-center gap-1.5 max-w-[78%]">
+        <div className="absolute top-3 left-3 right-3 flex items-start pointer-events-none">
+          <div className="flex flex-wrap items-center gap-1.5 max-w-full">
             {itemCategories.map((catKey) => {
               const meta = getCategoryMeta(catKey);
               const CatIcon = meta.icon;
@@ -162,15 +166,6 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
                 </span>
               );
             })}
-          </div>
-
-          <div className="flex items-center gap-1.5 shrink-0">
-            {assets.length > 1 && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold tracking-wider bg-white/95 text-neutral-900 shadow-xs backdrop-blur-md">
-                <Layers className="w-3 h-3 text-neutral-800" />
-                {assets.length} assets
-              </span>
-            )}
           </div>
         </div>
 
