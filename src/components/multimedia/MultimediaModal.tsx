@@ -20,6 +20,90 @@ import {
 import type { MultimediaItem, MediaAsset } from '../../types/multimedia';
 import { normalizeCategory, getItemAssets, getItemCategories, getCategoryDisplay, getCategoryIconName } from '../../types/multimedia';
 
+// Helper to render description with clickable links (supports HTML <a>, Markdown [text](url), and raw URLs)
+const FormattedDescription: React.FC<{ text: string }> = ({ text }) => {
+  if (!text) return null;
+
+  // Split by HTML <a> tags, markdown [text](url), or raw URLs
+  // Regex matches:
+  // 1) HTML anchor: <a\s+[^>]*href=["']([^"']*)["'][^>]*>(.*?)<\/a>
+  // 2) Markdown link: \[(.*?)\]\((https?:\/\/[^\s)]+)\)
+  // 3) Plain URL: (https?:\/\/[^\s<]+)
+  const regex = /(<a\s+[^>]*href=["']([^"']*)["'][^>]*>(.*?)<\/a>)|(\[([^\]]+)\]\((https?:\/\/[^\s)]+)\))|(https?:\/\/[^\s<]+)/gi;
+
+  const elements: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(text)) !== null) {
+    // Push preceding text
+    if (match.index > lastIndex) {
+      elements.push(text.slice(lastIndex, match.index));
+    }
+
+    if (match[1]) {
+      // HTML <a href="...">...</a>
+      const href = match[2];
+      const linkText = match[3] || href;
+      elements.push(
+        <a
+          key={`html-link-${match.index}`}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 decoration-emerald-500/40 hover:decoration-emerald-400 font-medium transition-colors inline-flex items-center gap-1 cursor-pointer"
+        >
+          {linkText}
+          <span className="text-[10px] opacity-70">↗</span>
+        </a>
+      );
+    } else if (match[4]) {
+      // Markdown [text](url)
+      const linkText = match[5];
+      const href = match[6];
+      elements.push(
+        <a
+          key={`md-link-${match.index}`}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 decoration-emerald-500/40 hover:decoration-emerald-400 font-medium transition-colors inline-flex items-center gap-1 cursor-pointer"
+        >
+          {linkText}
+          <span className="text-[10px] opacity-70">↗</span>
+        </a>
+      );
+    } else if (match[7]) {
+      // Plain URL
+      const url = match[7];
+      elements.push(
+        <a
+          key={`plain-link-${match.index}`}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 decoration-emerald-500/40 hover:decoration-emerald-400 font-medium transition-colors inline-flex items-center gap-1 cursor-pointer"
+        >
+          {url}
+          <span className="text-[10px] opacity-70">↗</span>
+        </a>
+      );
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    elements.push(text.slice(lastIndex));
+  }
+
+  return (
+    <p className="font-sans text-sm sm:text-base text-stone-200 leading-relaxed whitespace-pre-line">
+      {elements}
+    </p>
+  );
+};
+
 interface MultimediaModalProps {
   item: MultimediaItem | null;
   onClose: () => void;
@@ -434,9 +518,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
 
               {/* Description */}
               <div>
-                <p className="font-sans text-sm sm:text-base text-stone-200 leading-relaxed whitespace-pre-line">
-                  {item.description}
-                </p>
+                <FormattedDescription text={item.description} />
               </div>
 
               {/* Hook Rationale / Social Retención */}

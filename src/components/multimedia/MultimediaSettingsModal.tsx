@@ -727,14 +727,19 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
 
                 {/* Description */}
                 <div className="space-y-1">
-                  <label className="block font-sans text-xs font-semibold text-neutral-800">
-                    Concepto / Rationale creativo
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="block font-sans text-xs font-semibold text-neutral-800">
+                      Concepto / Rationale creativo
+                    </label>
+                    <span className="font-mono text-[10px] text-stone-400">
+                      Admite enlaces (ej: &lt;a href="..."&gt;texto&lt;/a&gt; o https://...)
+                    </span>
+                  </div>
                   <textarea
                     rows={2}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Explica brevemente la idea, el objetivo de comunicación y la ejecución técnica."
+                    placeholder='Explica la idea o añade enlaces como <a href="https://...">Visit site</a>'
                     className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs font-sans focus:outline-none focus:border-neutral-900"
                   />
                 </div>
