@@ -91,7 +91,7 @@ export const MultimediaDesignerPage: React.FC = () => {
   useEffect(() => {
     const unsubscribeItems = subscribeToMultimediaItems(
       (syncedItems) => {
-        if (syncedItems && syncedItems.length > 0) {
+        if (Array.isArray(syncedItems)) {
           setItems(syncedItems);
         }
       },
@@ -125,7 +125,7 @@ export const MultimediaDesignerPage: React.FC = () => {
     if (cloudSaved) {
       toast.success('Galería sincronizada en vivo para todos los visitantes');
     } else {
-      toast.success('Galería guardada localmente');
+      toast.error('Error al sincronizar en la nube. Revisa tu conexión.');
     }
   };
 
@@ -136,7 +136,7 @@ export const MultimediaDesignerPage: React.FC = () => {
       if (cloudSaved) {
         toast.success('¡Página guardada y sincronizada en vivo en la nube!');
       } else {
-        toast.success('¡Página guardada localmente!');
+        toast.error('Error al guardar en la nube. Revisa tu conexión.');
       }
       setIsEditMode(false);
     } catch (err) {
@@ -146,16 +146,24 @@ export const MultimediaDesignerPage: React.FC = () => {
     }
   };
 
-  const handleMoveSection = (index: number, direction: 'up' | 'down') => {
+  const handleMoveSection = async (index: number, direction: 'up' | 'down') => {
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= pageContent.sectionsOrder.length) return;
     const newOrder = [...pageContent.sectionsOrder];
     const [moved] = newOrder.splice(index, 1);
     newOrder.splice(targetIndex, 0, moved);
-    setPageContent((prev) => ({
-      ...prev,
+    const updated = {
+      ...pageContent,
       sectionsOrder: newOrder,
-    }));
+    };
+    setPageContent(updated);
+    await saveMultimediaPageContentLive(updated);
+  };
+
+  const handleUpdateSectionsOrder = async (newOrder: MultimediaSectionId[]) => {
+    const updated = { ...pageContent, sectionsOrder: newOrder };
+    setPageContent(updated);
+    await saveMultimediaPageContentLive(updated);
   };
 
   const handleCopyPageUrl = () => {
@@ -1031,9 +1039,7 @@ export const MultimediaDesignerPage: React.FC = () => {
         onUpdateItems={handleUpdateItems}
         onEnterEditMode={() => setIsEditMode(true)}
         sectionsOrder={pageContent.sectionsOrder}
-        onUpdateSectionsOrder={(newOrder) =>
-          setPageContent((prev) => ({ ...prev, sectionsOrder: newOrder }))
-        }
+        onUpdateSectionsOrder={handleUpdateSectionsOrder}
       />
     </div>
   );

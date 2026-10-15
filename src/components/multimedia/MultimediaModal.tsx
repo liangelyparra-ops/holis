@@ -102,6 +102,7 @@ const ModalVideoPlayer: React.FC<{
 
 export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [copied, setCopied] = useState(false);
 
   const assets = item ? getItemAssets(item) : [];
 
