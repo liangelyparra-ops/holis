@@ -1,145 +1,146 @@
+import { doc, setDoc, onSnapshot, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import type { MultimediaItem } from '../types/multimedia';
 import { multimediaInitialItems } from '../data/multimediaInitialItems';
 import type { MultimediaPageContent } from '../types/multimediaContent';
 import { defaultMultimediaPageContent } from '../types/multimediaContent';
 
-// ─── All persistence goes through the server-side API ─────────────────────────
-// The Firebase client SDK cannot connect to Firestore reliably from the browser
-// in the Cloud Run / AI Studio environment (WebSocket restrictions, CSP, etc.).
-// Instead, we proxy all reads/writes through our own Express API endpoints,
-// which use the Firestore REST API from the server side — no restrictions there.
-
-const POLL_INTERVAL_MS = 5000; // Polling interval for cross-device sync
+const MULTIMEDIA_DOC_PATH = 'multimedia_gallery_live';
+const CONTENT_DOC_PATH = 'multimedia_page_content_live';
 
 /**
- * Subscribes to real-time gallery items from the server API.
+ * Subscribes to real-time gallery items from Firestore.
  * Load order:
- *  1. Immediate fetch from /api/gallery (fast, ~200ms)
- *  2. Poll every 5s for cross-device sync
+ *  1. getDoc (immediate first fetch ~300ms) — Firestore is source of truth
+ *  2. onSnapshot (realtime listener for cross-device sync)
  */
 export function subscribeToMultimediaItems(
   onUpdate: (items: MultimediaItem[]) => void,
   onLoadingChange?: (loading: boolean) => void
 ): () => void {
   onLoadingChange?.(true);
-  let cancelled = false;
 
-  const fetchItems = async () => {
-    try {
-      const res = await fetch('/api/gallery');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      if (Array.isArray(data.items) && data.items.length > 0) {
-        onUpdate(data.items as MultimediaItem[]);
-      } else if (data.items?.length === 0) {
-        // Server returned empty — show defaults but don't override existing
+  const liveDocRef = doc(db, 'games', MULTIMEDIA_DOC_PATH);
+
+  // 1. Immediate fetch from Firestore on mount
+  getDoc(liveDocRef)
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data && Array.isArray(data.items) && data.items.length > 0) {
+          onUpdate(data.items as MultimediaItem[]);
+        }
+      } else {
+        // No doc yet — use defaults
         onUpdate(multimediaInitialItems);
       }
-    } catch (err) {
-      console.warn('[Gallery] fetch from /api/gallery failed:', err);
-      // Fallback: show defaults so UI isn't blank
+      onLoadingChange?.(false);
+    })
+    .catch((err) => {
+      console.warn('[Gallery] getDoc failed:', err.message);
       onUpdate(multimediaInitialItems);
-    } finally {
+      onLoadingChange?.(false);
+    });
+
+  // 2. Realtime listener for cross-device sync
+  const unsubscribe = onSnapshot(
+    liveDocRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data && Array.isArray(data.items) && data.items.length > 0) {
+          onUpdate(data.items as MultimediaItem[]);
+        }
+      }
+      onLoadingChange?.(false);
+    },
+    (error) => {
+      console.warn('[Gallery] onSnapshot error:', error.message);
       onLoadingChange?.(false);
     }
-  };
+  );
 
-  // Initial fetch immediately
-  fetchItems();
-
-  // Poll for cross-device updates
-  const intervalId = setInterval(() => {
-    if (!cancelled) fetchItems();
-  }, POLL_INTERVAL_MS);
-
-  return () => {
-    cancelled = true;
-    clearInterval(intervalId);
-  };
+  return unsubscribe;
 }
 
 /**
- * Saves gallery items to Firestore via the server API.
+ * Saves gallery items to Firestore.
  * Returns true if the save succeeded.
  */
 export async function saveMultimediaItemsLive(items: MultimediaItem[]): Promise<boolean> {
   try {
-    const res = await fetch('/api/gallery', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items }),
+    const liveDocRef = doc(db, 'games', MULTIMEDIA_DOC_PATH);
+    await setDoc(liveDocRef, {
+      items,
+      updatedAt: Date.now(),
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      console.error('[Gallery] save failed:', err);
-      return false;
-    }
-    const data = await res.json();
-    return data.ok === true;
+    return true;
   } catch (err) {
-    console.error('[Gallery] save network error:', err);
+    console.error('[Gallery] Firestore save error:', err);
     return false;
   }
 }
 
 /**
- * Subscribes to page content from the server API.
+ * Subscribes to page content from Firestore.
  */
 export function subscribeToMultimediaPageContent(
   onUpdate: (content: MultimediaPageContent) => void
 ): () => void {
-  let cancelled = false;
+  const docRef = doc(db, 'games', CONTENT_DOC_PATH);
 
-  const fetchContent = async () => {
-    try {
-      const res = await fetch('/api/page-content');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      if (data.content && typeof data.content === 'object') {
-        onUpdate({ ...defaultMultimediaPageContent, ...data.content });
+  // Immediate fetch
+  getDoc(docRef)
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data && data.content) {
+          onUpdate({ ...defaultMultimediaPageContent, ...data.content });
+        } else {
+          onUpdate(defaultMultimediaPageContent);
+        }
       } else {
         onUpdate(defaultMultimediaPageContent);
       }
-    } catch (err) {
-      console.warn('[Content] fetch from /api/page-content failed:', err);
+    })
+    .catch((err) => {
+      console.warn('[Content] getDoc failed:', err.message);
       onUpdate(defaultMultimediaPageContent);
+    });
+
+  // Realtime listener
+  const unsubscribe = onSnapshot(
+    docRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data && data.content) {
+          onUpdate({ ...defaultMultimediaPageContent, ...data.content });
+        }
+      }
+    },
+    (error) => {
+      console.warn('[Content] onSnapshot error:', error.message);
     }
-  };
+  );
 
-  // Initial fetch immediately
-  fetchContent();
-
-  // Poll for cross-device updates
-  const intervalId = setInterval(() => {
-    if (!cancelled) fetchContent();
-  }, POLL_INTERVAL_MS);
-
-  return () => {
-    cancelled = true;
-    clearInterval(intervalId);
-  };
+  return unsubscribe;
 }
 
 /**
- * Saves page content to Firestore via the server API.
+ * Saves page content to Firestore.
  * Returns true if the save succeeded.
  */
 export async function saveMultimediaPageContentLive(content: MultimediaPageContent): Promise<boolean> {
   try {
-    const res = await fetch('/api/page-content', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content }),
+    const docRef = doc(db, 'games', CONTENT_DOC_PATH);
+    await setDoc(docRef, {
+      content,
+      updatedAt: Date.now(),
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      console.error('[Content] save failed:', err);
-      return false;
-    }
-    const data = await res.json();
-    return data.ok === true;
+    return true;
   } catch (err) {
-    console.error('[Content] save network error:', err);
+    console.error('[Content] Firestore save error:', err);
     return false;
   }
 }
