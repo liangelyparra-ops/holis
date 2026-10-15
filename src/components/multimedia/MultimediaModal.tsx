@@ -103,8 +103,13 @@ const ModalVideoPlayer: React.FC<{
 export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
+  const [activeAssetIndex, setActiveAssetIndex] = useState(0);
 
   const assets = item ? getItemAssets(item) : [];
+
+  useEffect(() => {
+    setActiveAssetIndex(0);
+  }, [item]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -119,6 +124,23 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [item, onClose]);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (assets.length <= 1) return;
+    const container = e.currentTarget;
+    const containerTop = container.scrollTop;
+    
+    // Find which asset is currently at top
+    for (let i = 0; i < assets.length; i++) {
+      const el = document.getElementById(`modal-asset-${i}`);
+      if (el) {
+        const top = el.offsetTop - container.offsetTop;
+        if (containerTop >= top - 80) {
+          setActiveAssetIndex(i);
+        }
+      }
+    }
+  };
 
   if (!item || assets.length === 0) return null;
 
@@ -139,6 +161,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
   };
 
   const scrollToAsset = (index: number) => {
+    setActiveAssetIndex(index);
     const target = document.getElementById(`modal-asset-${index}`);
     if (target) {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -181,25 +204,33 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
 
           {/* Media Area (Left/Main - Scrollable when multi-asset) */}
           <div className="lg:w-8/12 flex-1 bg-black/40 flex flex-col overflow-hidden relative border-b lg:border-b-0 lg:border-r border-white/10">
-            {/* Multi-Asset Top Quick Jump Navigation Bar */}
+            {/* Multi-Asset Top Quick Jump Navigation Bar - Slim Text Tabs */}
             {assets.length > 1 && (
-              <div className="px-5 py-3 bg-white/[0.04] backdrop-blur-xl border-b border-white/10 flex items-center gap-2 overflow-x-auto scrollbar-none shrink-0 z-20">
-                {assets.map((asset, idx) => (
-                  <button
-                    key={asset.id || idx}
-                    type="button"
-                    onClick={() => scrollToAsset(idx)}
-                    className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-sans font-medium border border-white/10 transition-colors shrink-0 cursor-pointer"
-                  >
-                    {asset.title || asset.format}
-                  </button>
-                ))}
+              <div className="px-5 bg-black/60 backdrop-blur-xl border-b border-white/10 flex items-center gap-6 overflow-x-auto scrollbar-none shrink-0 z-20 h-10">
+                {assets.map((asset, idx) => {
+                  const isActive = activeAssetIndex === idx;
+                  return (
+                    <button
+                      key={asset.id || idx}
+                      type="button"
+                      onClick={() => scrollToAsset(idx)}
+                      className={`h-full flex items-center text-xs font-sans transition-all shrink-0 cursor-pointer border-b-2 relative ${
+                        isActive
+                          ? 'text-white font-semibold border-white'
+                          : 'text-stone-400 font-normal hover:text-stone-200 border-transparent'
+                      }`}
+                    >
+                      {asset.title || asset.format}
+                    </button>
+                  );
+                })}
               </div>
             )}
 
             {/* Scrollable Media Feed */}
             <div
               ref={scrollContainerRef}
+              onScroll={handleScroll}
               className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-10 scrollbar-thin scrollbar-thumb-white/20 hover:scrollbar-thumb-white/40"
             >
               {assets.map((asset, idx) => {
