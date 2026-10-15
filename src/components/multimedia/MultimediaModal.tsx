@@ -200,7 +200,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
             {/* Scrollable Media Feed */}
             <div
               ref={scrollContainerRef}
-              className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-8 scrollbar-thin scrollbar-thumb-white/20 hover:scrollbar-thumb-white/40"
+              className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-10 scrollbar-thin scrollbar-thumb-white/20 hover:scrollbar-thumb-white/40"
             >
               {assets.map((asset, idx) => {
                 const isAssetVideo = asset.mediaType === 'video';
@@ -211,7 +211,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                   <div
                     key={asset.id || idx}
                     id={`modal-asset-${idx}`}
-                    className="p-3 sm:p-5 rounded-3xl bg-white/[0.03] backdrop-blur-md border border-white/10 space-y-4 transition-all scroll-mt-6"
+                    className="space-y-4 transition-all scroll-mt-6"
                   >
                     {/* Header info for this asset if multi-asset */}
                     {assets.length > 1 && asset.title && (
@@ -225,7 +225,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                     {/* Media Item Display */}
                     <div className="w-full flex items-center justify-center">
                       {isAssetDriveVideo ? (
-                        <div className="w-full aspect-video rounded-2xl overflow-hidden border border-white/10 bg-black">
+                        <div className="w-full aspect-video rounded-2xl overflow-hidden bg-black">
                           <iframe
                             src={asset.url}
                             title={asset.title || item.title}
@@ -235,7 +235,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                           />
                         </div>
                       ) : isAssetEmbed ? (
-                        <div className="w-full aspect-video rounded-2xl overflow-hidden border border-white/10 bg-black">
+                        <div className="w-full aspect-video rounded-2xl overflow-hidden bg-black">
                           <iframe
                             src={asset.url}
                             title={asset.title || item.title}
@@ -247,7 +247,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                       ) : isAssetVideo ? (
                         <ModalVideoPlayer asset={asset} index={idx} autoPlayInitial={idx === 0} />
                       ) : (
-                        <div className="relative w-full rounded-2xl overflow-hidden bg-black/40 border border-white/10 flex items-center justify-center">
+                        <div className="relative w-full rounded-2xl overflow-hidden bg-black/40 flex items-center justify-center">
                           <img
                             src={asset.url}
                             alt={asset.title || item.title}
@@ -262,6 +262,11 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                         </div>
                       )}
                     </div>
+
+                    {/* Thin subtle divider between assets */}
+                    {assets.length > 1 && idx < assets.length - 1 && (
+                      <div className="pt-8 border-b border-white/[0.08]" />
+                    )}
                   </div>
                 );
               })}
