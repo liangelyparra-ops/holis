@@ -564,7 +564,7 @@ export const MultimediaDesignerPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Cards Grid */}
+        {/* Cards Grid - Modern Bento Box */}
         {filteredItems.length === 0 ? (
           <div className="py-16 text-center border-2 border-dashed border-stone-200 rounded-3xl space-y-3">
             <p className="font-sans text-sm text-stone-600">
@@ -579,12 +579,13 @@ export const MultimediaDesignerPage: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 grid-flow-row-dense sm:auto-rows-[270px]">
             {filteredItems.map((item, index) => (
               <MultimediaCard
                 key={item.id}
                 item={item}
                 index={index}
+                isBento={true}
                 onClick={() => setSelectedItemForModal(item)}
               />
             ))}

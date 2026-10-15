@@ -4,13 +4,35 @@ import { Play, Sparkles, Video, Image as ImageIcon, ExternalLink, Film, Layers, 
 import type { MultimediaItem, MediaAsset } from '../../types/multimedia';
 import { normalizeCategory, getItemAssets, getItemCategories, getCategoryDisplay, getCategoryIconName } from '../../types/multimedia';
 
+export function getBentoSpanClasses(format?: string): string {
+  switch (format) {
+    case '16:9':
+    case '16:10':
+      return 'sm:col-span-2 sm:row-span-1';
+    case '9:16':
+    case '4:5':
+      return 'sm:col-span-1 sm:row-span-2';
+    case '1:1':
+    default:
+      return 'sm:col-span-1 sm:row-span-1';
+  }
+}
+
 interface MultimediaCardProps {
   item: MultimediaItem;
   onClick: () => void;
   index: number;
+  isBento?: boolean;
+  className?: string;
 }
 
-export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, index }) => {
+export const MultimediaCard: React.FC<MultimediaCardProps> = ({
+  item,
+  onClick,
+  index,
+  isBento = true,
+  className = '',
+}) => {
   const [isHovered, setIsHovered] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -81,6 +103,8 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
     }
   };
 
+  const bentoSpan = isBento ? getBentoSpanClasses(primaryAsset.format) : '';
+
   return (
     <motion.article
       initial={{ opacity: 0, y: 20 }}
@@ -89,10 +113,18 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={onClick}
-      className="group relative flex flex-col bg-white rounded-2xl border border-stone-200/90 hover:border-neutral-900/40 shadow-xs hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer"
+      className={`group relative flex flex-col bg-white rounded-2xl border border-stone-200/90 hover:border-neutral-900/40 shadow-xs hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer ${
+        isBento ? 'h-full' : ''
+      } ${bentoSpan} ${className}`}
     >
       {/* Media Preview Container */}
-      <div className={`relative w-full ${getAspectRatioClass()} bg-neutral-900 overflow-hidden`}>
+      <div
+        className={`relative w-full ${
+          isBento
+            ? `${getAspectRatioClass()} sm:aspect-auto sm:flex-1 sm:min-h-0`
+            : getAspectRatioClass()
+        } bg-neutral-900 overflow-hidden`}
+      >
         {primaryAsset.mediaType === 'video' ? (
           <video
             ref={videoRef}
@@ -156,8 +188,8 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
         )}
 
         {/* Top Badges Overlay */}
-        <div className="absolute top-3 left-3 right-3 flex items-start pointer-events-none">
-          <div className="flex flex-wrap items-center gap-1.5 max-w-full">
+        <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2 pointer-events-none">
+          <div className="flex flex-wrap items-center gap-1.5 max-w-[75%]">
             {itemCategories.map((catKey) => {
               const meta = getCategoryMeta(catKey);
               const CatIcon = meta.icon;
@@ -172,6 +204,13 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
               );
             })}
           </div>
+
+          {assets.length > 1 && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-neutral-950/80 text-white backdrop-blur-md border border-white/10 shadow-2xs">
+              <Layers className="w-3 h-3 text-neutral-300" />
+              {assets.length}
+            </span>
+          )}
         </div>
 
         {/* Play Icon Indicator overlay for direct video - fades out while playing on hover */}
@@ -185,43 +224,21 @@ export const MultimediaCard: React.FC<MultimediaCardProps> = ({ item, onClick, i
 
         {/* Hover Click prompt banner */}
         <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-between text-white text-xs">
-          <span className="font-sans font-medium flex items-center gap-1">
-            Ver {assets.length > 1 ? `${assets.length} archivos (scroll)` : 'detalle'} &amp; workflow <ExternalLink className="w-3 h-3" />
+          <span className="font-sans font-medium flex items-center gap-1.5">
+            Ver {assets.length > 1 ? `${assets.length} archivos` : 'detalle'} &amp; workflow <ExternalLink className="w-3 h-3" />
           </span>
         </div>
       </div>
 
-      {/* Card Content */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3 text-left">
-        <div className="space-y-1.5">
-          <h3 className="font-headline text-base sm:text-lg font-semibold text-neutral-900 group-hover:text-black tracking-tight leading-snug">
+      {/* Card Content - Clean Title Bar */}
+      <div className="p-3.5 sm:p-4 bg-white flex items-center justify-between gap-3 border-t border-stone-100/90 shrink-0">
+        <div className="min-w-0 flex-1">
+          <h3 className="font-headline text-sm sm:text-base font-semibold text-neutral-900 group-hover:text-black tracking-tight leading-snug truncate">
             {item.title}
           </h3>
-          <p className="font-sans text-xs sm:text-sm text-stone-600 line-clamp-2 leading-relaxed">
-            {item.description}
-          </p>
         </div>
-
-        {/* Rationale / Hook Callout */}
-        {item.hookRationale && (
-          <div className="p-2.5 rounded-xl bg-stone-50 border border-stone-200/80 text-[11px] font-sans text-stone-700 leading-normal">
-            <span className="font-semibold text-neutral-900 mr-1 font-mono uppercase tracking-wider text-[9px] block mb-0.5">
-              Hook &amp; Impacto
-            </span>
-            {item.hookRationale}
-          </div>
-        )}
-
-        {/* Tools Badges */}
-        <div className="pt-2 border-t border-stone-100 flex flex-wrap items-center gap-1.5">
-          {item.tools.map((tool) => (
-            <span
-              key={tool}
-              className="px-2 py-0.5 rounded-md text-[10px] font-medium font-mono text-stone-600 bg-stone-100/90 border border-stone-200/60"
-            >
-              {tool}
-            </span>
-          ))}
+        <div className="shrink-0 flex items-center text-stone-400 group-hover:text-neutral-900 transition-colors">
+          <ExternalLink className="w-3.5 h-3.5" />
         </div>
       </div>
     </motion.article>
