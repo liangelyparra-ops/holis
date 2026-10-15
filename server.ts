@@ -1,6 +1,58 @@
 import express from "express";
 import { createServer } from "http";
 import path from "path";
+import { readFileSync } from "fs";
+
+// Load Firebase config for server-side Firestore REST API calls
+let firebaseConfig: { projectId: string; firestoreDatabaseId: string; apiKey: string } | null = null;
+try {
+  const raw = readFileSync(path.join(process.cwd(), "firebase-applet-config.json"), "utf-8");
+  firebaseConfig = JSON.parse(raw);
+} catch {
+  console.warn("[Firestore] Could not load firebase-applet-config.json");
+}
+
+const FIRESTORE_BASE = firebaseConfig
+  ? `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${firebaseConfig.firestoreDatabaseId}/documents/games`
+  : null;
+
+const API_KEY = firebaseConfig?.apiKey ?? "";
+
+/** Convert a plain JS value into a Firestore REST API value object */
+function toFirestoreValue(val: unknown): unknown {
+  if (val === null || val === undefined) return { nullValue: null };
+  if (typeof val === "boolean") return { booleanValue: val };
+  if (typeof val === "number") return Number.isInteger(val) ? { integerValue: String(val) } : { doubleValue: val };
+  if (typeof val === "string") return { stringValue: val };
+  if (Array.isArray(val)) return { arrayValue: { values: val.map(toFirestoreValue) } };
+  if (typeof val === "object") {
+    const fields: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(val as Record<string, unknown>)) {
+      fields[k] = toFirestoreValue(v);
+    }
+    return { mapValue: { fields } };
+  }
+  return { stringValue: String(val) };
+}
+
+/** Convert a Firestore REST API value object back to a plain JS value */
+function fromFirestoreValue(val: any): unknown {
+  if (!val || typeof val !== "object") return val;
+  if ("nullValue" in val) return null;
+  if ("booleanValue" in val) return val.booleanValue;
+  if ("integerValue" in val) return Number(val.integerValue);
+  if ("doubleValue" in val) return val.doubleValue;
+  if ("stringValue" in val) return val.stringValue;
+  if ("arrayValue" in val) return (val.arrayValue.values ?? []).map(fromFirestoreValue);
+  if ("mapValue" in val) {
+    const obj: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries((val.mapValue.fields ?? {}) as Record<string, unknown>)) {
+      obj[k] = fromFirestoreValue(v);
+    }
+    return obj;
+  }
+  return val;
+}
 
 async function startServer() {
   const app = express();
@@ -10,6 +62,110 @@ async function startServer() {
   // Add support for JSON and URL-encoded request bodies
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+
+  // ─── Multimedia Gallery: Firestore proxy (server-side REST API) ───────────
+  // The client Firebase SDK cannot reliably connect to Firestore in the Cloud Run
+  // environment, so all persistence goes through these server-side endpoints instead.
+
+  /** GET /api/gallery — returns the current gallery items array */
+  app.get("/api/gallery", async (_req, res) => {
+    if (!FIRESTORE_BASE) return res.status(503).json({ error: "Firebase not configured" });
+    try {
+      const response = await fetch(`${FIRESTORE_BASE}/multimedia_gallery_live?key=${API_KEY}`);
+      const data: any = await response.json();
+      if (data.error) {
+        console.error("[Gallery GET] Firestore error:", data.error);
+        return res.status(500).json({ error: data.error.message });
+      }
+      if (!data.fields) return res.json({ items: [] });
+      const items = fromFirestoreValue(data.fields.items) ?? [];
+      return res.json({ items });
+    } catch (err: any) {
+      console.error("[Gallery GET] fetch error:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  /** POST /api/gallery — saves items array to Firestore */
+  app.post("/api/gallery", async (req, res) => {
+    if (!FIRESTORE_BASE) return res.status(503).json({ error: "Firebase not configured" });
+    const { items } = req.body;
+    if (!Array.isArray(items)) return res.status(400).json({ error: "items must be an array" });
+    try {
+      const fields = {
+        items: toFirestoreValue(items),
+        updatedAt: toFirestoreValue(Date.now()),
+      };
+      const response = await fetch(
+        `${FIRESTORE_BASE}/multimedia_gallery_live?key=${API_KEY}&updateMask.fieldPaths=items&updateMask.fieldPaths=updatedAt`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fields }),
+        }
+      );
+      const data: any = await response.json();
+      if (data.error) {
+        console.error("[Gallery POST] Firestore error:", data.error);
+        return res.status(500).json({ error: data.error.message });
+      }
+      console.log(`[Gallery POST] Saved ${items.length} items to Firestore`);
+      return res.json({ ok: true, count: items.length });
+    } catch (err: any) {
+      console.error("[Gallery POST] fetch error:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  /** GET /api/page-content — returns the page texts/content object */
+  app.get("/api/page-content", async (_req, res) => {
+    if (!FIRESTORE_BASE) return res.status(503).json({ error: "Firebase not configured" });
+    try {
+      const response = await fetch(`${FIRESTORE_BASE}/multimedia_page_content_live?key=${API_KEY}`);
+      const data: any = await response.json();
+      if (data.error) {
+        console.error("[Content GET] Firestore error:", data.error);
+        return res.status(500).json({ error: data.error.message });
+      }
+      if (!data.fields) return res.json({ content: null });
+      const content = fromFirestoreValue(data.fields.content) ?? null;
+      return res.json({ content });
+    } catch (err: any) {
+      console.error("[Content GET] fetch error:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  /** POST /api/page-content — saves page content object to Firestore */
+  app.post("/api/page-content", async (req, res) => {
+    if (!FIRESTORE_BASE) return res.status(503).json({ error: "Firebase not configured" });
+    const { content } = req.body;
+    if (!content || typeof content !== "object") return res.status(400).json({ error: "content must be an object" });
+    try {
+      const fields = {
+        content: toFirestoreValue(content),
+        updatedAt: toFirestoreValue(Date.now()),
+      };
+      const response = await fetch(
+        `${FIRESTORE_BASE}/multimedia_page_content_live?key=${API_KEY}&updateMask.fieldPaths=content&updateMask.fieldPaths=updatedAt`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fields }),
+        }
+      );
+      const data: any = await response.json();
+      if (data.error) {
+        console.error("[Content POST] Firestore error:", data.error);
+        return res.status(500).json({ error: data.error.message });
+      }
+      console.log("[Content POST] Saved page content to Firestore");
+      return res.json({ ok: true });
+    } catch (err: any) {
+      console.error("[Content POST] fetch error:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+  });
 
   // Legacy contact logging endpoint. This does not deliver email.
   app.post("/api/contact", (req, res) => {

@@ -1,222 +1,145 @@
-import { doc, setDoc, onSnapshot, getDoc } from 'firebase/firestore';
-import { db } from '../firebase';
 import type { MultimediaItem } from '../types/multimedia';
 import { multimediaInitialItems } from '../data/multimediaInitialItems';
 import type { MultimediaPageContent } from '../types/multimediaContent';
 import { defaultMultimediaPageContent } from '../types/multimediaContent';
 
-const MULTIMEDIA_DOC_PATH = 'multimedia_gallery_live';
-const LOCAL_STORAGE_KEY = 'multimedia_portfolio_items_v2';
+// ─── All persistence goes through the server-side API ─────────────────────────
+// The Firebase client SDK cannot connect to Firestore reliably from the browser
+// in the Cloud Run / AI Studio environment (WebSocket restrictions, CSP, etc.).
+// Instead, we proxy all reads/writes through our own Express API endpoints,
+// which use the Firestore REST API from the server side — no restrictions there.
 
-const CONTENT_DOC_PATH = 'multimedia_page_content_live';
-const CONTENT_STORAGE_KEY = 'multimedia_page_content_v1';
+const POLL_INTERVAL_MS = 5000; // Polling interval for cross-device sync
 
 /**
- * Subscribes to real-time updates from Firestore.
+ * Subscribes to real-time gallery items from the server API.
  * Load order:
- *  1. localStorage cache (immediate, ~0ms) so UI doesn't flash blank
- *  2. Firestore getDoc (fast first fetch, ~300-800ms) — overrides cache
- *  3. onSnapshot realtime listener (live updates from any device)
- * This ensures Firestore is ALWAYS the source of truth.
+ *  1. Immediate fetch from /api/gallery (fast, ~200ms)
+ *  2. Poll every 5s for cross-device sync
  */
 export function subscribeToMultimediaItems(
   onUpdate: (items: MultimediaItem[]) => void,
   onLoadingChange?: (loading: boolean) => void
 ): () => void {
   onLoadingChange?.(true);
+  let cancelled = false;
 
-  // 1. Show cached data immediately to avoid blank flash
-  try {
-    const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        onUpdate(parsed);
-      }
-    }
-  } catch {
-    // Ignore parse errors
-  }
-
-  const liveDocRef = doc(db, 'games', MULTIMEDIA_DOC_PATH);
-
-  // 2. Fetch from Firestore immediately on mount (not waiting for snapshot)
-  getDoc(liveDocRef)
-    .then((snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        if (data && Array.isArray(data.items) && data.items.length > 0) {
-          try {
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.items));
-          } catch {
-            // Ignore storage errors
-          }
-          onUpdate(data.items);
-        }
-      } else {
-        // No Firestore doc yet — seed it with initial items so it persists
-        const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (!cached) {
-          onUpdate(multimediaInitialItems);
-        }
-      }
-      onLoadingChange?.(false);
-    })
-    .catch((err) => {
-      console.warn('Firestore initial fetch failed, falling back to cache/defaults:', err.message);
-      // If Firestore is unreachable, use cache or defaults
-      const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (!cached) {
+  const fetchItems = async () => {
+    try {
+      const res = await fetch('/api/gallery');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (Array.isArray(data.items) && data.items.length > 0) {
+        onUpdate(data.items as MultimediaItem[]);
+      } else if (data.items?.length === 0) {
+        // Server returned empty — show defaults but don't override existing
         onUpdate(multimediaInitialItems);
       }
+    } catch (err) {
+      console.warn('[Gallery] fetch from /api/gallery failed:', err);
+      // Fallback: show defaults so UI isn't blank
+      onUpdate(multimediaInitialItems);
+    } finally {
       onLoadingChange?.(false);
-    });
+    }
+  };
 
-  // 3. Realtime listener for live cross-device sync
-  try {
-    const unsubscribe = onSnapshot(
-      liveDocRef,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.data();
-          if (data && Array.isArray(data.items) && data.items.length > 0) {
-            try {
-              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.items));
-            } catch {
-              // Ignore storage errors
-            }
-            onUpdate(data.items);
-          }
-        }
-        onLoadingChange?.(false);
-      },
-      (error) => {
-        console.warn('Firestore realtime listener error:', error.message);
-        onLoadingChange?.(false);
-      }
-    );
+  // Initial fetch immediately
+  fetchItems();
 
-    return unsubscribe;
-  } catch (err) {
-    console.warn('Could not attach Firestore listener:', err);
-    return () => {};
-  }
+  // Poll for cross-device updates
+  const intervalId = setInterval(() => {
+    if (!cancelled) fetchItems();
+  }, POLL_INTERVAL_MS);
+
+  return () => {
+    cancelled = true;
+    clearInterval(intervalId);
+  };
 }
 
 /**
- * Saves updated items to Firestore (source of truth) AND localStorage (speed cache).
- * Returns true if cloud save succeeded.
+ * Saves gallery items to Firestore via the server API.
+ * Returns true if the save succeeded.
  */
 export async function saveMultimediaItemsLive(items: MultimediaItem[]): Promise<boolean> {
-  // Immediate local cache for fast reload
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
-  } catch {
-    // Ignore
-  }
-
-  // Cloud save — this is the real persistence
-  try {
-    const liveDocRef = doc(db, 'games', MULTIMEDIA_DOC_PATH);
-    await setDoc(liveDocRef, {
-      items,
-      updatedAt: Date.now(),
+    const res = await fetch('/api/gallery', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items }),
     });
-    return true;
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      console.error('[Gallery] save failed:', err);
+      return false;
+    }
+    const data = await res.json();
+    return data.ok === true;
   } catch (err) {
-    console.error('Firestore cloud sync error:', err);
+    console.error('[Gallery] save network error:', err);
     return false;
   }
 }
 
 /**
- * Subscribes to page text/content updates from Firestore.
- * Same load order: cache → getDoc → onSnapshot
+ * Subscribes to page content from the server API.
  */
 export function subscribeToMultimediaPageContent(
   onUpdate: (content: MultimediaPageContent) => void
 ): () => void {
-  // 1. Immediate cache load
-  try {
-    const cached = localStorage.getItem(CONTENT_STORAGE_KEY);
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      if (parsed && typeof parsed === 'object') {
-        onUpdate({ ...defaultMultimediaPageContent, ...parsed });
+  let cancelled = false;
+
+  const fetchContent = async () => {
+    try {
+      const res = await fetch('/api/page-content');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.content && typeof data.content === 'object') {
+        onUpdate({ ...defaultMultimediaPageContent, ...data.content });
+      } else {
+        onUpdate(defaultMultimediaPageContent);
       }
+    } catch (err) {
+      console.warn('[Content] fetch from /api/page-content failed:', err);
+      onUpdate(defaultMultimediaPageContent);
     }
-  } catch {
-    // Ignore
-  }
+  };
 
-  const docRef = doc(db, 'games', CONTENT_DOC_PATH);
+  // Initial fetch immediately
+  fetchContent();
 
-  // 2. Immediate Firestore fetch
-  getDoc(docRef)
-    .then((snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        if (data && data.content) {
-          try {
-            localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(data.content));
-          } catch {
-            // Ignore
-          }
-          onUpdate({ ...defaultMultimediaPageContent, ...data.content });
-        }
-      }
-    })
-    .catch((err) => {
-      console.warn('Firestore content initial fetch failed:', err.message);
-    });
+  // Poll for cross-device updates
+  const intervalId = setInterval(() => {
+    if (!cancelled) fetchContent();
+  }, POLL_INTERVAL_MS);
 
-  // 3. Realtime listener
-  try {
-    const unsubscribe = onSnapshot(
-      docRef,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.data();
-          if (data && data.content) {
-            try {
-              localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(data.content));
-            } catch {
-              // Ignore
-            }
-            onUpdate({ ...defaultMultimediaPageContent, ...data.content });
-          }
-        }
-      },
-      (error) => {
-        console.warn('Firestore content listener error:', error.message);
-      }
-    );
-    return unsubscribe;
-  } catch (err) {
-    console.warn('Could not attach content listener:', err);
-    return () => {};
-  }
+  return () => {
+    cancelled = true;
+    clearInterval(intervalId);
+  };
 }
 
 /**
- * Saves page content to Firestore (source of truth) AND localStorage (speed cache).
+ * Saves page content to Firestore via the server API.
+ * Returns true if the save succeeded.
  */
 export async function saveMultimediaPageContentLive(content: MultimediaPageContent): Promise<boolean> {
   try {
-    localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(content));
-  } catch {
-    // Ignore
-  }
-
-  try {
-    const docRef = doc(db, 'games', CONTENT_DOC_PATH);
-    await setDoc(docRef, {
-      content,
-      updatedAt: Date.now(),
+    const res = await fetch('/api/page-content', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
     });
-    return true;
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      console.error('[Content] save failed:', err);
+      return false;
+    }
+    const data = await res.json();
+    return data.ok === true;
   } catch (err) {
-    console.error('Firestore content sync error:', err);
+    console.error('[Content] save network error:', err);
     return false;
   }
 }
