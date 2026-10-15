@@ -14,6 +14,8 @@ import {
   Box,
   Palette,
   Globe,
+  Play,
+  Pause,
 } from 'lucide-react';
 import type { MultimediaItem, MediaAsset } from '../../types/multimedia';
 import { normalizeCategory, getItemAssets, getItemCategories, getCategoryDisplay, getCategoryIconName } from '../../types/multimedia';
@@ -23,35 +25,48 @@ interface MultimediaModalProps {
   onClose: () => void;
 }
 
-// Dedicated Video Component with Auto-play on Hover and Audio Toggle
+// Dedicated Video Component with Auto-play on Open, minimal hover controls and clean transparent background
 const ModalVideoPlayer: React.FC<{
   asset: MediaAsset;
   index?: number;
   autoPlayInitial?: boolean;
-}> = ({ asset, index = 0, autoPlayInitial = true }) => {
+}> = ({ asset }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
 
+  // Auto-play on mount / open
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    if (isHovered) {
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => setIsPlaying(true))
-          .catch(() => {
-            // Ignored browser restriction
-          });
-      }
+    // Reset progress
+    setProgress(0);
+
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => setIsPlaying(true))
+        .catch(() => {
+          // Autoplay policy: retry muted if needed
+          video.muted = true;
+          setIsMuted(true);
+          video.play().then(() => setIsPlaying(true)).catch(() => {});
+        });
+    }
+  }, [asset.url]);
+
+  const togglePlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    if (videoRef.current.paused) {
+      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
     } else {
-      video.pause();
+      videoRef.current.pause();
       setIsPlaying(false);
     }
-  }, [isHovered]);
+  };
 
   const toggleSound = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -61,11 +76,31 @@ const ModalVideoPlayer: React.FC<{
     setIsMuted(nextMuted);
   };
 
+  const handleTimeUpdate = () => {
+    if (!videoRef.current) return;
+    const current = videoRef.current.currentTime;
+    const duration = videoRef.current.duration;
+    if (duration > 0) {
+      setProgress((current / duration) * 100);
+    }
+  };
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickPos = (e.clientX - rect.left) / rect.width;
+    const targetTime = clickPos * videoRef.current.duration;
+    if (Number.isFinite(targetTime)) {
+      videoRef.current.currentTime = targetTime;
+      setProgress(clickPos * 100);
+    }
+  };
+
   return (
     <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="relative w-full rounded-2xl overflow-hidden bg-black/60 border border-white/10 group/player flex items-center justify-center"
+      onClick={togglePlay}
+      className="relative w-fit max-w-full mx-auto rounded-2xl overflow-hidden group/player flex items-center justify-center cursor-pointer select-none"
     >
       <video
         ref={videoRef}
@@ -75,31 +110,69 @@ const ModalVideoPlayer: React.FC<{
         loop
         playsInline
         preload="auto"
-        controls
-        className="w-full max-h-[68vh] object-contain"
+        className="max-w-full max-h-[72vh] w-auto h-auto object-contain block rounded-2xl"
+        onTimeUpdate={handleTimeUpdate}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
       />
 
-      {/* Floating Hover & Audio Status Badge */}
-      <div className="absolute top-3 right-3 flex items-center gap-2 pointer-events-auto z-20">
+      {/* Center Subtle Play/Pause Indicator on hover when paused */}
+      {!isPlaying && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/20 backdrop-blur-[1px]">
+          <div className="w-12 h-12 rounded-full bg-black/60 text-white flex items-center justify-center shadow-lg border border-white/20">
+            <Play className="w-5 h-5 fill-current ml-0.5" />
+          </div>
+        </div>
+      )}
+
+      {/* Floating Audio Toggle - Minimal pill at top-right (visible on hover or always subtle) */}
+      <div className="absolute top-3 right-3 flex items-center gap-2 pointer-events-auto z-20 opacity-0 group-hover/player:opacity-100 transition-opacity duration-200">
         <button
           type="button"
           onClick={toggleSound}
           title={isMuted ? 'Activar sonido' : 'Silenciar'}
-          className="px-2.5 py-1.5 rounded-full bg-black/70 hover:bg-black/90 text-white text-xs font-mono flex items-center gap-1.5 backdrop-blur-md border border-white/20 transition-all cursor-pointer shadow-lg"
+          className="p-1.5 rounded-full bg-black/60 hover:bg-black/85 text-white/90 hover:text-white backdrop-blur-md border border-white/15 transition-all cursor-pointer shadow-md"
         >
-          {isMuted ? <VolumeX className="w-3.5 h-3.5 text-stone-300" /> : <Volume2 className="w-3.5 h-3.5 text-emerald-400" />}
-          <span>{isMuted ? 'Mudo' : 'Audio On'}</span>
+          {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-emerald-400" />}
         </button>
       </div>
 
-      {/* Subtitle / Hover hint overlay */}
-      {!isPlaying && (
-        <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[11px] font-sans text-stone-300 pointer-events-none transition-opacity duration-300 opacity-80 group-hover/player:opacity-0">
-          Pasa el cursor para reproducir automáticamente
+      {/* Minimal Bottom Controls Overlay (visible on hover) */}
+      <div
+        className="absolute inset-x-0 bottom-0 p-3 pt-8 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col gap-2 opacity-0 group-hover/player:opacity-100 transition-opacity duration-200 pointer-events-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Clickable Progress Bar */}
+        <div
+          onClick={handleSeek}
+          className="w-full h-1.5 hover:h-2 bg-white/20 hover:bg-white/30 rounded-full cursor-pointer relative overflow-hidden transition-all"
+        >
+          <div
+            className="h-full bg-white rounded-full transition-all duration-100"
+            style={{ width: `${progress}%` }}
+          />
         </div>
-      )}
+
+        {/* Minimal Control Bar */}
+        <div className="flex items-center justify-between text-white/90 text-xs px-0.5">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={togglePlay}
+              className="p-1 hover:text-white text-white/80 transition-colors cursor-pointer"
+            >
+              {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
+            </button>
+            <button
+              type="button"
+              onClick={toggleSound}
+              className="p-1 hover:text-white text-white/80 transition-colors cursor-pointer"
+            >
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

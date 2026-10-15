@@ -46,6 +46,7 @@ interface AssetInputState {
   preferredType: 'video' | 'image';
   format: MediaFormat;
   title: string;
+  thumbnailUrl?: string;
 }
 
 export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = ({
@@ -98,7 +99,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
 
   // Multi-asset state
   const [assetsList, setAssetsList] = useState<AssetInputState[]>([
-    { id: 'asset-1', url: '', preferredType: 'video', format: '16:9', title: '' },
+    { id: 'asset-1', url: '', preferredType: 'video', format: '16:9', title: '', thumbnailUrl: '' },
   ]);
 
   // Drag and drop state for items
@@ -115,13 +116,13 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
     setCategories(['MOTION']);
     setCustomCategoryInput('');
     setIsVisible(true);
-    setAssetsList([{ id: `asset-${Date.now()}`, url: '', preferredType: 'video', format: '16:9', title: '' }]);
+    setAssetsList([{ id: `asset-${Date.now()}`, url: '', preferredType: 'video', format: '16:9', title: '', thumbnailUrl: '' }]);
   };
 
   const handleAddAssetRow = () => {
     setAssetsList((prev) => [
       ...prev,
-      { id: `asset-${Date.now()}-${prev.length}`, url: '', preferredType: 'video', format: '16:9', title: '' },
+      { id: `asset-${Date.now()}-${prev.length}`, url: '', preferredType: 'video', format: '16:9', title: '', thumbnailUrl: '' },
     ]);
   };
 
@@ -154,6 +155,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
 
     const parsedAssets: MediaAsset[] = validAssets.map((a, idx) => {
       const parsed = parseMediaUrl(a.url, a.preferredType);
+      const customThumb = a.thumbnailUrl?.trim();
       return {
         id: a.id || `asset-${idx}-${Date.now()}`,
         url: parsed.url,
@@ -161,7 +163,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
         mediaType: parsed.mediaType,
         format: a.format,
         title: a.title.trim() || undefined,
-        thumbnailUrl: parsed.thumbnailUrl,
+        thumbnailUrl: customThumb || parsed.thumbnailUrl,
         driveFileId: parsed.driveFileId,
       };
     });
@@ -245,6 +247,7 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
         preferredType: a.mediaType.includes('image') ? 'image' : 'video',
         format: a.format || '16:9',
         title: a.title || '',
+        thumbnailUrl: a.thumbnailUrl || '',
       }))
     );
   };
@@ -635,6 +638,15 @@ export const MultimediaSettingsModal: React.FC<MultimediaSettingsModalProps> = (
                             onChange={(e) => handleUpdateAsset(index, 'title', e.target.value)}
                             placeholder="Etiqueta opcional (ej: Reel 9:16, Key Visual Feed, Storyboard)"
                             className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs font-sans bg-white focus:outline-none focus:border-neutral-900"
+                          />
+
+                          {/* Thumbnail URL (optional poster/card cover image) */}
+                          <input
+                            type="url"
+                            value={asset.thumbnailUrl || ''}
+                            onChange={(e) => handleUpdateAsset(index, 'thumbnailUrl', e.target.value)}
+                            placeholder="URL miniatura del card (opcional, imagen de portada)"
+                            className="w-full px-3 py-1.5 rounded-lg border border-stone-200 text-xs font-sans bg-white focus:outline-none focus:border-neutral-900 text-stone-700"
                           />
 
                           {/* Type toggle & Format selector */}
