@@ -202,9 +202,9 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                       key={asset.id || idx}
                       type="button"
                       onClick={() => scrollToAsset(idx)}
-                      className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] font-mono border border-white/10 transition-colors shrink-0 cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] font-sans border border-white/10 transition-colors shrink-0 cursor-pointer"
                     >
-                      #{idx + 1} {asset.title ? `· ${asset.title.slice(0, 15)}...` : asset.format}
+                      {asset.title || asset.format}
                     </button>
                   ))}
                 </div>
@@ -228,18 +228,11 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                     className="p-3 sm:p-5 rounded-3xl bg-white/[0.03] backdrop-blur-md border border-white/10 space-y-4 transition-all scroll-mt-6"
                   >
                     {/* Header info for this asset if multi-asset */}
-                    {assets.length > 1 && (
+                    {assets.length > 1 && asset.title && (
                       <div className="flex items-center gap-2 px-1">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-md bg-white/15 text-white text-[10px] font-mono font-bold">
-                            ARCHIVO {idx + 1} DE {assets.length}
-                          </span>
-                          {asset.title && (
-                            <span className="text-white/90 font-sans text-xs sm:text-sm font-semibold truncate max-w-md">
-                              {asset.title}
-                            </span>
-                          )}
-                        </div>
+                        <span className="text-white/90 font-sans text-xs sm:text-sm font-semibold truncate max-w-md">
+                          {asset.title}
+                        </span>
                       </div>
                     )}
 
