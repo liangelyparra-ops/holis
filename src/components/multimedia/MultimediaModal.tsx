@@ -260,31 +260,23 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
   return (
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 md:p-6 overflow-hidden"
+        className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 lg:p-6 bg-black/75"
         onClick={onClose}
       >
-        {/* Backdrop with Deep Glassmorphism */}
+        {/* Modal Window: Inspired by CaseStudyModal size, single-column integrated with frosted glass effect */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-neutral-950/80 backdrop-blur-2xl"
-        />
-
-        {/* Modal Window: Integrated, more compact, adapting to content */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 15 }}
+          initial={{ opacity: 0, scale: 0.97, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96, y: 15 }}
-          transition={{ duration: 0.25, ease: 'easeOut' }}
+          exit={{ opacity: 0, scale: 0.97, y: 12 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-3xl max-h-[90vh] flex flex-col bg-neutral-950/90 backdrop-blur-3xl rounded-3xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.85)] border border-white/15 z-10 text-white"
+          className="relative w-full max-w-6xl max-h-[95dvh] flex flex-col bg-neutral-900/80 backdrop-blur-xl border border-white/15 rounded-3xl overflow-hidden shadow-[0_32px_80px_-12px_rgba(0,0,0,0.85)] z-10 text-white"
         >
-          {/* Subtle Glass Highlights */}
-          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none z-30" />
+          {/* Subtle Top Glass Highlights */}
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent pointer-events-none z-30" />
 
           {/* Modal Header: Category Badges & Close Button */}
-          <div className="flex items-center justify-between gap-3 px-5 sm:px-6 py-4 border-b border-white/10 bg-white/[0.02] backdrop-blur-md shrink-0 z-20">
+          <div className="flex items-center justify-between gap-4 px-6 sm:px-10 py-5 border-b border-white/10 bg-white/[0.04] backdrop-blur-md shrink-0 z-20">
             <div className="flex flex-wrap items-center gap-2">
               {getItemCategories(item).map((catKey) => {
                 const { label } = getCategoryDisplay(catKey);
@@ -321,15 +313,15 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
               onClick={onClose}
               type="button"
               aria-label="Cerrar modal"
-              className="shrink-0 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all backdrop-blur-md border border-white/20 shadow-md cursor-pointer"
+              className="shrink-0 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors border border-white/20 shadow-md cursor-pointer"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Multi-Asset Quick Jump Tabs (if multiple assets exist) */}
           {assets.length > 1 && (
-            <div className="px-6 bg-black/40 backdrop-blur-xl border-b border-white/10 flex items-center gap-6 overflow-x-auto scrollbar-none shrink-0 z-20 h-11">
+            <div className="px-6 sm:px-10 bg-black/40 backdrop-blur-md border-b border-white/10 flex items-center gap-6 overflow-x-auto scrollbar-none shrink-0 z-20 h-12">
               {assets.map((asset, idx) => {
                 const isActive = activeAssetIndex === idx;
                 return (
@@ -354,10 +346,10 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
           <div
             ref={scrollContainerRef}
             onScroll={handleScroll}
-            className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-7 space-y-7 scrollbar-thin scrollbar-thumb-white/20 hover:scrollbar-thumb-white/40 text-left"
+            className="flex-1 min-h-0 overflow-y-auto px-6 sm:px-10 md:px-14 py-8 sm:py-10 space-y-8 scrollbar-thin scrollbar-thumb-white/20 hover:scrollbar-thumb-white/40 text-left"
           >
-            {/* Media Area (adjusts nicely to media size) */}
-            <div className="space-y-6">
+            {/* Media Area (centers media and preserves aspect ratio seamlessly) */}
+            <div className="space-y-8">
               {assets.map((asset, idx) => {
                 const isAssetVideo = asset.mediaType === 'video';
                 const isAssetDriveVideo = asset.mediaType === 'drive_video';
@@ -367,12 +359,12 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                   <div
                     key={asset.id || idx}
                     id={`modal-asset-${idx}`}
-                    className="space-y-3 transition-all scroll-mt-6"
+                    className="space-y-4 transition-all scroll-mt-6"
                   >
                     <div className="w-full flex items-center justify-center">
                       {isAssetDriveVideo ? (
-                        <div className="relative w-full max-w-full mx-auto rounded-2xl overflow-hidden group/drive flex items-center justify-center bg-black/90 border border-white/10">
-                          <div className="w-full aspect-video max-h-[60vh] relative rounded-2xl overflow-hidden">
+                        <div className="relative w-full max-w-4xl mx-auto rounded-2xl overflow-hidden group/drive flex items-center justify-center bg-black/80 border border-white/10 shadow-lg">
+                          <div className="w-full aspect-video max-h-[68vh] relative rounded-2xl overflow-hidden">
                             <iframe
                               src={asset.url.includes('?') ? `${asset.url}&autoplay=1` : `${asset.url}?autoplay=1`}
                               title={asset.title || item.title}
@@ -380,7 +372,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                               allowFullScreen
                               className="w-full h-full border-0 rounded-2xl"
                             />
-                            {/* Blocker overlay for Google Drive top-right pop-out (open in new tab) button */}
+                            {/* Blocker overlay for Google Drive top-right pop-out button */}
                             <div
                               className="absolute top-0 right-0 w-24 h-14 z-30 pointer-events-auto bg-transparent cursor-default"
                               title="Reproductor de video"
@@ -392,8 +384,8 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                           </div>
                         </div>
                       ) : isAssetEmbed ? (
-                        <div className="relative w-full max-w-full mx-auto rounded-2xl overflow-hidden flex items-center justify-center bg-black/90 border border-white/10">
-                          <div className="w-full aspect-video max-h-[60vh] relative rounded-2xl overflow-hidden">
+                        <div className="relative w-full max-w-4xl mx-auto rounded-2xl overflow-hidden flex items-center justify-center bg-black/80 border border-white/10 shadow-lg">
+                          <div className="w-full aspect-video max-h-[68vh] relative rounded-2xl overflow-hidden">
                             <iframe
                               src={asset.url}
                               title={asset.title || item.title}
@@ -406,12 +398,12 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                       ) : isAssetVideo ? (
                         <ModalVideoPlayer asset={asset} index={idx} autoPlayInitial={idx === 0} />
                       ) : (
-                        <div className="relative w-full rounded-2xl overflow-hidden bg-black/40 border border-white/10 flex items-center justify-center">
+                        <div className="relative w-full max-w-4xl mx-auto rounded-2xl overflow-hidden bg-black/40 border border-white/10 flex items-center justify-center shadow-lg">
                           <img
                             src={asset.url}
                             alt={asset.title || item.title}
                             loading="lazy"
-                            className="w-full max-h-[60vh] object-contain transition-transform duration-500 hover:scale-[1.01]"
+                            className="w-full max-h-[68vh] object-contain transition-transform duration-500 hover:scale-[1.01]"
                             onError={(e) => {
                               if (asset.thumbnailUrl && asset.thumbnailUrl !== asset.url) {
                                 (e.target as HTMLImageElement).src = asset.thumbnailUrl;
@@ -422,7 +414,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                       )}
                     </div>
 
-                    {/* Thin subtle divider between multiple assets */}
+                    {/* Subtle divider between multiple assets */}
                     {assets.length > 1 && idx < assets.length - 1 && (
                       <div className="pt-6 border-b border-white/[0.08]" />
                     )}
@@ -432,7 +424,7 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
             </div>
 
             {/* Integrated Details Section */}
-            <div className="space-y-5 pt-2 border-t border-white/10">
+            <div className="space-y-6 pt-4 border-t border-white/10 max-w-4xl">
               {/* Title */}
               <div>
                 <h2 className="font-headline text-2xl sm:text-3xl font-light text-white tracking-tight leading-tight">
@@ -479,6 +471,17 @@ export const MultimediaModal: React.FC<MultimediaModalProps> = ({ item, onClose 
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Modal Footer (matching CaseStudyModal) */}
+          <div className="px-6 sm:px-10 py-4 border-t border-white/10 bg-white/[0.03] backdrop-blur-md flex justify-end shrink-0">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl bg-white/10 hover:bg-white/20 px-5 py-2.5 text-xs sm:text-sm font-semibold text-white transition-colors border border-white/15 cursor-pointer"
+            >
+              Cerrar
+            </button>
           </div>
         </motion.div>
       </div>
