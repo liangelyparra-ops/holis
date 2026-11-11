@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/design", "destination": "/index.html" },
+    { "source": "/product", "destination": "/index.html" },
+    { "source": "/multimedia", "destination": "/index.html" },
+    { "source": "/diseno-multimedia", "destination": "/index.html" }
+  ]
+}
