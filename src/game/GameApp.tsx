@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Toaster, toast } from 'sonner';
-import { Home, Mail, Share2 } from 'lucide-react';
+import { Mail, Share2 } from 'lucide-react';
 import GameSection from './GameSection';
 import { portfolioContent } from '../data/portfolioContent';
 
@@ -53,20 +53,6 @@ export default function GameApp() {
           className="fixed top-4 right-4 z-50 flex items-center gap-1.5 p-1.5 rounded-full bg-neutral-900/80 backdrop-blur-md border border-neutral-800 shadow-xl transition-all"
           aria-label="Game navigation"
         >
-          {/* Home / Back to portfolio */}
-          <div className="relative group">
-            <a
-              href="/"
-              aria-label="Volver al portafolio"
-              className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-white hover:bg-neutral-800/80 transition-all cursor-pointer"
-            >
-              <Home className="w-4 h-4" />
-            </a>
-            <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md bg-neutral-900/95 border border-neutral-800 text-white text-[10px] font-sans font-medium tracking-wide shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-              Portafolio
-            </span>
-          </div>
-
           {/* WhatsApp */}
           <div className="relative group">
             <a

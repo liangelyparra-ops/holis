@@ -13,6 +13,7 @@ import { ContactSection } from './components/portfolio/ContactSection';
 import { PapelitoCaseCard } from './components/portfolio/PapelitoCaseCard';
 
 import { MultimediaDesignerPage } from './components/multimedia/MultimediaDesignerPage';
+import { DesignPage } from './components/design/DesignPage';
 
 const isMultimediaRoute = (hash: string, pathname: string) => {
   const h = hash.toLowerCase();
@@ -27,6 +28,13 @@ const isMultimediaRoute = (hash: string, pathname: string) => {
 };
 
 export default function App() {
+  if (typeof window !== 'undefined' && window.location.pathname.replace(/\/+$/, '') === '/design') {
+    return <DesignPage />;
+  }
+  return <ExistingPortfolio />;
+}
+
+function ExistingPortfolio() {
   const [activeTab, setActiveTab] = useState<'IMPACT' | 'CONTACT'>('IMPACT');
   const [isMultimedia, setIsMultimedia] = useState<boolean>(() => {
     return typeof window !== 'undefined' 

@@ -1,0 +1,10 @@
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import GameStage from './GameStage.generated';
+import '../src/index.css';
+import type {GameState} from '../src/types';
+const stage=new URLSearchParams(location.search).get('stage') || 'HOME';
+const avatar='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" rx="32" fill="#3C48C3"/><circle cx="32" cy="24" r="11" fill="#dddaf0"/><path d="M12 59c0-24 40-24 40 0" fill="#dddaf0"/></svg>');
+const players=['Lia','Alex','Sam','Dani'].map((name,i)=>({id:'preview-'+(i+1),name,avatar,score:[30,20,10,0][i],isReady:true,isHost:i===0,papelitos:['Un astronauta','Una bicicleta','Un gato']}));
+const state:GameState={status:stage as GameState['status'],players,cards:[{id:'one',category:'PAPELITO',content:'Un astronauta',emoji:'🚀'},{id:'two',category:'PAPELITO',content:'Una bicicleta',emoji:'🚲'},{id:'three',category:'PAPELITO',content:'Un gato',emoji:'🐈'}],currentCardIndex:1,timer:64,mode:'PAPELITO',currentRound:stage==='GAME'?2:1,currentTurnPlayerId:'preview-1',readyCount:4,turnOrder:players.map(p=>p.id),papelitosPerPlayer:3,papelitoTheme:'libre'};
+createRoot(document.getElementById('root')!).render(<div style={{background:'#0e0e0e',color:'white',minHeight:720,padding:'40px 16px 16px'}}><p style={{textAlign:'center',font:'11px sans-serif',letterSpacing:'.1em',color:'#8d8d99',marginBottom:18}}>GAME SCREENS · SAMPLE PLAYERS</p><GameStage previewState={state}/></div>);
